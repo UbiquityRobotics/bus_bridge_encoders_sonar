@@ -1,0 +1,234 @@
+Cmp-Mod V01 Created by Cvpcb (2014-jan-25)-product   date = Thu 10 Jul 2014 06:17:03 AM PDT
+
+BeginCmp
+TimeStamp = /53B058C5;
+Reference = C1;
+ValeurCmp = 22uF;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Capacitor3MMDiscRM2.5;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B05957;
+Reference = C2;
+ValeurCmp = .1uF;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Capacitor3MMDiscRM2.5;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B05AB0;
+Reference = C3;
+ValeurCmp = 22uF;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Capacitor4x3RM2-5_RevB;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B246EA;
+Reference = C4;
+ValeurCmp = .1uF;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Capacitor3MMDiscRM2.5;
+EndCmp
+
+BeginCmp
+TimeStamp = /53AA4798;
+Reference = G1;
+ValeurCmp = OSHW_LOGO;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:OSHW_LOGO_400mil;
+EndCmp
+
+BeginCmp
+TimeStamp = /53AA33AA;
+Reference = H1;
+ValeurCmp = 3MM_HOLE;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:MountingHole_3mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B05B56;
+Reference = J1;
+ValeurCmp = POWER_SELECT;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x03;
+EndCmp
+
+BeginCmp
+TimeStamp = /53A9D11F;
+Reference = N1;
+ValeurCmp = MS_DATA_HEADER;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_2x08;
+EndCmp
+
+BeginCmp
+TimeStamp = /53A9D139;
+Reference = N2;
+ValeurCmp = MS_PWR_HEADER;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_2x08;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B1B0A0;
+Reference = N3;
+ValeurCmp = ENCODER_CONNECTOR;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x04;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B21032;
+Reference = N4;
+ValeurCmp = ENCODER_CONNECTOR;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x04;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B16BD0;
+Reference = N5;
+ValeurCmp = MOTOR_CONNECTOR;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x02;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B16F6F;
+Reference = N6;
+ValeurCmp = MOTOR_CONNECTOR;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x02;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B4C06A;
+Reference = N7;
+ValeurCmp = HC_SR04_CONNECTOR;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x04;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B4C21C;
+Reference = N8;
+ValeurCmp = HC_SR04_CONNECTOR;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Pin_Header_Straight_1x04;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B059A7;
+Reference = R1;
+ValeurCmp = .47;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B104EB;
+Reference = R2;
+ValeurCmp = 470;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B1057E;
+Reference = R3;
+ValeurCmp = 470;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B105C7;
+Reference = R4;
+ValeurCmp = 470;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B1074B;
+Reference = R5;
+ValeurCmp = 470;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B107A9;
+Reference = R6;
+ValeurCmp = 470;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B10807;
+Reference = R7;
+ValeurCmp = 470;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B07E1A;
+Reference = R8;
+ValeurCmp = 10K;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B07E85;
+Reference = R9;
+ValeurCmp = 10K;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B07EB5;
+Reference = R10;
+ValeurCmp = 10K;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B07714;
+Reference = R11;
+ValeurCmp = 10K;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B077B8;
+Reference = R12;
+ValeurCmp = 10K;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B077EB;
+Reference = R13;
+ValeurCmp = 10K;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:Resistor_Horizontal_400;
+EndCmp
+
+BeginCmp
+TimeStamp = /53AF4DC8;
+Reference = U1;
+ValeurCmp = LM2940;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:TO-220_Neutral123_Horizontal_LargePads;
+EndCmp
+
+BeginCmp
+TimeStamp = /53AF4EDB;
+Reference = U2;
+ValeurCmp = LTV-826;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:DIP-8__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B067F4;
+Reference = U3;
+ValeurCmp = LTV-826;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:DIP-8__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B06871;
+Reference = U4;
+ValeurCmp = LTV-826;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:DIP-8__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /53B0B545;
+Reference = U5;
+ValeurCmp = 754410;
+IdModule  = Mini_Bridge_Encoders_Sonar_Rev_B:DIP-16__300;
+EndCmp
+
+EndListe
