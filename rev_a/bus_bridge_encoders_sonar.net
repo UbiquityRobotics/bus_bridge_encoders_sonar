@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source /home/wayne/public_html/projects/bus_bridge_encoders_sonar/rev_a/bus_bridge_encoders_sonar.sch)
-    (date "Tue 12 Aug 2014 11:48:25 AM PDT")
+    (date "Mon 18 Aug 2014 02:07:47 PM PDT")
     (tool "Eeschema (2014-jan-25)-product"))
   (components
     (comp (ref H1)
@@ -225,7 +225,7 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 53EA4CB4))
     (comp (ref X1)
-      (value CRYSTAL)
+      (value 16MHz)
       (libsource (lib bus_bridge_encoders_sonar) (part CRYSTAL))
       (sheetpath (names /) (tstamps /))
       (tstamp 53EA6D8D))
@@ -574,10 +574,10 @@
         (pin (num 2) (name ~) (type power_in))
         (pin (num 3) (name VOUT) (type power_out)))))
   (libraries
-    (library (logical bus_bridge_encoders_sonar-cache)
-      (uri /home/wayne/public_html/projects/bus_bridge_encoders_sonar/rev_a/bus_bridge_encoders_sonar-cache.lib))
     (library (logical bus_bridge_encoders_sonar)
-      (uri bus_bridge_encoders_sonar.lib)))
+      (uri bus_bridge_encoders_sonar.lib))
+    (library (logical bus_bridge_encoders_sonar-cache)
+      (uri /home/wayne/public_html/projects/bus_bridge_encoders_sonar/rev_a/bus_bridge_encoders_sonar-cache.lib)))
   (nets
     (net (code 1) (name "Net-(R13-Pad2)")
       (node (ref R13) (pin 2))
