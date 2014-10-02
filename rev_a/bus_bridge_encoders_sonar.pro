@@ -1,4 +1,4 @@
-update=Mon 11 Aug 2014 04:00:26 PM PDT
+update=Wed 01 Oct 2014 09:23:38 PM PDT
 version=1
 last_client=kicad
 [cvpcb]
@@ -30,15 +30,7 @@ BoardOutlineThickness=0.09999999999999999
 ModuleOutlineThickness=0.15
 [eeschema]
 version=1
-PageLayoutDescrFile=
-SubpartIdSeparator=0
-SubpartFirstId=65
 LibDir=../rev_a
-NetFmtName=
-RptD_X=0
-RptD_Y=100
-RptLab=1
-LabSize=60
 [eeschema/libraries]
 LibName1=bus_bridge_encoders_sonar
 LibName2=power
