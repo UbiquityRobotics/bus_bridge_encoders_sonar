@@ -1,10 +1,10 @@
-(module DIP-16__300 (layer F.Cu) (tedit 53B4EBB1)
+(module DIP-16__300 (layer F.Cu) (tedit 542F29B1)
   (descr "16 pins DIL package, round pads")
   (tags DIL)
-  (fp_text reference U5 (at -11.049 -3.81 90) (layer F.SilkS)
+  (fp_text reference R2 (at 0 -5.715) (layer F.SilkS)
     (effects (font (size 1.016 1.016) (thickness 0.2032)))
   )
-  (fp_text value 754410 (at -0.5715 -0.762) (layer F.SilkS) hide
+  (fp_text value DIP-16__300 (at 0 5.715) (layer F.SilkS) hide
     (effects (font (size 1.016 1.016) (thickness 0.2032)))
   )
   (fp_line (start -11.43 -1.27) (end -11.43 -1.27) (layer F.SilkS) (width 0.381))

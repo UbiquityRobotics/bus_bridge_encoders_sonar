@@ -1,3 +1,5 @@
 (fp_lib_table
   (lib (name Bus_Bridge_Encoders_Sonar)(type KiCad)(uri ${KIPRJMOD}/bus_bridge_encoders_sonar.pretty)(options "")(descr "Bus Bridge/Encoders/Sonar (Rev. A)"))
+  (lib (name Pin_Headers)(type Github)(uri ${KIGITHUB}/Pin_Headers.pretty)(options "")(descr "2.54mm pin headers."))
+  (lib (name Sockets_DIP)(type Github)(uri ${KIGITHUB}/Sockets_DIP.pretty)(options "")(descr "The way you like them."))
 )
