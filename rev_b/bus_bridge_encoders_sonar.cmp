@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Fri 03 Oct 2014 03:06:01 PM PDT
+Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Sun 05 Oct 2014 05:31:23 PM PDT
 
 BeginCmp
 TimeStamp = /53B058C5;
@@ -220,14 +220,14 @@ EndCmp
 BeginCmp
 TimeStamp = /542EE89B;
 Reference = R2;
-ValeurCmp = 470;
+ValeurCmp = 470_DIP16;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-16__300;
 EndCmp
 
 BeginCmp
 TimeStamp = /542D6E16;
 Reference = R8;
-ValeurCmp = 10K;
+ValeurCmp = 10Kx6;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x07;
 EndCmp
 

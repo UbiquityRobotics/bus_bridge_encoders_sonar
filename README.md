@@ -39,7 +39,7 @@ connects the A and B  quadrature signals to D4 and D2.
 
 {more goes here.}
 
-### Issues
+## Rev. A Issues
 
 * Tie off unused inputs of U7 to 0V or 5V. [x]
 
@@ -61,3 +61,8 @@ connects the A and B  quadrature signals to D4 and D2.
 * Combine Encoder and Motor onto a single 2x4 ribbon cable. [x]
 
 * Add an LED that can be blinked. [x]
+
+## Rev. B Issues
+
+* Connected U8 STBY (pin 8) to a processor pin [x]
+
