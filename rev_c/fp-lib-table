@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name Bus_Bridge_Encoders_Sonar)(type KiCad)(uri ${KIPRJMOD}/bus_bridge_encoders_sonar.pretty)(options "")(descr "Bus Bridge/Encoders/Sonar (Rev. A)"))
+)
