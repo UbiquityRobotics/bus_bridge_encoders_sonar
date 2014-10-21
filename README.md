@@ -66,3 +66,93 @@ connects the A and B  quadrature signals to D4 and D2.
 
 * Connected U8 STBY (pin 8) to a processor pin [x]
 
+## Rev. C
+
+<Table Border="1">
+    <TR>
+    </TR><TR>
+	<TH>Arduino Name</TH>
+	<TH>AVR Port</TH>
+	<TH>Function</TH>
+    </TR><TR>
+	<TD>D0</TD>
+	<TD>PD0/RXD</TD>
+	<TD>USART Receive</TD>
+    </TR><TR>
+	<TD>D1</TD>
+	<TD>PD0/TXD</TD>
+	<TD>USART Transmit</TD.
+    </TR><TR>
+	<TD>D2</TD>
+	<TD>PD3</TD>
+	<TD>SONAR0_TRIG</TD>
+    </TR><TR>
+	<TD>D3</TD>
+	<TD>PD3/OC2B</TD>
+	<TD>SONAR0_ECHO</TD>
+    </TR><TR>
+	<TD>D4</TD>
+	<TD>PD4</TD>
+	<TD>SONAR1_TRIG</TD>
+    </TR><TR>
+	<TD>D5</TD>
+	<TD>PD6/OC0B</TD>
+	<TD>SONAR1_ECHO</TD>
+    </TR><TR>
+	<TD>D6</TD>
+	<TD>PD6/OC0A</TD>
+	<TD>ENC_EN</TD>
+    </TR><TR>cc
+	<TD>D7</TD>
+        <TD>PD7<TD>
+	<TD>1A</TD>
+    </TR><TR>
+	<TD>D8</TD>
+	<TD>PB0<TD>
+	<TD>4A</TD>
+    </TR><TR>
+	<TD>D9</TD>
+	<TD>PB1/OC1A</TD>
+	<TD>EN34</TD>
+    </TR><TR>
+	<TD>D10</TD>
+	<TD>PB2/OC1B</TD>
+	<TD>EN12</TD>
+    </TR><TR>
+	<TD>D11</TD>
+	<TD>PB3/OC2A</TD>
+	<TD>3A</TD>
+    </TR><TR>
+	<TD>D12</TD>m
+	<TD>PB4</TD>
+	<TD>2A</TD>
+    </TR><TR>
+	<TD>D13</TD>
+	<TD>PB5</TD>
+	<TD>LED</TD>
+    </TR><TR>
+	<TD>A0</TD>
+	<TD>PC0</TD>
+	<TD>ENC1_A</TD>
+    </TR><TR>
+	<TD>A1</TD>
+	<TD>PC1</TD>
+	<TD>ENC1_B</TD>
+    </TR><TR>
+	<TD>A2</TD>
+	<TD>PC2</TD>
+	<TD>ENC2_A</TD>
+    </TR><TR>
+	<TD>A3</TD>
+	<TD>PC3</TD>
+	<TD>ENC2_B</TD>
+    </TR><TR>
+	<TD>A4</TD>
+	<TD>PC4</TD>
+	<TD>CAN_STBY</TD>
+    </TR><TR>
+	<TD>A5</TD>
+	<TD>PC5</TD>
+	<TD>-</TD>
+    </TR>
+</Table>

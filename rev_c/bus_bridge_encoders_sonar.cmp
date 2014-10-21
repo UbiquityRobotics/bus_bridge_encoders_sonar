@@ -1,364 +1,427 @@
-Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Sun 05 Oct 2014 05:31:23 PM PDT
+Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Tue 21 Oct 2014 10:12:08 AM PDT
 
 BeginCmp
-TimeStamp = /53B058C5;
+TimeStamp = /543A0165/543A2450;
 Reference = C1;
 ValeurCmp = 22uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B05957;
+TimeStamp = /543A0165/543A2457;
 Reference = C2;
 ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B05AB0;
+TimeStamp = /543A0165/543A2465;
 Reference = C3;
 ValeurCmp = 22uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B246EA;
+TimeStamp = /543A0165/543A249A;
 Reference = C4;
 ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
-EndCmp
-
-BeginCmp
-TimeStamp = /53EA7619;
-Reference = C5;
-ValeurCmp = 18pF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
-EndCmp
-
-BeginCmp
-TimeStamp = /53EA3E9D;
-Reference = C6;
-ValeurCmp = 22uF;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA7713;
+TimeStamp = /543A0162/543A13A9;
+Reference = C5;
+ValeurCmp = 22uF;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A13B7;
+Reference = C6;
+ValeurCmp = .1uF;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A13CC;
 Reference = C7;
 ValeurCmp = 18pF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
-EndCmp
-
-BeginCmp
-TimeStamp = /53EA479D;
-Reference = C8;
-ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
-EndCmp
-
-BeginCmp
-TimeStamp = /53EA4CB4;
-Reference = C9;
-ValeurCmp = 22uF;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E996AB;
-Reference = C10;
-ValeurCmp = .1uF;
+TimeStamp = /543A0162/543A13BE;
+Reference = C8;
+ValeurCmp = 22uF;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA3930;
+TimeStamp = /543A0162/543A1499;
+Reference = C9;
+ValeurCmp = .1uF;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A13D3;
+Reference = C10;
+ValeurCmp = 18pF;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A14A0;
 Reference = C11;
 ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA3BB3;
+TimeStamp = /543A0162/543A14A7;
 Reference = C12;
 ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA3C1E;
+TimeStamp = /543A0162/543A1403;
 Reference = C13;
 ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA3C8A;
+TimeStamp = /543A0162/543F4E32;
 Reference = C14;
 ValeurCmp = .1uF;
-IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E96A4D;
+TimeStamp = /543A0162/543A1385;
 Reference = D1;
 ValeurCmp = SD101C-TR;
 IdModule  = Bus_Bridge_Encoders_Sonar:Diode_DO-41_SOD81_Horizontal_RM10;
 EndCmp
 
 BeginCmp
-TimeStamp = /542F3451;
+TimeStamp = /543A0162/543A1740;
 Reference = D2;
 ValeurCmp = LED;
 IdModule  = Bus_Bridge_Encoders_Sonar:T1_LED;
 EndCmp
 
 BeginCmp
-TimeStamp = /53AA4798;
+TimeStamp = /543A0162/543A12F4;
 Reference = G1;
 ValeurCmp = OSHW_LOGO;
 IdModule  = Bus_Bridge_Encoders_Sonar:OSHW_LOGO_300mil;
 EndCmp
 
 BeginCmp
-TimeStamp = /53AA33AA;
+TimeStamp = /543A0162/543A12DF;
 Reference = H1;
 ValeurCmp = 3MM_HOLE;
 IdModule  = Bus_Bridge_Encoders_Sonar:MountingHole_3mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E9AFD9;
+TimeStamp = /543A0162/543A1418;
 Reference = H2;
 ValeurCmp = 3MM_HOLE;
 IdModule  = Bus_Bridge_Encoders_Sonar:MountingHole_3mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E9B07B;
+TimeStamp = /543A0162/543A141F;
 Reference = H3;
 ValeurCmp = 3MM_HOLE;
 IdModule  = Bus_Bridge_Encoders_Sonar:MountingHole_3mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E9B0DD;
+TimeStamp = /543A0162/543A1426;
 Reference = H4;
 ValeurCmp = 3MM_HOLE;
 IdModule  = Bus_Bridge_Encoders_Sonar:MountingHole_3mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B05B56;
+TimeStamp = /543A0165/543A246C;
 Reference = J1;
 ValeurCmp = POWER_SELECT;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x03;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E96A70;
+TimeStamp = /543A0162/543A138C;
 Reference = J2;
 ValeurCmp = TERMINATE_JUMPER;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x03;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E9683A;
+TimeStamp = /543A547B;
 Reference = N1;
 ValeurCmp = BUS_SLAVE_HEADER;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x05_Shrouded;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E96ADF;
+TimeStamp = /543A54D4;
 Reference = N2;
+ValeurCmp = MOTOR_ENCODER_CONN_2X5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x05_Shrouded;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A5519;
+Reference = N3;
+ValeurCmp = MOTOR_ENCODER_CONN_2X5;
+IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x05_Shrouded;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A1393;
+Reference = N4;
 ValeurCmp = FTDI_HEADER;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x06;
 EndCmp
 
 BeginCmp
-TimeStamp = /542E27A4;
-Reference = N3;
+TimeStamp = /543A0162/543A16EF;
+Reference = N5;
 ValeurCmp = AVR_ISP_HEADER;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x03;
 EndCmp
 
 BeginCmp
-TimeStamp = /542D7B65;
-Reference = N5;
-ValeurCmp = MOTOR_ENCODER_CONN;
-IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x04_Shrouded;
-EndCmp
-
-BeginCmp
-TimeStamp = /542D79E5;
+TimeStamp = /543A0162/543A1365;
 Reference = N6;
-ValeurCmp = MOTOR_ENCODER_CONN;
-IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x04_Shrouded;
+ValeurCmp = HC_SR04_CONNECTOR;
+IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x04;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B4C06A;
+TimeStamp = /543A0162/543A135E;
 Reference = N7;
 ValeurCmp = HC_SR04_CONNECTOR;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x04;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B4C21C;
-Reference = N8;
-ValeurCmp = HC_SR04_CONNECTOR;
-IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x04;
+TimeStamp = /543A0165/543B0BA3;
+Reference = Q1;
+ValeurCmp = PN2222;
+IdModule  = Bus_Bridge_Encoders_Sonar:TO92_123;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B059A7;
+TimeStamp = /543A0162/543C5625;
+Reference = Q2;
+ValeurCmp = PN2222;
+IdModule  = Bus_Bridge_Encoders_Sonar:TO92_123;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543C503C;
+Reference = Q3;
+ValeurCmp = PN2222;
+IdModule  = Bus_Bridge_Encoders_Sonar:TO92_123;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543C5543;
+Reference = Q4;
+ValeurCmp = PN2222;
+IdModule  = Bus_Bridge_Encoders_Sonar:TO92_123;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543C55CF;
+Reference = Q5;
+ValeurCmp = PN2222;
+IdModule  = Bus_Bridge_Encoders_Sonar:TO92_123;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0165/543A245E;
 Reference = R1;
 ValeurCmp = .47;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /542EE89B;
+TimeStamp = /543A0165/543B0C2C;
 Reference = R2;
-ValeurCmp = 470_DIP16;
-IdModule  = Bus_Bridge_Encoders_Sonar:DIP-16__300;
+ValeurCmp = 220;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /542D6E16;
-Reference = R8;
+TimeStamp = /543A0165/543A2628;
+Reference = R3;
 ValeurCmp = 10Kx6;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x07;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA42CF;
-Reference = R14;
+TimeStamp = /543A0162/543A139A;
+Reference = R4;
 ValeurCmp = .47;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EAC63C;
-Reference = R15;
+TimeStamp = /543A0162/543A13DE;
+Reference = R5;
 ValeurCmp = 22K;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EAC7FD;
-Reference = R16;
+TimeStamp = /543A0162/543A13E5;
+Reference = R6;
 ValeurCmp = 33K;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EACA5C;
-Reference = R17;
+TimeStamp = /543A0162/543A13EC;
+Reference = R7;
 ValeurCmp = 100K;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /542D11FF;
-Reference = R18;
-ValeurCmp = 100K;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
-EndCmp
-
-BeginCmp
-TimeStamp = /53E99224;
-Reference = R19;
+TimeStamp = /543A0162/543A13B0;
+Reference = R8;
 ValeurCmp = .47;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EACAD9;
-Reference = R20;
+TimeStamp = /543A0162/543A13F3;
+Reference = R9;
 ValeurCmp = 100K;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E99988;
-Reference = R22;
+TimeStamp = /543A0162/543D8280;
+Reference = R10;
+ValeurCmp = 100K;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A140A;
+Reference = R11;
 ValeurCmp = 10K;
-IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Horizontal_400;
+IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E9A9CA;
+TimeStamp = /543A0162/543C5E11;
+Reference = R12;
+ValeurCmp = 4K7x4;
+IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A1716;
+Reference = R13;
+ValeurCmp = 470_DIP16;
+IdModule  = Bus_Bridge_Encoders_Sonar:DIP-16__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543C6FF9;
+Reference = R14;
+ValeurCmp = 3K3x4;
+IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A1411;
 Reference = SW1;
 ValeurCmp = MJTP1243;
 IdModule  = Bus_Bridge_Encoders_Sonar:Button_6.5MM;
 EndCmp
 
 BeginCmp
-TimeStamp = /53AF4DC8;
+TimeStamp = /543A0165/543A2481;
 Reference = U1;
-ValeurCmp = LM2940;
-IdModule  = Bus_Bridge_Encoders_Sonar:TO-220_Neutral123_Horizontal_LargePads;
+ValeurCmp = LTV-826;
+IdModule  = Bus_Bridge_Encoders_Sonar:DIP-8__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53AF4EDB;
+TimeStamp = /543A0165/543ABB5F;
 Reference = U2;
 ValeurCmp = LTV-826;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-8__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B067F4;
+TimeStamp = /543A0165/543ABE70;
 Reference = U3;
 ValeurCmp = LTV-826;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-8__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B06871;
+TimeStamp = /543A0165/543ABF91;
 Reference = U4;
 ValeurCmp = LTV-826;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-8__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53B0B545;
+TimeStamp = /543A0165/543A2449;
 Reference = U5;
-ValeurCmp = 754410;
-IdModule  = Bus_Bridge_Encoders_Sonar:DIP-16__300;
-EndCmp
-
-BeginCmp
-TimeStamp = /53EA3E06;
-Reference = U6;
 ValeurCmp = LM2940;
 IdModule  = Bus_Bridge_Encoders_Sonar:TO-220_Neutral123_Horizontal_LargePads;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EAE540;
+TimeStamp = /543A0165/543A2660;
+Reference = U6;
+ValeurCmp = 754410;
+IdModule  = Bus_Bridge_Encoders_Sonar:DIP-16__300;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A13FC;
 Reference = U7;
 ValeurCmp = 74HCT08;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-14__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E968BB;
+TimeStamp = /543A0162/543A13A2;
 Reference = U8;
+ValeurCmp = LM2940;
+IdModule  = Bus_Bridge_Encoders_Sonar:TO-220_Neutral123_Horizontal_LargePads;
+EndCmp
+
+BeginCmp
+TimeStamp = /543A0162/543A137E;
+Reference = U9;
 ValeurCmp = MCP2562;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-8__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53E952D0;
-Reference = U9;
+TimeStamp = /543A0162/543A136E;
+Reference = U10;
 ValeurCmp = ATMEGA328_DIP28;
 IdModule  = Bus_Bridge_Encoders_Sonar:DIP-28__300;
 EndCmp
 
 BeginCmp
-TimeStamp = /53EA6D8D;
+TimeStamp = /543A0162/543A13C5;
 Reference = X1;
 ValeurCmp = 16MHz;
 IdModule  = Bus_Bridge_Encoders_Sonar:Crystal_HC49-U_Vertical;
