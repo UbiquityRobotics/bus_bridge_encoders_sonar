@@ -36,9 +36,9 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 1 3
-Title "Bridge/Encoders/Sonars Mini-Shield"
-Date "Sun 12 Oct 2014"
-Rev "C"
+Title "Bus Bridge/Encoders/Sonars"
+Date "Thu 30 Oct 2014"
+Rev "D"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -87,46 +87,56 @@ Wire Wire Line
 Wire Wire Line
 	1800 3100 1800 3200
 Wire Wire Line
-	1700 3200 2800 3200
+	1700 3200 1800 3200
+Wire Wire Line
+	1800 3200 2800 3200
 Connection ~ 1800 3200
 Wire Wire Line
 	1700 3300 1800 3300
 Wire Wire Line
 	1800 3300 1800 3400
 Wire Wire Line
-	1700 3400 2600 3400
+	1700 3400 1800 3400
 Wire Wire Line
-	2600 2800 2600 5400
+	1800 3400 2600 3400
+Wire Wire Line
+	2600 2800 2600 3400
+Wire Wire Line
+	2600 3400 2600 5200
+Wire Wire Line
+	2600 5200 2600 5400
 Wire Wire Line
 	2600 5200 2800 5200
 Connection ~ 1800 3400
 Wire Wire Line
 	1700 3700 1900 3700
 Wire Wire Line
-	1900 3700 1900 5600
+	1900 3700 1900 3800
+Wire Wire Line
+	1900 3800 1900 5700
 Wire Wire Line
 	1900 3800 1700 3800
 Wire Wire Line
 	1700 3900 1800 3900
 Wire Wire Line
-	1800 3900 1800 5700
+	1800 3900 1800 4000
+Wire Wire Line
+	1800 4000 1800 5600
 Wire Wire Line
 	1800 4000 1700 4000
 Wire Wire Line
 	2600 5400 4800 5400
 Connection ~ 2600 5200
-Wire Wire Line
-	1800 5700 4800 5700
 Connection ~ 1800 4000
-Wire Wire Line
-	1900 5600 4800 5600
 Connection ~ 1900 3800
 Wire Notes Line
 	2300 5500 2300 3650
 Wire Wire Line
 	8300 2800 8500 2800
 Wire Wire Line
-	8300 2500 8300 2800
+	8300 2500 8300 2700
+Wire Wire Line
+	8300 2700 8300 2800
 Wire Wire Line
 	8300 2700 8500 2700
 Wire Wire Line
@@ -139,7 +149,9 @@ Connection ~ 8300 2700
 Wire Wire Line
 	8500 3500 8300 3500
 Wire Wire Line
-	8300 3500 8300 3800
+	8300 3500 8300 3600
+Wire Wire Line
+	8300 3600 8300 3800
 Wire Wire Line
 	8300 3600 8500 3600
 Wire Wire Line
@@ -172,7 +184,9 @@ Wire Wire Line
 Wire Wire Line
 	8500 4700 8300 4700
 Wire Wire Line
-	8300 4400 8300 4800
+	8300 4400 8300 4700
+Wire Wire Line
+	8300 4700 8300 4800
 Wire Wire Line
 	8300 4800 8500 4800
 Wire Wire Line
@@ -217,19 +231,27 @@ Wire Wire Line
 Wire Wire Line
 	8500 2900 7600 2900
 Wire Wire Line
-	7600 2900 7600 4900
+	7600 2900 7600 3000
+Wire Wire Line
+	7600 3000 7600 4900
 Wire Wire Line
 	7600 4900 8500 4900
 Wire Wire Line
-	7700 2800 7700 5000
+	7700 2800 7700 3000
+Wire Wire Line
+	7700 3000 7700 5000
 Wire Wire Line
 	7700 5000 8500 5000
 Wire Notes Line
 	5250 5500 5250 4150
 Wire Wire Line
-	5800 5300 8500 5300
+	5800 5300 6400 5300
 Wire Wire Line
-	5800 5400 8500 5400
+	6400 5300 8500 5300
+Wire Wire Line
+	5800 5400 6300 5400
+Wire Wire Line
+	6300 5400 8500 5400
 Wire Wire Line
 	5800 5700 6000 5700
 Wire Wire Line
@@ -279,7 +301,9 @@ Wire Wire Line
 Wire Wire Line
 	8500 5500 8300 5500
 Wire Wire Line
-	8300 5500 8300 5700
+	8300 5500 8300 5600
+Wire Wire Line
+	8300 5600 8300 5700
 Wire Wire Line
 	8300 5700 6700 5700
 Connection ~ 6400 5300
@@ -354,4 +378,8 @@ Electrically\nIsolated
 Wire Wire Line
 	8500 5600 8300 5600
 Connection ~ 8300 5600
+Wire Wire Line
+	1800 5600 4800 5600
+Wire Wire Line
+	1900 5700 4800 5700
 $EndSCHEMATC

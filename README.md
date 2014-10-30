@@ -160,19 +160,20 @@ connects the A and B  quadrature signals to D4 and D2.
 
 # Rev. C
 
-* Schematic should label C13 as 1uF.
+* Schematic should label C13 as 1uF. [x]
 
-* Schematic should label R4 as 120_1%.
+* Schematic should label R4 as 120_1%. [x]
+
+* Schematic has BGND and BPWR swapped on root diagram. [x]
 
 * Make sure regulator input capacitors can take 30V.  Probably switch
-  over to aluminum electrolytic capacitor.
+  over to aluminum electrolytic capacitor. [x]
 
-* Schematic has BGND and BPWR swapped on root diagram:
-
-* Move ISP connector up to make more room for Atmel-ICE connector.
+* Move ISP connector up to make more room for Atmel-ICE connector. [x]
 
 * Between Dual Slot Encoder (Rev. D) and Rev. C of this
   board, pins 4 and 5 are swapped as are pins 6 and 7.
+  [change dual slot encoders instead]
   See below:
 
 <BlockQuote>

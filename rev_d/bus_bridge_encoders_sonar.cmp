@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Tue 21 Oct 2014 10:12:08 AM PDT
+Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Thu 30 Oct 2014 08:28:51 AM PDT
 
 BeginCmp
 TimeStamp = /543A0165/543A2450;
@@ -87,7 +87,7 @@ EndCmp
 BeginCmp
 TimeStamp = /543A0162/543A1403;
 Reference = C13;
-ValeurCmp = .1uF;
+ValeurCmp = 1uF;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB;
 EndCmp
 
@@ -269,7 +269,7 @@ EndCmp
 BeginCmp
 TimeStamp = /543A0162/543A139A;
 Reference = R4;
-ValeurCmp = .47;
+ValeurCmp = 120;
 IdModule  = Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100;
 EndCmp
 

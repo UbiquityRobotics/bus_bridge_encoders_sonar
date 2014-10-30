@@ -36,9 +36,9 @@ EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 3 3
-Title ""
-Date "Sun 12 Oct 2014"
-Rev "C"
+Title "Bus Bridge/Encoders/Sonars"
+Date "Thu 30 Oct 2014"
+Rev "D"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -171,7 +171,7 @@ L R_HORIZ R4
 U 1 1 543A139A
 P 1500 3950
 F 0 "R4" H 1500 4050 50  0000 C CNN
-F 1 ".47" H 1500 3850 50  0000 C CNN
+F 1 "120" H 1500 3850 50  0000 C CNN
 F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 1525 3950 60  0001 C CNN
 F 3 "" H 1525 3950 60  0000 C CNN
 	1    1500 3950
@@ -328,7 +328,7 @@ L C_HORIZ C13
 U 1 1 543A1403
 P 4100 5300
 F 0 "C13" H 4160 5360 50  0000 L CNN
-F 1 ".1uF" H 4160 5230 50  0000 L CNN
+F 1 "1uF" H 4160 5230 50  0000 L CNN
 F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 4138 5150 30  0001 C CNN
 F 3 "" H 4100 5300 60  0000 C CNN
 	1    4100 5300
@@ -1665,4 +1665,12 @@ Connection ~ 3950 7550
 Wire Wire Line
 	4250 6950 4250 7050
 Connection ~ 3950 6950
+Text Notes 1400 7400 0    50   ~ 0
+35V\nAluminum
+Text Notes 1250 7050 0    50   ~ 0
++
+Text Notes 2650 7050 0    50   ~ 0
++
+Text Notes 2800 7400 0    50   ~ 0
+6.3V\nTantalum
 $EndSCHEMATC
