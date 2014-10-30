@@ -156,3 +156,41 @@ connects the A and B  quadrature signals to D4 and D2.
 	<TD>-</TD>
     </TR>
 </Table>
+
+
+# Rev. C
+
+* Schematic should label C13 as 1uF.
+
+* Schematic should label R4 as 120_1%.
+
+* Make sure regulator input capacitors can take 30V.  Probably switch
+  over to aluminum electrolytic capacitor.
+
+* Schematic has BGND and BPWR swapped on root diagram:
+
+* Move ISP connector up to make more room for Atmel-ICE connector.
+
+* Between Dual Slot Encoder (Rev. D) and Rev. C of this
+  board, pins 4 and 5 are swapped as are pins 6 and 7.
+  See below:
+
+<BlockQuote>
+<Pre>
+     BBES-C       DSE-D
+    ===========================
+     MOTOR_A   1  MOTOR_A
+     MOTOR_A   2  MOTOR_A
+     LOG_5V    3  LPWR (=5V)
+     LGND      4  QUAD_A
+     QUAD_A    5  LGND (not really used)
+     QUAD_B    6  LED_EN
+     LED_EN    7  QUAD_B
+     LED_5V    8  BPWR
+     MOTOR_B   9  MOTOR_B
+     MOTOR_B  10  MOTOR_B
+</Pre>
+</BlockQuote>
+
+
+
