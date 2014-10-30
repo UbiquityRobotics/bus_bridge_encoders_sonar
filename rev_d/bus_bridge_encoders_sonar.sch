@@ -1,0 +1,357 @@
+EESchema Schematic File Version 2
+LIBS:bus_bridge_encoders_sonar
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:special
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:bus_bridge_encoders_sonar-cache
+EELAYER 25 0
+EELAYER END
+$Descr A 11000 8500
+encoding utf-8
+Sheet 1 3
+Title "Bridge/Encoders/Sonars Mini-Shield"
+Date "Sun 12 Oct 2014"
+Rev "C"
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L BUS_SLAVE_HEADER N1
+U 1 1 543A547B
+P 1300 3550
+F 0 "N1" H 1125 4100 50  0000 C CNN
+F 1 "BUS_SLAVE_HEADER" H 1300 3000 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x05_Shrouded" H 1300 3550 60  0001 C CNN
+F 3 "" H 1300 3550 60  0000 C CNN
+	1    1300 3550
+	1    0    0    -1  
+$EndComp
+$Comp
+L MOTOR_ENCODER_CONN_2X5 N2
+U 1 1 543A54D4
+P 8900 3150
+F 0 "N2" H 8900 3700 50  0000 C CNN
+F 1 "MOTOR_ENCODER_CONN_2X5" H 8900 2600 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x05_Shrouded" H 8900 3150 60  0001 C CNN
+F 3 "" H 8900 3150 60  0000 C CNN
+	1    8900 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L MOTOR_ENCODER_CONN_2X5 N3
+U 1 1 543A5519
+P 8900 5150
+F 0 "N3" H 8900 5700 50  0000 C CNN
+F 1 "MOTOR_ENCODER_CONN_2X5" H 8900 4600 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x05_Shrouded" H 8900 5150 60  0001 C CNN
+F 3 "" H 8900 5150 60  0000 C CNN
+	1    8900 5150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2800 3500 1700 3500
+Wire Wire Line
+	1700 3600 2800 3600
+Wire Wire Line
+	1700 3100 1800 3100
+Wire Wire Line
+	1800 3100 1800 3200
+Wire Wire Line
+	1700 3200 2800 3200
+Connection ~ 1800 3200
+Wire Wire Line
+	1700 3300 1800 3300
+Wire Wire Line
+	1800 3300 1800 3400
+Wire Wire Line
+	1700 3400 2600 3400
+Wire Wire Line
+	2600 2800 2600 5400
+Wire Wire Line
+	2600 5200 2800 5200
+Connection ~ 1800 3400
+Wire Wire Line
+	1700 3700 1900 3700
+Wire Wire Line
+	1900 3700 1900 5600
+Wire Wire Line
+	1900 3800 1700 3800
+Wire Wire Line
+	1700 3900 1800 3900
+Wire Wire Line
+	1800 3900 1800 5700
+Wire Wire Line
+	1800 4000 1700 4000
+Wire Wire Line
+	2600 5400 4800 5400
+Connection ~ 2600 5200
+Wire Wire Line
+	1800 5700 4800 5700
+Connection ~ 1800 4000
+Wire Wire Line
+	1900 5600 4800 5600
+Connection ~ 1900 3800
+Wire Notes Line
+	2300 5500 2300 3650
+Wire Wire Line
+	8300 2800 8500 2800
+Wire Wire Line
+	8300 2500 8300 2800
+Wire Wire Line
+	8300 2700 8500 2700
+Wire Wire Line
+	8300 2500 10100 2500
+Wire Wire Line
+	10100 2500 10100 6400
+Wire Wire Line
+	10100 6400 6000 6400
+Connection ~ 8300 2700
+Wire Wire Line
+	8500 3500 8300 3500
+Wire Wire Line
+	8300 3500 8300 3800
+Wire Wire Line
+	8300 3600 8500 3600
+Wire Wire Line
+	8300 3800 10000 3800
+Wire Wire Line
+	10000 3800 10000 6300
+Wire Wire Line
+	10000 6300 6100 6300
+Connection ~ 8300 3600
+Wire Wire Line
+	8500 3400 8200 3400
+Wire Wire Line
+	8200 3400 8200 4000
+Wire Wire Line
+	8200 4000 9800 4000
+Wire Wire Line
+	9800 4000 9800 6100
+Wire Wire Line
+	9800 6100 6300 6100
+Wire Wire Line
+	8500 3300 8100 3300
+Wire Wire Line
+	8100 3300 8100 4100
+Wire Wire Line
+	8100 4100 9700 4100
+Wire Wire Line
+	9700 4100 9700 6000
+Wire Wire Line
+	9700 6000 6400 6000
+Wire Wire Line
+	8500 4700 8300 4700
+Wire Wire Line
+	8300 4400 8300 4800
+Wire Wire Line
+	8300 4800 8500 4800
+Wire Wire Line
+	8300 4400 9500 4400
+Connection ~ 8300 4700
+Wire Notes Line
+	8450 4850 7950 4850
+Wire Notes Line
+	7950 4850 7950 3250
+Wire Notes Line
+	7950 3250 8450 3250
+Wire Notes Line
+	9150 3250 9250 3250
+Wire Notes Line
+	9250 3250 9250 2850
+Wire Notes Line
+	9250 2850 9150 2850
+Wire Notes Line
+	8450 2850 7950 2850
+Wire Notes Line
+	7950 2850 7950 550 
+Wire Notes Line
+	9150 4850 9250 4850
+Wire Notes Line
+	9250 4850 9250 5250
+Wire Notes Line
+	9250 5250 9150 5250
+Wire Wire Line
+	4800 4400 3800 4400
+Wire Wire Line
+	4800 4500 3800 4500
+Wire Wire Line
+	4800 4600 3800 4600
+Wire Wire Line
+	4800 4800 3800 4800
+Wire Wire Line
+	4800 4900 3800 4900
+Wire Wire Line
+	4800 5000 3800 5000
+Wire Wire Line
+	4800 5200 3800 5200
+Wire Wire Line
+	8500 2900 7600 2900
+Wire Wire Line
+	7600 2900 7600 4900
+Wire Wire Line
+	7600 4900 8500 4900
+Wire Wire Line
+	7700 2800 7700 5000
+Wire Wire Line
+	7700 5000 8500 5000
+Wire Notes Line
+	5250 5500 5250 4150
+Wire Wire Line
+	5800 5300 8500 5300
+Wire Wire Line
+	5800 5400 8500 5400
+Wire Wire Line
+	5800 5700 6000 5700
+Wire Wire Line
+	6000 5700 6000 6400
+Wire Wire Line
+	5800 5600 6100 5600
+Wire Wire Line
+	6100 5600 6100 6300
+Wire Wire Line
+	6300 6100 6300 5400
+Wire Wire Line
+	6400 6000 6400 5300
+$Sheet
+S 4800 4300 1000 1500
+U 543A0165
+F0 "Power" 60
+F1 "power.sch" 60
+F2 "BGND" I L 4800 5700 50 
+F3 "1A" I L 4800 4400 50 
+F4 "EN12" I L 4800 4500 50 
+F5 "2A" I L 4800 4600 50 
+F6 "BPWR" I L 4800 5600 50 
+F7 "3A" I L 4800 4800 50 
+F8 "EN34" I L 4800 4900 50 
+F9 "4A" I L 4800 5000 50 
+F10 "LGND" I L 4800 5400 50 
+F11 "MOTOR1_A" I R 5800 5700 50 
+F12 "MOTOR1_B" I R 5800 5600 50 
+F13 "MOTOR2_A" I R 5800 5000 50 
+F14 "MOTOR2_B" I R 5800 5100 50 
+F15 "ENC_EN" I L 4800 5200 50 
+F16 "LED_EN" I R 5800 5300 50 
+F17 "LED_5V" I R 5800 5400 50 
+$EndSheet
+Wire Wire Line
+	6700 5700 6700 5000
+Wire Wire Line
+	6700 5000 5800 5000
+Wire Wire Line
+	5800 5100 6600 5100
+Wire Wire Line
+	6600 5100 6600 5800
+Wire Wire Line
+	6600 5800 9500 5800
+Wire Wire Line
+	9500 5800 9500 4400
+Wire Wire Line
+	8500 5500 8300 5500
+Wire Wire Line
+	8300 5500 8300 5700
+Wire Wire Line
+	8300 5700 6700 5700
+Connection ~ 6400 5300
+Connection ~ 6300 5400
+Wire Wire Line
+	8500 5200 7300 5200
+Wire Wire Line
+	7300 5200 7300 3900
+Wire Wire Line
+	7300 3900 3800 3900
+Wire Wire Line
+	8500 5100 7400 5100
+Wire Wire Line
+	7400 5100 7400 3800
+Wire Wire Line
+	7400 3800 3800 3800
+$Sheet
+S 2800 2900 1000 2400
+U 543A0162
+F0 "Logic" 50
+F1 "logic.sch" 50
+F2 "LPWR" I L 2800 3200 50 
+F3 "LGND" I L 2800 5200 50 
+F4 "1A" I R 3800 4400 50 
+F5 "EN12" I R 3800 4500 50 
+F6 "2A" I R 3800 4600 50 
+F7 "3A" I R 3800 4800 50 
+F8 "CANH" I L 2800 3500 50 
+F9 "CANL" I L 2800 3600 50 
+F10 "EN34" I R 3800 4900 50 
+F11 "4A" I R 3800 5000 50 
+F12 "ENC_EN" I R 3800 5200 50 
+F13 "ENC1_A" I R 3800 3100 50 
+F14 "ENC1_B" I R 3800 3200 50 
+F15 "ENC2_A" I R 3800 3800 50 
+F16 "ENC2_B" I R 3800 3900 50 
+F17 "LOG_5V" I R 3800 3000 50 
+$EndSheet
+Wire Wire Line
+	8500 3200 3800 3200
+Wire Wire Line
+	8500 3100 3800 3100
+Connection ~ 7700 3000
+Wire Wire Line
+	2600 2800 7700 2800
+Connection ~ 2600 3400
+Wire Wire Line
+	7600 3000 3800 3000
+Connection ~ 7600 3000
+Wire Wire Line
+	8500 3000 7700 3000
+Wire Notes Line
+	1050 3650 550  3650
+Text Notes 6000 4350 0    50   ~ 0
+Electrically\nIsolated
+Wire Notes Line
+	2300 5500 5250 5500
+Wire Notes Line
+	2300 3650 1750 3650
+Wire Notes Line
+	8450 5250 7000 5250
+Wire Notes Line
+	7000 5250 7000 4150
+Wire Notes Line
+	7000 4150 5250 4150
+Text Notes 8050 2100 0    50   ~ 0
+Electrically\nIsolated
+Text Notes 9350 3100 0    50   ~ 0
+Electrically\nIsolated
+Text Notes 600  3850 0    50   ~ 0
+Electrically\nIsolated
+Wire Wire Line
+	8500 5600 8300 5600
+Connection ~ 8300 5600
+$EndSCHEMATC

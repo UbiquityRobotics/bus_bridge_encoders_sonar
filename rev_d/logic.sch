@@ -1,0 +1,1668 @@
+EESchema Schematic File Version 2
+LIBS:bus_bridge_encoders_sonar
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:special
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:bus_bridge_encoders_sonar-cache
+EELAYER 25 0
+EELAYER END
+$Descr A 11000 8500
+encoding utf-8
+Sheet 3 3
+Title ""
+Date "Sun 12 Oct 2014"
+Rev "C"
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L 3MM_HOLE H1
+U 1 1 543A12DF
+P 6000 6450
+F 0 "H1" H 5950 6600 50  0000 C CNN
+F 1 "3MM_HOLE" H 6000 6300 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:MountingHole_3mm" H 6000 6450 60  0001 C CNN
+F 3 "" H 6000 6450 60  0000 C CNN
+	1    6000 6450
+	1    0    0    -1  
+$EndComp
+Text Label 8950 2400 0    50   ~ 0
+D13
+Text Label 9350 1400 0    50   ~ 0
+D12
+Text Label 9350 1700 0    50   ~ 0
+D11
+Text Label 9350 1100 0    50   ~ 0
+D10
+Text Label 9350 2000 0    50   ~ 0
+D9
+Text Label 9350 2300 0    50   ~ 0
+D8
+Text Label 4300 2000 2    50   ~ 0
+D6
+Text Label 4300 1900 2    50   ~ 0
+D5
+Text Label 4300 1400 2    50   ~ 0
+D4
+Text Label 4300 1300 2    50   ~ 0
+D3
+Text Label 4300 1200 2    50   ~ 0
+D2
+$Comp
+L OSHW_LOGO G1
+U 1 1 543A12F4
+P 5050 7400
+F 0 "G1" H 5050 7600 60  0000 C CNN
+F 1 "OSHW_LOGO" H 5050 7225 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:OSHW_LOGO_300mil" H 5050 7400 60  0001 C CNN
+F 3 "" H 5050 7400 60  0000 C CNN
+	1    5050 7400
+	1    0    0    -1  
+$EndComp
+$Comp
+L HC_SR04_CONNECTOR N7
+U 1 1 543A135E
+P 8650 1750
+F 0 "N7" H 8650 2000 50  0000 C CNN
+F 1 "HC_SR04_CONNECTOR" H 8650 1500 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x04" H 8650 1750 50  0001 C CNN
+F 3 "" H 8650 1750 50  0000 C CNN
+	1    8650 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L HC_SR04_CONNECTOR N6
+U 1 1 543A1365
+P 8650 1050
+F 0 "N6" H 8750 1300 50  0000 C CNN
+F 1 "HC_SR04_CONNECTOR" H 8650 800 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x04" H 8650 1050 50  0001 C CNN
+F 3 "" H 8650 1050 50  0000 C CNN
+	1    8650 1050
+	1    0    0    -1  
+$EndComp
+$Comp
+L ATMEGA328_DIP28 U10
+U 1 1 543A136E
+P 5300 1550
+F 0 "U10" H 5275 2350 50  0000 C CNN
+F 1 "ATMEGA328_DIP28" H 5300 725 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-28__300" H 5300 1550 60  0001 C CNN
+F 3 "" H 5300 1550 60  0000 C CNN
+	1    5300 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L MCP2562 U9
+U 1 1 543A137E
+P 2500 3500
+F 0 "U9" H 2250 3800 50  0000 C CNN
+F 1 "MCP2562" H 2475 3300 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-8__300" H 2550 3500 60  0001 C CNN
+F 3 "" H 2550 3500 60  0000 C CNN
+	1    2500 3500
+	1    0    0    -1  
+$EndComp
+$Comp
+L SCHOTTKY_DIODE_VERT D1
+U 1 1 543A1385
+P 4400 4950
+F 0 "D1" H 4500 4800 50  0000 C CNN
+F 1 "SD101C-TR" H 4675 5075 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Diode_DO-41_SOD81_Horizontal_RM10" H 4400 4950 60  0001 C CNN
+F 3 "" H 4400 4950 60  0000 C CNN
+	1    4400 4950
+	-1   0    0    1   
+$EndComp
+$Comp
+L TERMINATE_JUMPER J2
+U 1 1 543A138C
+P 2100 3950
+F 0 "J2" H 2150 4150 50  0000 C CNN
+F 1 "TERMINATE_JUMPER" H 2100 3750 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x03" H 2100 3950 60  0001 C CNN
+F 3 "" H 2100 3950 60  0000 C CNN
+	1    2100 3950
+	-1   0    0    -1  
+$EndComp
+$Comp
+L FTDI_HEADER N4
+U 1 1 543A1393
+P 1050 5850
+F 0 "N4" H 950 6450 50  0000 C CNN
+F 1 "FTDI_HEADER" H 1050 5625 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x06" H 1050 5850 60  0001 C CNN
+F 3 "" H 1050 5850 60  0000 C CNN
+	1    1050 5850
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ R4
+U 1 1 543A139A
+P 1500 3950
+F 0 "R4" H 1500 4050 50  0000 C CNN
+F 1 ".47" H 1500 3850 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 1525 3950 60  0001 C CNN
+F 3 "" H 1525 3950 60  0000 C CNN
+	1    1500 3950
+	1    0    0    -1  
+$EndComp
+NoConn ~ 1800 4050
+$Comp
+L VOLTAGE_REGULATOR U8
+U 1 1 543A13A2
+P 1900 6850
+F 0 "U8" H 1700 7000 50  0000 C CNN
+F 1 "LM2940" H 1925 6700 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:TO-220_Neutral123_Horizontal_LargePads" H 1900 6900 60  0001 C CNN
+F 3 "" H 1900 6900 60  0000 C CNN
+	1    1900 6850
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C5
+U 1 1 543A13A9
+P 1350 7100
+F 0 "C5" H 1370 7190 50  0000 L CNN
+F 1 "22uF" H 1370 7010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5" H 1388 6950 30  0001 C CNN
+F 3 "" H 1350 7100 60  0000 C CNN
+	1    1350 7100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ R8
+U 1 1 543A13B0
+P 2150 7400
+F 0 "R8" H 2150 7500 50  0000 C CNN
+F 1 ".47" H 2150 7300 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 2175 7400 60  0001 C CNN
+F 3 "" H 2175 7400 60  0000 C CNN
+	1    2150 7400
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C6
+U 1 1 543A13B7
+P 2450 7100
+F 0 "C6" H 2470 7190 50  0000 L CNN
+F 1 ".1uF" H 2470 7010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 2488 6950 30  0001 C CNN
+F 3 "" H 2450 7100 60  0000 C CNN
+	1    2450 7100
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C8
+U 1 1 543A13BE
+P 2750 7100
+F 0 "C8" H 2770 7190 50  0000 L CNN
+F 1 "22uF" H 2770 7010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5" H 2788 6950 30  0001 C CNN
+F 3 "" H 2750 7100 60  0000 C CNN
+	1    2750 7100
+	1    0    0    -1  
+$EndComp
+$Comp
+L CRYSTAL X1
+U 1 1 543A13C5
+P 3000 1800
+F 0 "X1" H 3000 1950 50  0000 C CNN
+F 1 "16MHz" H 3000 1650 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Crystal_HC49-U_Vertical" H 3000 1800 60  0001 C CNN
+F 3 "" H 3000 1800 60  0000 C CNN
+	1    3000 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C7
+U 1 1 543A13CC
+P 2600 2100
+F 0 "C7" H 2620 2190 50  0000 L CNN
+F 1 "18pF" H 2620 2010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 2638 1950 30  0001 C CNN
+F 3 "" H 2600 2100 60  0000 C CNN
+	1    2600 2100
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C10
+U 1 1 543A13D3
+P 3400 2100
+F 0 "C10" H 3420 2190 50  0000 L CNN
+F 1 "18pF" H 3420 2010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 3438 1950 30  0001 C CNN
+F 3 "" H 3400 2100 60  0000 C CNN
+	1    3400 2100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT R5
+U 1 1 543A13DE
+P 1700 5100
+F 0 "R5" H 1770 5150 50  0000 L CNN
+F 1 "22K" H 1770 5050 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 1700 5150 60  0001 C CNN
+F 3 "" H 1700 5150 60  0000 C CNN
+	1    1700 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT R6
+U 1 1 543A13E5
+P 1700 5900
+F 0 "R6" H 1770 5950 50  0000 L CNN
+F 1 "33K" H 1770 5850 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 1700 5950 60  0001 C CNN
+F 3 "" H 1700 5950 60  0000 C CNN
+	1    1700 5900
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT R7
+U 1 1 543A13EC
+P 2000 5100
+F 0 "R7" H 2070 5150 50  0000 L CNN
+F 1 "100K" H 2070 5050 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 2000 5150 60  0001 C CNN
+F 3 "" H 2000 5150 60  0000 C CNN
+	1    2000 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT R9
+U 1 1 543A13F3
+P 2300 5100
+F 0 "R9" H 2370 5150 50  0000 L CNN
+F 1 "100K" H 2370 5050 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 2300 5150 60  0001 C CNN
+F 3 "" H 2300 5150 60  0000 C CNN
+	1    2300 5100
+	1    0    0    -1  
+$EndComp
+NoConn ~ 1400 5700
+NoConn ~ 1400 5800
+$Comp
+L 74X08 U7
+U 3 1 543A13FC
+P 3300 5300
+F 0 "U7" H 3300 5550 50  0000 C CNN
+F 1 "74HCT08" H 3175 5050 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-14__300" H 3300 5300 60  0001 C CNN
+F 3 "" H 3300 5300 60  0000 C CNN
+	3    3300 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_HORIZ C13
+U 1 1 543A1403
+P 4100 5300
+F 0 "C13" H 4160 5360 50  0000 L CNN
+F 1 ".1uF" H 4160 5230 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 4138 5150 30  0001 C CNN
+F 3 "" H 4100 5300 60  0000 C CNN
+	1    4100 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT R11
+U 1 1 543A140A
+P 4700 5000
+F 0 "R11" H 4770 5050 50  0000 L CNN
+F 1 "10K" H 4770 4950 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 4700 5050 60  0001 C CNN
+F 3 "" H 4700 5050 60  0000 C CNN
+	1    4700 5000
+	1    0    0    -1  
+$EndComp
+$Comp
+L 2_LEAD_PUSH_BUTTON SW1
+U 1 1 543A1411
+P 4600 5750
+F 0 "SW1" H 4600 6000 50  0000 C CNN
+F 1 "MJTP1243" H 4600 5700 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Button_6.5MM" H 4600 5750 60  0001 C CNN
+F 3 "" H 4600 5750 60  0000 C CNN
+	1    4600 5750
+	1    0    0    -1  
+$EndComp
+$Comp
+L 3MM_HOLE H2
+U 1 1 543A1418
+P 6000 6850
+F 0 "H2" H 5950 7000 50  0000 C CNN
+F 1 "3MM_HOLE" H 6000 6700 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:MountingHole_3mm" H 6000 6850 60  0001 C CNN
+F 3 "" H 6000 6850 60  0000 C CNN
+	1    6000 6850
+	1    0    0    -1  
+$EndComp
+$Comp
+L 3MM_HOLE H3
+U 1 1 543A141F
+P 6000 7250
+F 0 "H3" H 5950 7400 50  0000 C CNN
+F 1 "3MM_HOLE" H 6000 7100 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:MountingHole_3mm" H 6000 7250 60  0001 C CNN
+F 3 "" H 6000 7250 60  0000 C CNN
+	1    6000 7250
+	1    0    0    -1  
+$EndComp
+$Comp
+L 3MM_HOLE H4
+U 1 1 543A1426
+P 6000 7650
+F 0 "H4" H 5950 7800 50  0000 C CNN
+F 1 "3MM_HOLE" H 6000 7500 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:MountingHole_3mm" H 6000 7650 60  0001 C CNN
+F 3 "" H 6000 7650 60  0000 C CNN
+	1    6000 7650
+	1    0    0    -1  
+$EndComp
+Text Label 2525 6800 0    50   ~ 0
+VCC
+$Comp
+L +5V #PWR01
+U 1 1 543A142E
+P 2450 6700
+F 0 "#PWR01" H 2450 6790 20  0001 C CNN
+F 1 "+5V" H 2450 6805 50  0000 C CNN
+F 2 "" H 2450 6700 60  0000 C CNN
+F 3 "" H 2450 6700 60  0000 C CNN
+	1    2450 6700
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR02
+U 1 1 543A1434
+P 1900 7700
+F 0 "#PWR02" H 1900 7700 30  0001 C CNN
+F 1 "GND" H 1900 7630 30  0001 C CNN
+F 2 "" H 1900 7700 60  0000 C CNN
+F 3 "" H 1900 7700 60  0000 C CNN
+	1    1900 7700
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR03
+U 1 1 543A1446
+P 4400 4400
+F 0 "#PWR03" H 4400 4490 20  0001 C CNN
+F 1 "+5V" H 4400 4505 50  0000 C CNN
+F 2 "" H 4400 4400 60  0000 C CNN
+F 3 "" H 4400 4400 60  0000 C CNN
+	1    4400 4400
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR04
+U 1 1 543A144C
+P 3900 6300
+F 0 "#PWR04" H 3900 6300 30  0001 C CNN
+F 1 "GND" H 3900 6230 30  0001 C CNN
+F 2 "" H 3900 6300 60  0000 C CNN
+F 3 "" H 3900 6300 60  0000 C CNN
+	1    3900 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR05
+U 1 1 543A145E
+P 7000 1450
+F 0 "#PWR05" H 7000 1540 20  0001 C CNN
+F 1 "+5V" H 7000 1555 50  0000 C CNN
+F 2 "" H 7000 1450 60  0000 C CNN
+F 3 "" H 7000 1450 60  0000 C CNN
+	1    7000 1450
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR06
+U 1 1 543A1464
+P 6800 1750
+F 0 "#PWR06" H 6800 1750 30  0001 C CNN
+F 1 "GND" H 6800 1680 30  0001 C CNN
+F 2 "" H 6800 1750 60  0000 C CNN
+F 3 "" H 6800 1750 60  0000 C CNN
+	1    6800 1750
+	1    0    0    -1  
+$EndComp
+Text Label 4300 1100 2    50   ~ 0
+TXD
+$Comp
+L C_VERT C9
+U 1 1 543A1499
+P 3350 7250
+F 0 "C9" H 3370 7340 50  0000 L CNN
+F 1 ".1uF" H 3370 7160 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 3388 7100 30  0001 C CNN
+F 3 "" H 3350 7250 60  0000 C CNN
+	1    3350 7250
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C11
+U 1 1 543A14A0
+P 3650 7250
+F 0 "C11" H 3670 7340 50  0000 L CNN
+F 1 ".1uF" H 3670 7160 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 3688 7100 30  0001 C CNN
+F 3 "" H 3650 7250 60  0000 C CNN
+	1    3650 7250
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_VERT C12
+U 1 1 543A14A7
+P 3950 7250
+F 0 "C12" H 3970 7340 50  0000 L CNN
+F 1 ".1uF" H 3970 7160 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 3988 7100 30  0001 C CNN
+F 3 "" H 3950 7250 60  0000 C CNN
+	1    3950 7250
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR07
+U 1 1 543A14B5
+P 3350 6850
+F 0 "#PWR07" H 3350 6940 20  0001 C CNN
+F 1 "+5V" H 3350 6955 50  0000 C CNN
+F 2 "" H 3350 6850 60  0000 C CNN
+F 3 "" H 3350 6850 60  0000 C CNN
+	1    3350 6850
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR08
+U 1 1 543A14BB
+P 3350 7650
+F 0 "#PWR08" H 3350 7650 30  0001 C CNN
+F 1 "GND" H 3350 7580 30  0001 C CNN
+F 2 "" H 3350 7650 60  0000 C CNN
+F 3 "" H 3350 7650 60  0000 C CNN
+	1    3350 7650
+	1    0    0    -1  
+$EndComp
+Text Notes 3475 7650 0    50   ~ 0
+Filter Capacitors
+Text Notes 5200 4950 0    50   ~ 0
+Reset Circuitry
+Text Notes 850  6250 0    50   ~ 0
+Programmer
+Text Label 1100 6800 0    50   ~ 0
+LPWR
+$Comp
+L 74X08 U7
+U 2 1 543A14D3
+P 3000 900
+F 0 "U7" H 3000 1150 50  0000 C CNN
+F 1 "74HCT08" H 2875 650 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-14__300" H 3000 900 60  0001 C CNN
+F 3 "" H 3000 900 60  0000 C CNN
+	2    3000 900 
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74X08 U7
+U 1 1 543A14DA
+P 1800 900
+F 0 "U7" H 1800 1150 50  0000 C CNN
+F 1 "74HCT08" H 1675 650 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-14__300" H 1800 900 60  0001 C CNN
+F 3 "" H 1800 900 60  0000 C CNN
+	1    1800 900 
+	1    0    0    -1  
+$EndComp
+NoConn ~ 3500 900 
+$Comp
+L AVR_ISP_HEADER N5
+U 1 1 543A16EF
+P 7500 2750
+F 0 "N5" H 7350 2400 50  0000 C CNN
+F 1 "AVR_ISP_HEADER" H 7500 3100 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_2x03" H 7500 2750 60  0001 C CNN
+F 3 "" H 7500 2750 60  0000 C CNN
+	1    7500 2750
+	1    0    0    1   
+$EndComp
+$Comp
+L +5V #PWR09
+U 1 1 543A170D
+P 7000 2400
+F 0 "#PWR09" H 7000 2490 20  0001 C CNN
+F 1 "+5V" H 7000 2505 50  0000 C CNN
+F 2 "" H 7000 2400 60  0000 C CNN
+F 3 "" H 7000 2400 60  0000 C CNN
+	1    7000 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 2 1 543A1716
+P 9700 800
+F 0 "R13" H 9700 900 50  0000 C CNN
+F 1 "470_DIP16" H 9700 700 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 800 60  0001 C CNN
+F 3 "" H 9725 800 60  0000 C CNN
+	2    9700 800 
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 3 1 543A171D
+P 9700 1100
+F 0 "R13" H 9700 1200 50  0000 C CNN
+F 1 "470_DIP16" H 9700 1000 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 1100 60  0001 C CNN
+F 3 "" H 9725 1100 60  0000 C CNN
+	3    9700 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 4 1 543A1724
+P 9700 1400
+F 0 "R13" H 9700 1500 50  0000 C CNN
+F 1 "470_DIP16" H 9700 1300 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 1400 60  0001 C CNN
+F 3 "" H 9725 1400 60  0000 C CNN
+	4    9700 1400
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 5 1 543A172B
+P 9700 1700
+F 0 "R13" H 9700 1800 50  0000 C CNN
+F 1 "470_DIP16" H 9700 1600 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 1700 60  0001 C CNN
+F 3 "" H 9725 1700 60  0000 C CNN
+	5    9700 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 6 1 543A1732
+P 9700 2000
+F 0 "R13" H 9700 2100 50  0000 C CNN
+F 1 "470_DIP16" H 9700 1900 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 2000 60  0001 C CNN
+F 3 "" H 9725 2000 60  0000 C CNN
+	6    9700 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 7 1 543A1739
+P 9700 2300
+F 0 "R13" H 9700 2400 50  0000 C CNN
+F 1 "470_DIP16" H 9700 2200 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 2300 60  0001 C CNN
+F 3 "" H 9725 2300 60  0000 C CNN
+	7    9700 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L LED D2
+U 1 1 543A1740
+P 8300 2750
+F 0 "D2" H 8370 2910 50  0000 C CNN
+F 1 "LED" H 8410 2625 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:T1_LED" H 8300 2750 60  0001 C CNN
+F 3 "" H 8300 2750 60  0000 C CNN
+	1    8300 2750
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR010
+U 1 1 543A1747
+P 8300 3100
+F 0 "#PWR010" H 8300 3100 30  0001 C CNN
+F 1 "GND" H 8300 3030 30  0001 C CNN
+F 2 "" H 8300 3100 60  0000 C CNN
+F 3 "" H 8300 3100 60  0000 C CNN
+	1    8300 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_HORIZ_DIP16 R13
+U 1 1 543A1750
+P 8700 2400
+F 0 "R13" H 8700 2500 50  0000 C CNN
+F 1 "470_DIP16" H 8700 2300 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 8725 2400 60  0001 C CNN
+F 3 "" H 8725 2400 60  0000 C CNN
+	1    8700 2400
+	1    0    0    -1  
+$EndComp
+Text HLabel 8200 3850 0    50   Input ~ 0
+ENC1_A
+Text HLabel 8200 4550 0    50   Input ~ 0
+ENC1_B
+Text HLabel 8200 5250 0    50   Input ~ 0
+ENC2_A
+Text HLabel 8200 5950 0    50   Input ~ 0
+ENC2_B
+Text HLabel 10100 800  2    50   Input ~ 0
+1A
+Text HLabel 10100 1100 2    50   Input ~ 0
+EN12
+Text HLabel 10100 1400 2    50   Input ~ 0
+2A
+Text HLabel 10100 1700 2    50   Input ~ 0
+3A
+Text HLabel 10100 2000 2    50   Input ~ 0
+EN34
+Text HLabel 10100 2300 2    50   Input ~ 0
+4A
+Text HLabel 10100 2600 2    50   Input ~ 0
+ENC_EN
+Text HLabel 1000 6800 0    50   Input ~ 0
+LPWR
+Text HLabel 1100 3400 0    50   Input ~ 0
+CANH
+Text HLabel 1100 3500 0    50   Input ~ 0
+CANL
+Text HLabel 1000 7600 0    50   Input ~ 0
+LGND
+$Comp
+L R_HORIZ_DIP16 R13
+U 8 1 543B81DF
+P 9700 2600
+F 0 "R13" H 9700 2700 50  0000 C CNN
+F 1 "470_DIP16" H 9700 2500 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-16__300" H 9725 2600 60  0001 C CNN
+F 3 "" H 9725 2600 60  0000 C CNN
+	8    9700 2600
+	1    0    0    -1  
+$EndComp
+Text Label 4300 1000 2    50   ~ 0
+RXD
+Text Label 4300 2100 2    50   ~ 0
+D7
+Text Label 4300 2200 2    50   ~ 0
+D8
+Text Label 6300 2200 0    50   ~ 0
+D9
+Text Label 6300 2100 0    50   ~ 0
+D10
+Text Label 6300 2000 0    50   ~ 0
+D11
+Text Label 6300 1900 0    50   ~ 0
+D12
+Text Label 6300 1800 0    50   ~ 0
+D13
+Text Label 6300 1400 0    50   ~ 0
+A0
+Text Label 6300 1300 0    50   ~ 0
+A1
+Text Label 6300 1200 0    50   ~ 0
+A2
+Text Label 6300 1100 0    50   ~ 0
+A3
+Text Label 6300 1000 0    50   ~ 0
+A4
+Entry Wire Line
+	6500 1000 6600 900 
+Entry Wire Line
+	6500 1100 6600 1000
+Entry Wire Line
+	6500 1200 6600 1100
+Entry Wire Line
+	6500 1300 6600 1200
+Entry Wire Line
+	6500 1400 6600 1300
+Entry Wire Line
+	3800 1000 3900 1100
+Entry Wire Line
+	3800 900  3900 1000
+Entry Wire Line
+	3800 1100 3900 1200
+Entry Wire Line
+	3800 1200 3900 1300
+Entry Wire Line
+	3800 1300 3900 1400
+Entry Wire Line
+	9200 700  9300 800 
+Entry Wire Line
+	9200 1000 9300 1100
+Entry Wire Line
+	9200 1300 9300 1400
+Entry Wire Line
+	9200 1600 9300 1700
+Entry Wire Line
+	9200 1900 9300 2000
+Entry Wire Line
+	9200 2200 9300 2300
+Entry Wire Line
+	9200 2500 9300 2600
+$Comp
+L +5V #PWR011
+U 1 1 543BE462
+P 3600 1400
+F 0 "#PWR011" H 3600 1490 20  0001 C CNN
+F 1 "+5V" H 3600 1505 50  0000 C CNN
+F 2 "" H 3600 1400 60  0000 C CNN
+F 3 "" H 3600 1400 60  0000 C CNN
+	1    3600 1400
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	3800 2300 3900 2200
+Entry Wire Line
+	3800 2200 3900 2100
+Entry Wire Line
+	3800 2100 3900 2000
+Entry Wire Line
+	3800 2000 3900 1900
+Entry Wire Line
+	6500 1800 6600 1900
+Entry Wire Line
+	6500 1900 6600 2000
+Entry Wire Line
+	6500 2000 6600 2100
+Entry Wire Line
+	6500 2100 6600 2200
+Entry Wire Line
+	6500 2200 6600 2300
+$Comp
+L +5V #PWR012
+U 1 1 543C1000
+P 8200 800
+F 0 "#PWR012" H 8200 890 20  0001 C CNN
+F 1 "+5V" H 8200 905 50  0000 C CNN
+F 2 "" H 8200 800 60  0000 C CNN
+F 3 "" H 8200 800 60  0000 C CNN
+	1    8200 800 
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	7800 1700 7900 1800
+Entry Wire Line
+	7800 1600 7900 1700
+Entry Wire Line
+	7800 1000 7900 1100
+Entry Wire Line
+	7800 900  7900 1000
+Text Label 4300 900  2    50   ~ 0
+~RESET
+Entry Wire Line
+	3800 800  3900 900 
+$Comp
+L NPN Q3
+U 1 1 543C503C
+P 9000 4550
+F 0 "Q3" H 9100 4550 50  0000 C CNN
+F 1 "PN2222" H 9000 4300 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:TO92_123" H 9000 4550 60  0001 C CNN
+F 3 "" H 9000 4550 60  0000 C CNN
+	1    9000 4550
+	1    0    0    -1  
+$EndComp
+$Comp
+L NPN Q4
+U 1 1 543C5543
+P 9000 5250
+F 0 "Q4" H 9100 5250 50  0000 C CNN
+F 1 "PN2222" H 9000 5000 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:TO92_123" H 9000 5250 60  0001 C CNN
+F 3 "" H 9000 5250 60  0000 C CNN
+	1    9000 5250
+	1    0    0    -1  
+$EndComp
+$Comp
+L NPN Q5
+U 1 1 543C55CF
+P 9000 5950
+F 0 "Q5" H 9100 5950 50  0000 C CNN
+F 1 "PN2222" H 9000 5700 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:TO92_123" H 9000 5950 60  0001 C CNN
+F 3 "" H 9000 5950 60  0000 C CNN
+	1    9000 5950
+	1    0    0    -1  
+$EndComp
+$Comp
+L NPN Q2
+U 1 1 543C5625
+P 9000 3850
+F 0 "Q2" H 9100 3850 50  0000 C CNN
+F 1 "PN2222" H 9000 3600 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:TO92_123" H 9000 3850 60  0001 C CNN
+F 3 "" H 9000 3850 60  0000 C CNN
+	1    9000 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5 R12
+U 4 1 543C5E11
+P 8600 6300
+F 0 "R12" H 8645 6370 50  0000 L CNN
+F 1 "4K7x4" H 8645 6270 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 8600 6300 50  0001 C CNN
+F 3 "" H 8600 6300 50  0000 C CNN
+	4    8600 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5 R12
+U 3 1 543C6061
+P 8600 5550
+F 0 "R12" H 8645 5620 50  0000 L CNN
+F 1 "4K7x4" H 8645 5520 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 8600 5550 50  0001 C CNN
+F 3 "" H 8600 5550 50  0000 C CNN
+	3    8600 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5 R12
+U 2 1 543C60B5
+P 8600 4850
+F 0 "R12" H 8645 4920 50  0000 L CNN
+F 1 "4K7x4" H 8645 4820 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 8600 4850 50  0001 C CNN
+F 3 "" H 8600 4850 50  0000 C CNN
+	2    8600 4850
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5 R12
+U 1 1 543C6108
+P 8600 4150
+F 0 "R12" H 8645 4220 50  0000 L CNN
+F 1 "4K7x4" H 8645 4120 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 8600 4150 50  0001 C CNN
+F 3 "" H 8600 4150 50  0000 C CNN
+	1    8600 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR013
+U 1 1 543C6BA0
+P 8600 6700
+F 0 "#PWR013" H 8600 6700 30  0001 C CNN
+F 1 "GND" H 8600 6630 30  0001 C CNN
+F 2 "" H 8600 6700 60  0000 C CNN
+F 3 "" H 8600 6700 60  0000 C CNN
+	1    8600 6700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5_ALT R14
+U 1 1 543C6FF9
+P 9400 3400
+F 0 "R14" H 9445 3470 50  0000 L CNN
+F 1 "3K3x4" H 9445 3370 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 9400 3400 50  0001 C CNN
+F 3 "" H 9400 3400 50  0000 C CNN
+	1    9400 3400
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5_ALT R14
+U 2 1 543C7193
+P 9600 4100
+F 0 "R14" H 9645 4170 50  0000 L CNN
+F 1 "3K3x4" H 9645 4070 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 9600 4100 50  0001 C CNN
+F 3 "" H 9600 4100 50  0000 C CNN
+	2    9600 4100
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5_ALT R14
+U 3 1 543C71EC
+P 9600 4800
+F 0 "R14" H 9645 4870 50  0000 L CNN
+F 1 "3K3x4" H 9645 4770 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 9600 4800 50  0001 C CNN
+F 3 "" H 9600 4800 50  0000 C CNN
+	3    9600 4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_VERT_SIP5_ALT R14
+U 4 1 543C7242
+P 9600 5500
+F 0 "R14" H 9645 5570 50  0000 L CNN
+F 1 "3K3x4" H 9645 5470 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05" H 9600 5500 50  0001 C CNN
+F 3 "" H 9600 5500 50  0000 C CNN
+	4    9600 5500
+	1    0    0    -1  
+$EndComp
+Text Label 10100 5800 0    50   ~ 0
+A3
+Text Label 10100 5100 0    50   ~ 0
+A2
+Text Label 10100 4400 0    50   ~ 0
+A1
+Text Label 10100 3700 0    50   ~ 0
+A0
+Entry Wire Line
+	10200 3700 10300 3600
+Entry Wire Line
+	10200 4400 10300 4300
+Entry Wire Line
+	10200 5100 10300 5000
+Entry Wire Line
+	10200 5800 10300 5700
+$Comp
+L +5V #PWR014
+U 1 1 543CA9C4
+P 9400 3000
+F 0 "#PWR014" H 9400 3090 20  0001 C CNN
+F 1 "+5V" H 9400 3105 50  0000 C CNN
+F 2 "" H 9400 3000 60  0000 C CNN
+F 3 "" H 9400 3000 60  0000 C CNN
+	1    9400 3000
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	9100 2400 9200 2300
+$Comp
+L +5V #PWR015
+U 1 1 543D0007
+P 1200 700
+F 0 "#PWR015" H 1200 790 20  0001 C CNN
+F 1 "+5V" H 1200 805 50  0000 C CNN
+F 2 "" H 1200 700 60  0000 C CNN
+F 3 "" H 1200 700 60  0000 C CNN
+	1    1200 700 
+	1    0    0    -1  
+$EndComp
+Text HLabel 9100 3100 0    50   Input ~ 0
+LOG_5V
+$Comp
+L 74X08 U7
+U 4 2 543A14CC
+P 4200 3700
+F 0 "U7" H 4200 3950 50  0000 C CNN
+F 1 "74HCT08" H 4150 3450 50  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-14__300" H 4200 3700 60  0001 C CNN
+F 3 "" H 4200 3700 60  0000 C CNN
+	4    4200 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR016
+U 1 1 543D2F2C
+P 3100 3700
+F 0 "#PWR016" H 3100 3700 30  0001 C CNN
+F 1 "GND" H 3100 3630 30  0001 C CNN
+F 2 "" H 3100 3700 60  0000 C CNN
+F 3 "" H 3100 3700 60  0000 C CNN
+	1    3100 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR017
+U 1 1 543D3144
+P 3200 2900
+F 0 "#PWR017" H 3200 2990 20  0001 C CNN
+F 1 "+5V" H 3200 3005 50  0000 C CNN
+F 2 "" H 3200 2900 60  0000 C CNN
+F 3 "" H 3200 2900 60  0000 C CNN
+	1    3200 2900
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR018
+U 1 1 543D3E99
+P 7000 3100
+F 0 "#PWR018" H 7000 3100 30  0001 C CNN
+F 1 "GND" H 7000 3030 30  0001 C CNN
+F 2 "" H 7000 3100 60  0000 C CNN
+F 3 "" H 7000 3100 60  0000 C CNN
+	1    7000 3100
+	1    0    0    -1  
+$EndComp
+Text Label 6750 2500 0    50   ~ 0
+D12
+Text Label 6750 2800 0    50   ~ 0
+D11
+Text Label 6750 2700 0    50   ~ 0
+D13
+Text Label 6750 2900 0    50   ~ 0
+~RESET
+Entry Wire Line
+	6600 2400 6700 2500
+Entry Wire Line
+	6600 2600 6700 2700
+Entry Wire Line
+	6600 2700 6700 2800
+Entry Wire Line
+	6600 2800 6700 2900
+$Comp
+L GND #PWR019
+U 1 1 543D51A4
+P 8100 2000
+F 0 "#PWR019" H 8100 2000 30  0001 C CNN
+F 1 "GND" H 8100 1930 30  0001 C CNN
+F 2 "" H 8100 2000 60  0000 C CNN
+F 3 "" H 8100 2000 60  0000 C CNN
+	1    8100 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR020
+U 1 1 543D5773
+P 5700 7750
+F 0 "#PWR020" H 5700 7750 30  0001 C CNN
+F 1 "GND" H 5700 7680 30  0001 C CNN
+F 2 "" H 5700 7750 60  0000 C CNN
+F 3 "" H 5700 7750 60  0000 C CNN
+	1    5700 7750
+	1    0    0    -1  
+$EndComp
+Text Label 1100 7600 0    50   ~ 0
+LGND
+Connection ~ 1350 6800
+Wire Wire Line
+	1000 6800 1450 6800
+Wire Wire Line
+	1350 6900 1350 6800
+Wire Wire Line
+	1350 7600 1350 7300
+Connection ~ 1900 7400
+Wire Wire Line
+	2750 7600 2750 7300
+Wire Wire Line
+	1900 7150 1900 7700
+Wire Wire Line
+	1900 7400 1950 7400
+Wire Wire Line
+	2450 7400 2450 7300
+Wire Wire Line
+	2350 7400 2450 7400
+Connection ~ 2450 6800
+Wire Wire Line
+	1200 700  1200 1000
+Wire Wire Line
+	2750 6800 2750 6900
+Wire Wire Line
+	3000 3600 3700 3600
+Wire Wire Line
+	9300 2300 9500 2300
+Wire Wire Line
+	1800 3600 2000 3600
+Wire Wire Line
+	3200 3500 3000 3500
+Wire Wire Line
+	3100 3400 3000 3400
+Wire Wire Line
+	1100 3500 2000 3500
+Wire Wire Line
+	1100 3400 2000 3400
+Wire Wire Line
+	1200 3500 1200 3950
+Wire Wire Line
+	1200 3950 1300 3950
+Wire Wire Line
+	1800 3950 1700 3950
+Wire Wire Line
+	1700 3850 1800 3850
+Wire Wire Line
+	1700 3400 1700 3850
+Wire Wire Line
+	9300 1100 9500 1100
+Wire Wire Line
+	3300 1800 4400 1800
+Wire Wire Line
+	2700 1800 2600 1800
+Connection ~ 2600 1800
+Wire Wire Line
+	3400 1900 3400 1800
+Connection ~ 3400 1800
+Wire Wire Line
+	2600 2300 2600 2400
+Wire Wire Line
+	3400 2300 3400 2500
+Wire Wire Line
+	6200 1500 6800 1500
+Wire Wire Line
+	6200 1600 7000 1600
+Wire Wire Line
+	2000 4900 2000 4800
+Wire Wire Line
+	2300 4900 2300 4800
+Connection ~ 2300 4800
+Wire Wire Line
+	1700 5300 1700 5700
+Wire Wire Line
+	1500 6200 3900 6200
+Wire Wire Line
+	5700 7650 5800 7650
+Wire Wire Line
+	1700 6100 1700 6200
+Connection ~ 1700 6200
+Wire Wire Line
+	1400 5900 1500 5900
+Wire Wire Line
+	1500 5900 1500 6200
+Wire Wire Line
+	1400 5400 2800 5400
+Connection ~ 2300 5400
+Wire Wire Line
+	2700 5200 2800 5200
+Wire Wire Line
+	3400 4700 1700 4700
+Wire Wire Line
+	1700 4700 1700 4900
+Wire Wire Line
+	1400 5600 2000 5600
+Wire Wire Line
+	1400 5500 1700 5500
+Connection ~ 1700 5500
+Wire Wire Line
+	4400 4400 4400 4700
+Wire Wire Line
+	4300 5300 6500 5300
+Wire Wire Line
+	4400 5300 4400 5200
+Wire Wire Line
+	4700 5300 4700 5200
+Connection ~ 4400 5300
+Wire Wire Line
+	4700 4500 4700 4800
+Wire Wire Line
+	3800 5300 3900 5300
+Wire Wire Line
+	5000 5300 5000 5750
+Connection ~ 4700 5300
+Wire Wire Line
+	5000 5750 4900 5750
+Connection ~ 5000 5300
+Wire Wire Line
+	5700 6450 5700 7750
+Wire Wire Line
+	5700 6450 5800 6450
+Wire Wire Line
+	5800 6850 5700 6850
+Connection ~ 5700 6850
+Wire Wire Line
+	5800 7250 5700 7250
+Connection ~ 5700 7250
+Connection ~ 5700 7650
+Wire Wire Line
+	4300 5750 3900 5750
+Connection ~ 1900 7600
+Wire Wire Line
+	2450 6700 2450 6900
+Wire Wire Line
+	2350 6800 2750 6800
+Wire Wire Line
+	1000 7600 2750 7600
+Wire Wire Line
+	2000 4800 4000 4800
+Wire Wire Line
+	3900 5750 3900 6300
+Connection ~ 3900 6200
+Wire Wire Line
+	7000 1600 7000 1450
+Wire Wire Line
+	6800 1500 6800 1750
+Wire Wire Line
+	1800 3000 1800 3600
+Wire Wire Line
+	2000 3300 1900 3300
+Wire Wire Line
+	3350 6850 3350 7050
+Connection ~ 3350 6950
+Wire Wire Line
+	3950 7050 3950 6950
+Wire Wire Line
+	3650 7050 3650 6950
+Connection ~ 3650 6950
+Wire Wire Line
+	3350 7450 3350 7650
+Connection ~ 3350 7550
+Wire Wire Line
+	3950 7450 3950 7550
+Wire Wire Line
+	3650 7450 3650 7550
+Connection ~ 3650 7550
+Wire Wire Line
+	2000 5600 2000 5300
+Wire Wire Line
+	2300 5400 2300 5300
+Wire Wire Line
+	3000 3300 3400 3300
+Wire Wire Line
+	1200 1000 1300 1000
+Wire Wire Line
+	1200 800  1300 800 
+Wire Wire Line
+	2500 800  2400 800 
+Wire Wire Line
+	2400 800  2400 1000
+Wire Wire Line
+	2400 1000 2500 1000
+Wire Wire Line
+	2300 900  2400 900 
+Connection ~ 2400 900 
+Wire Wire Line
+	9300 1400 9500 1400
+Wire Wire Line
+	9300 800  9500 800 
+Wire Wire Line
+	9300 1700 9500 1700
+Wire Wire Line
+	9500 2000 9300 2000
+Wire Wire Line
+	7100 3000 7000 3000
+Wire Wire Line
+	7100 2900 6700 2900
+Wire Wire Line
+	6700 2700 7100 2700
+Wire Wire Line
+	6700 2500 7100 2500
+Wire Wire Line
+	6700 2800 7100 2800
+Wire Wire Line
+	7100 2600 7000 2600
+Wire Wire Line
+	7000 2600 7000 2400
+Wire Wire Line
+	9100 2400 8900 2400
+Wire Wire Line
+	8500 2400 8300 2400
+Wire Wire Line
+	8300 2400 8300 2500
+Wire Wire Line
+	8300 3000 8300 3100
+Wire Wire Line
+	9900 800  10100 800 
+Wire Wire Line
+	10100 1100 9900 1100
+Wire Wire Line
+	9900 1400 10100 1400
+Wire Wire Line
+	10100 1700 9900 1700
+Wire Wire Line
+	10100 2000 9900 2000
+Wire Wire Line
+	10100 2300 9900 2300
+Wire Wire Line
+	9900 2600 10100 2600
+Wire Wire Line
+	9500 2600 9300 2600
+Wire Wire Line
+	6200 1000 6500 1000
+Wire Wire Line
+	6500 1100 6200 1100
+Wire Wire Line
+	6200 1200 6500 1200
+Wire Wire Line
+	6500 1300 6200 1300
+Wire Wire Line
+	6200 1400 6500 1400
+Wire Wire Line
+	6500 1800 6200 1800
+Wire Wire Line
+	6200 1900 6500 1900
+Wire Wire Line
+	6500 2000 6200 2000
+Wire Wire Line
+	6200 2100 6500 2100
+Wire Wire Line
+	6500 2200 6200 2200
+Wire Wire Line
+	4400 1000 3900 1000
+Wire Wire Line
+	3900 1100 4400 1100
+Wire Wire Line
+	4400 1200 3900 1200
+Wire Wire Line
+	3900 1300 4400 1300
+Wire Wire Line
+	3900 1400 4400 1400
+Wire Wire Line
+	4400 1900 3900 1900
+Wire Wire Line
+	3900 2000 4400 2000
+Wire Wire Line
+	4400 2100 3900 2100
+Wire Wire Line
+	4400 2200 3900 2200
+Wire Bus Line
+	6600 600  6600 5300
+Wire Wire Line
+	6200 1700 6300 1700
+Wire Wire Line
+	6300 1700 6300 1600
+Connection ~ 6300 1600
+Wire Wire Line
+	4400 1500 3600 1500
+Wire Wire Line
+	3600 1500 3600 1400
+Wire Wire Line
+	4400 1600 3700 1600
+Wire Wire Line
+	3700 1600 3700 2400
+Wire Wire Line
+	2600 1500 2600 1900
+Wire Wire Line
+	2600 1500 3400 1500
+Wire Wire Line
+	3400 1500 3400 1700
+Wire Wire Line
+	3400 1700 4400 1700
+Wire Wire Line
+	3700 2400 2600 2400
+Connection ~ 3400 2400
+Wire Wire Line
+	8200 1600 8300 1600
+Wire Wire Line
+	8200 800  8200 1600
+Wire Wire Line
+	8200 900  8300 900 
+Connection ~ 8200 900 
+Wire Wire Line
+	8300 1200 8100 1200
+Wire Wire Line
+	8100 1200 8100 2000
+Wire Wire Line
+	8100 1900 8300 1900
+Connection ~ 8100 1900
+Wire Wire Line
+	8300 1800 7900 1800
+Wire Wire Line
+	8300 1700 7900 1700
+Wire Wire Line
+	7900 1100 8300 1100
+Wire Wire Line
+	7900 1000 8300 1000
+Wire Bus Line
+	7800 600  7800 1800
+Wire Bus Line
+	3800 600  3800 2400
+Wire Bus Line
+	3800 600  9200 600 
+Wire Wire Line
+	3900 900  4400 900 
+Wire Wire Line
+	9400 6100 9300 6100
+Wire Wire Line
+	9400 6600 9400 4000
+Wire Wire Line
+	9400 4000 9300 4000
+Wire Wire Line
+	9300 4700 9400 4700
+Connection ~ 9400 4700
+Wire Wire Line
+	9300 5400 9400 5400
+Connection ~ 9400 5400
+Wire Wire Line
+	8200 3850 8800 3850
+Wire Wire Line
+	8600 3850 8600 3950
+Wire Wire Line
+	8200 4550 8800 4550
+Wire Wire Line
+	8600 4550 8600 4650
+Wire Wire Line
+	8200 5250 8800 5250
+Wire Wire Line
+	8600 5250 8600 5350
+Wire Wire Line
+	8200 5950 8800 5950
+Wire Wire Line
+	8600 5950 8600 6100
+Wire Wire Line
+	8400 6600 9400 6600
+Wire Wire Line
+	8600 6500 8600 6700
+Connection ~ 8600 6600
+Connection ~ 9400 6100
+Wire Wire Line
+	9300 3700 10200 3700
+Wire Wire Line
+	9400 3700 9400 3600
+Wire Wire Line
+	9300 4400 10200 4400
+Wire Wire Line
+	9600 4400 9600 4300
+Wire Wire Line
+	9300 5100 10200 5100
+Wire Wire Line
+	9600 5100 9600 5000
+Connection ~ 9400 3700
+Connection ~ 9600 4400
+Connection ~ 9600 5100
+Wire Wire Line
+	10000 3100 10000 5200
+Wire Wire Line
+	9100 3100 10000 3100
+Wire Wire Line
+	9400 3000 9400 3200
+Connection ~ 9700 3100
+Wire Wire Line
+	9600 3900 9600 3800
+Wire Wire Line
+	9600 3800 9700 3800
+Wire Wire Line
+	9700 3800 9700 3100
+Wire Wire Line
+	9600 4600 9600 4500
+Wire Wire Line
+	9600 4500 9900 4500
+Wire Wire Line
+	9900 4500 9900 3100
+Connection ~ 9900 3100
+Wire Wire Line
+	9300 5800 10200 5800
+Wire Wire Line
+	9600 5800 9600 5700
+Wire Wire Line
+	9600 5300 9600 5200
+Wire Wire Line
+	9600 5200 10000 5200
+Connection ~ 9600 5800
+Wire Bus Line
+	10300 2800 10300 5800
+Wire Bus Line
+	9200 2800 10300 2800
+Wire Bus Line
+	9200 600  9200 2800
+Wire Wire Line
+	8600 4350 8600 4450
+Wire Wire Line
+	8600 4450 8400 4450
+Wire Wire Line
+	8400 4450 8400 6600
+Wire Wire Line
+	8600 5050 8600 5150
+Wire Wire Line
+	8600 5150 8400 5150
+Connection ~ 8400 5150
+Wire Wire Line
+	8600 5750 8600 5850
+Wire Wire Line
+	8600 5850 8400 5850
+Connection ~ 8400 5850
+Connection ~ 8600 5950
+Connection ~ 8600 3850
+Connection ~ 8600 4550
+Connection ~ 8600 5250
+Connection ~ 1200 800 
+Connection ~ 1700 3400
+Wire Wire Line
+	3100 3400 3100 3700
+Wire Wire Line
+	3200 2900 3200 3500
+Wire Wire Line
+	7000 3000 7000 3100
+Connection ~ 9400 3100
+Connection ~ 1350 7600
+Wire Wire Line
+	4000 4800 4000 4500
+Wire Wire Line
+	4000 4500 4700 4500
+Connection ~ 4400 4500
+Wire Wire Line
+	3700 3800 3200 3800
+Wire Wire Line
+	3200 4500 1500 4500
+$Comp
+L R_VERT R10
+U 1 1 543D8280
+P 3600 3300
+F 0 "R10" H 3670 3350 50  0000 L CNN
+F 1 "100K" H 3670 3250 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 3600 3350 60  0001 C CNN
+F 3 "" H 3600 3350 60  0000 C CNN
+	1    3600 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3600 3000 3600 3100
+Wire Wire Line
+	1800 3000 3600 3000
+Connection ~ 3200 3000
+Wire Wire Line
+	1500 4500 1500 5600
+Connection ~ 1500 5600
+Wire Wire Line
+	3200 3800 3200 4500
+Wire Wire Line
+	3600 3500 3600 3600
+Connection ~ 3600 3600
+Wire Wire Line
+	3400 3300 3400 4700
+Wire Wire Line
+	3400 4200 6500 4200
+Wire Wire Line
+	4700 3700 6500 3700
+Entry Wire Line
+	6500 3700 6600 3600
+Entry Wire Line
+	6500 4200 6600 4100
+Entry Wire Line
+	6500 5300 6600 5200
+Text Label 6250 5300 0    50   ~ 0
+~RESET
+Text Label 6400 3700 2    50   ~ 0
+RXD
+Text Label 6400 4200 2    50   ~ 0
+TXD
+Connection ~ 3400 4200
+Text Label 9450 800  2    50   ~ 0
+D7
+Text Label 9450 2600 2    50   ~ 0
+D6
+Text Label 8050 1000 2    50   ~ 0
+D2
+Text Label 8050 1100 2    50   ~ 0
+D3
+Text Label 8050 1700 2    50   ~ 0
+D4
+Text Label 8050 1800 2    50   ~ 0
+D5
+Wire Wire Line
+	1900 3300 1900 2700
+Wire Wire Line
+	1900 2700 4100 2700
+Wire Wire Line
+	4100 2700 4100 3300
+Wire Wire Line
+	4100 3300 6500 3300
+Entry Wire Line
+	6500 3300 6600 3200
+Text Label 6300 3300 0    50   ~ 0
+A4
+NoConn ~ 6200 900 
+Connection ~ 1200 3500
+$Comp
+L GND #PWR021
+U 1 1 543B231C
+P 3400 2500
+F 0 "#PWR021" H 3400 2500 30  0001 C CNN
+F 1 "GND" H 3400 2430 30  0001 C CNN
+F 2 "" H 3400 2500 60  0000 C CNN
+F 3 "" H 3400 2500 60  0000 C CNN
+	1    3400 2500
+	1    0    0    -1  
+$EndComp
+Text Notes 5000 3900 0    50   ~ 0
+UART Circuitry
+Text Notes 1500 7850 0    50   ~ 0
+5V Power Supply
+Text Notes 2150 1250 0    50   ~ 0
+Unused
+Text Notes 2350 5750 0    50   ~ 0
+Note: U7 has VCC connected to pin 14\nand  GND connected to pin 7.
+Text Notes 7450 4850 0    50   ~ 0
+Encoder Amplifiers
+Text Notes 7700 2250 0    50   ~ 0
+Sonar Connectors
+Text Notes 9550 600  0    50   ~ 0
+Motor Circuitry
+Text Notes 7000 3400 0    50   ~ 0
+In Circuit Programmer\nCircuitry
+Text Notes 1200 3000 0    50   ~ 0
+Bus Circuitry
+Text Notes 5600 6150 0    50   ~ 0
+Mounting Holes
+Text Notes 4750 7850 0    50   ~ 0
+Open Source\nHardware Logo
+Text Notes 4800 2600 0    50   ~ 0
+Microcontroller + Crystal
+Text Label 1500 7600 0    50   ~ 0
+GND
+Wire Wire Line
+	3350 6950 4250 6950
+Wire Wire Line
+	3350 7550 4250 7550
+Wire Wire Line
+	2700 5200 2700 5400
+Connection ~ 2700 5400
+$Comp
+L C_VERT C14
+U 1 1 543F4E32
+P 4250 7250
+F 0 "C14" H 4270 7340 50  0000 L CNN
+F 1 ".1uF" H 4270 7160 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 4288 7100 30  0001 C CNN
+F 3 "" H 4250 7250 60  0000 C CNN
+	1    4250 7250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4250 7550 4250 7450
+Connection ~ 3950 7550
+Wire Wire Line
+	4250 6950 4250 7050
+Connection ~ 3950 6950
+$EndSCHEMATC
