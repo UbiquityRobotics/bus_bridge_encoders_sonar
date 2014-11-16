@@ -158,7 +158,7 @@ connects the A and B  quadrature signals to D4 and D2.
 </Table>
 
 
-# Rev. C
+## Rev. C
 
 * Schematic should label C13 as 1uF. [x]
 
@@ -193,5 +193,14 @@ connects the A and B  quadrature signals to D4 and D2.
 </Pre>
 </BlockQuote>
 
+## Rev. D
 
+* The vertical resistors are hard to solder.  Think about switching
+
+* Update schematic to specifiy electrolytic capacistors for input
+  voltage regulators.
+
+* The C5 is too close to the mounting hole.
+
+* Think about adding an LED jumper block.
 
