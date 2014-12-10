@@ -121,7 +121,7 @@ void Bus_Serial__frame_put(Frame frame) {
 void setup() {
   // Initalize the debugging port:
   Serial.begin(115200);
-  Serial.print("\r\nBus_Bridge_Encoders_Sonar:\r\n");
+  Serial.print("\r\nbus_bridge_encoders_sonar:\r\n");
 
   // Initialize the BUS uart:
   Bus_Serial__initialize(BUS_BAUD_500KBPS);
@@ -139,8 +139,26 @@ void setup() {
 void loop() {
   if (Bus_Serial__can_receive())
   {
-    Frame frame = Bus_Serial__frame_get();
-    Serial.write(frame);
+    Frame receive_frame = Bus_Serial__frame_get();
+    Frame send_frame = receive_frame;
+    Bus_Serial__frame_put(send_frame);
+    Frame echo_frame = Bus_Serial__frame_get();
+    
+    if (receive_frame == echo_frame) {
+      Serial.write(echo_frame);
+      if ((echo_frame & 1) == 0) {
+        digitalWrite(LED, LOW);
+      } else {
+	digitalWrite(LED, HIGH);
+      }
+    } else {
+      Serial.write('!');
+    }
+
+    if (echo_frame == '_') {
+      Serial.write('\r');
+      Serial.write('\n');
+    }
   }
   //bus.slave_mode(133, command_process);
 }
