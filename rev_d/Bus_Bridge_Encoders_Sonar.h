@@ -8,7 +8,7 @@
   //////// Edit begins here: TOP_LEVEL
   //////// Edit ends here: TOP_LEVEL
 
-class Bus_Bridge_Encoders_Sonar : public Maker_Bus_Module {
+class Bus_Bridge_Encoders_Sonar : public Bus_Module {
   public:
     // Constructor
     Bus_Bridge_Encoders_Sonar(UByte address);

@@ -28,7 +28,7 @@ typedef unsigned short UInt16;
 #if TEST == TEST_BUS_COMMAND || TEST == TEST_BUS_INTERRUPT_INPUT
 
 // Object variables:
-Maker_Bus maker_bus;
+Bus bus;
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
 
 Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
@@ -85,7 +85,7 @@ void loop() {
 
 void loop() {
   // Read the next *frame* from the bus:
-  Frame frame = maker_bus.frame_get();
+  Frame frame = bus.frame_get();
 
   // Echo *frame* to the debugging port with an occasional CRLF:
   Serial.write(frame);

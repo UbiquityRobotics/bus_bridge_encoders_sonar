@@ -9,9 +9,9 @@
 #include "Arduino.h"
 #include "Print.h"
 
-// To enable debugging code, get {MAKER_BUS_DEBUG} define to 1; otherewise 
+// To enable debugging code, get {BUS_DEBUG} define to 1; otherewise 
 // set it to 0 to disable debugging:
-#define MAKER_BUS_DEBUG 0
+#define BUS_DEBUG 0
 
 //#define TRACE
 
@@ -47,16 +47,16 @@ typedef unsigned short Unicode;		// 16-bit Unicode character
 #define PUT_RING_SIZE 16
 #define PUT_RING_MASK (PUT_RING_SIZE - 1)
 
-// These two defines are only used when {MAKER_BUS_DEBUG} is set to 1:
-#define MAKER_BUS_LOG_SIZE 128
-#define MAKER_BUS_LOG_MASK (MAKER_BUS_LOG_SIZE - 1)
+// These two defines are only used when {BUS_DEBUG} is set to 1:
+#define BUS_LOG_SIZE 128
+#define BUS_LOG_MASK (BUS_LOG_SIZE - 1)
 
-static const UByte Maker_Bus_Buffer__size = 32;
-static const UByte Maker_Bus_Buffer__mask =  Maker_Bus_Buffer__size - 1;
-class Maker_Bus_Buffer
+static const UByte Bus_Buffer__size = 32;
+static const UByte Bus_Buffer__mask =  Bus_Buffer__size - 1;
+class Bus_Buffer
 {
   public:
-    Maker_Bus_Buffer();
+    Bus_Buffer();
     UByte checksum(UByte count);
     void reset();
     void show(UByte Tag);
@@ -65,24 +65,24 @@ class Maker_Bus_Buffer
     UShort ushort_get();
     void ushort_put(UShort ushort);
 
-    UByte _ubytes[Maker_Bus_Buffer__size];
+    UByte _ubytes[Bus_Buffer__size];
     UByte _get_index;
     UByte _put_index;
     UByte _count;
     UByte _error_flags;
 };
 
-//! \class Maker_Bus
-//! \brief managing the Maker_Bus UART
+//! \class Bus
+//! \brief managing the Bus UART
 //!
 //! This a helper class that takes care of the UART that talks to the
-//! Maker_Bus.
+//! Bus.
 
-class Maker_Bus
+class Bus
 {
   public:
-    //! @brief Constructor for Maker_Bus object.
-    Maker_Bus();
+    //! @brief Constructor for Bus object.
+    Bus();
 
     //! @brief Return the a signed byte from currently selected module.
     //!   @return the next signed byte from the command.
@@ -194,13 +194,13 @@ class Maker_Bus
     //!   @param command_process helper routine to process each
     //!                          byte of received from master
     void slave_mode(UByte address, UByte (*command_process)
-     (Maker_Bus *maker_bus, UByte command, Logical mode));
+     (Bus *bus, UByte command, Logical mode));
 
-    // The {log_dump} method is only enabled when MAKER_BUS_DEUBG is set to 1:
-    #if MAKER_BUS_DEBUG != 0
+    // The {log_dump} method is only enabled when BUS_DEUBG is set to 1:
+    #if BUS_DEBUG != 0
 	// Dump frame buffer:
 	void log_dump();
-    #endif // MAKER_BUS_DEBUG != 0
+    #endif // BUS_DEBUG != 0
 
     // The following fields should be private, but the interrupt
     // service routine needs to be able to access them.  Trying to figure
@@ -218,8 +218,8 @@ class Maker_Bus
     UShort _echo_suppress;	// Frame to suppress; (OR in 0x8000 to suppress)
 
   private:
-    Maker_Bus_Buffer _get_buffer;	// FIFO for received bytes
-    Maker_Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
+    Bus_Buffer _get_buffer;	// FIFO for received bytes
+    Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
 
     Logical _auto_flush;	// 1=>Auto flush every cmd; 0=>queue up cmds
     Logical _master_mode;	// 1=>master mode; 0=>slave mode
@@ -229,52 +229,52 @@ class Maker_Bus
 
     UByte _commands_length;	// No. of valid command bytes in {_put_buffer}
 
-    // The frame log is only enabled when {MAKER_BUS_DEBUG} is set to 1:
-    #if MAKER_BUS_DEBUG != 0
-	UShort _log_buffer[MAKER_BUS_LOG_SIZE];	// Buffer of read/written frames
+    // The frame log is only enabled when {BUS_DEBUG} is set to 1:
+    #if BUS_DEBUG != 0
+	UShort _log_buffer[BUS_LOG_SIZE];	// Buffer of read/written frames
 	UByte _log_total;	// Total number read/written
 	UByte _log_dumped;	// Total number dumped out
-    #endif // MAKER_BUS_DEBUG != 0
+    #endif // BUS_DEBUG != 0
 };
 
-class Maker_Bus_Module
+class Bus_Module
 {
   public:
-    Maker_Bus_Module() {
+    Bus_Module() {
 	// Construct an empty module:
-	_maker_bus = (Maker_Bus *)0;
+	_bus = (Bus *)0;
 	_address = 0xff;
     }
 
-    void bind(Maker_Bus *maker_bus, UByte address);
-	// Slave module is located at {address} on {maker_bus}:
+    void bind(Bus *bus, UByte address);
+	// Slave module is located at {address} on {bus}:
 
     Byte byte_get() {
 	// This routine will return next next {Byte} from the current
 	// module selected by {this}.
 
-	return (Byte)_maker_bus->ubyte_get();
+	return (Byte)_bus->ubyte_get();
     }
 
     void byte_put(Byte byte) {
 	// This routine will send {byte} to the current module
 	// selected by {this}.
 
- 	_maker_bus->ubyte_put((UByte)byte);
+ 	_bus->ubyte_put((UByte)byte);
     }
 
     Character character_get() {
 	// This routine will return next {Character} from current
 	// module selected by {this}.
 
-	return (Logical)_maker_bus->ubyte_get();
+	return (Logical)_bus->ubyte_get();
     }
 
     void character_put(Character character) {
 	// This routine will send {character} to the current module
 	// selected by {this}.
 
-	_maker_bus->ubyte_put((UByte)character);
+	_bus->ubyte_put((UByte)character);
     }
 
     void command_begin(UByte command) {
@@ -282,21 +282,21 @@ class Maker_Bus_Module
 	// with the byte {command}.  This command is sent to the
 	// current module selected by {this}.
 
-	_maker_bus->command_begin(_address, command);
+	_bus->command_begin(_address, command);
     }
 
     void command_end() {
 	// This routine will end the current command being sent to
 	// the current module selected by {this}.
 
-	_maker_bus->command_end();
+	_bus->command_end();
     }
 
     void flush() {
 	// This routine will flush all pending commands to the current
 	// module selected by {this}.
 
-        _maker_bus->flush();
+        _bus->flush();
     }
 
     Logical flush_mode_set(Logical auto_flush) {
@@ -306,43 +306,43 @@ class Maker_Bus_Module
 	// commands are queued until an explicit flush occurs.
 	// The previous value of flush mode is returned.
 
-	return _maker_bus->flush_mode(auto_flush);
+	return _bus->flush_mode(auto_flush);
     }
 
     Logical logical_get() {
 	// This routine will return next next byte from current
 	// module selected by {this}.
 
-	return (Logical)_maker_bus->ubyte_get();
+	return (Logical)_bus->ubyte_get();
     }
 
     void logical_put(Logical logical) {
 	// Send {logical} to slave:
-	_maker_bus->ubyte_put((UByte)logical);
+	_bus->ubyte_put((UByte)logical);
     }
 
     UByte ubyte_get() {
 	// This routine will return next next byte from current
 	// module selected by {this}.
 
-        return _maker_bus->ubyte_get();
+        return _bus->ubyte_get();
     }
 
     void ubyte_put(UByte ubyte) {
 	// Send {ubyte} to slave:
-	_maker_bus->ubyte_put(ubyte);
+	_bus->ubyte_put(ubyte);
     }
 
     void slave_mode(UByte address,
-      UByte (*command_process)(Maker_Bus *, UByte, Logical)) {
-        return _maker_bus->slave_mode(address, command_process);
+      UByte (*command_process)(Bus *, UByte, Logical)) {
+        return _bus->slave_mode(address, command_process);
     }
 
   private:
-    Maker_Bus *_maker_bus;
+    Bus *_bus;
     UByte _address;
 };
 
-extern Maker_Bus maker_bus;
+extern Bus bus;
 
 #endif // BUS_H
