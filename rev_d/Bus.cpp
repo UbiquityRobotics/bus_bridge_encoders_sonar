@@ -1,18 +1,17 @@
+#define UART1_DISABLED
+
 #include "Arduino.h"
 #include "Bus.h"
 
 #define TRACE
 
-#ifdef TRACE
-#define trace_char(ch) Serial.write(ch)
+//#ifdef TRACE
+#define trace_char(ch) Serial.write(ch);
 #define trace_hex(hex) Serial.print(hex, HEX);
-#else
-#define trace_char(ch)
-#define trace_hex(hex)
-#endif
-
-#define ZAP
-#ifdef ZAP
+//#else
+//#define trace_char(ch)
+//#define trace_hex(hex)
+//#endif
 
 void serialEvent1() __attribute__((weak));
 void serialEvent1() {}
@@ -25,9 +24,9 @@ void serialEvent1() {}
 //}
 
 // Interrupt handler for UART1 Receive:
-SIGNAL(USART1_RX_vect)
+ISR(USART1_RX_vect)
 {
-    //trace_char('[');
+    //trace_char('{');
     // Read the 9th bit first, because reading UDR1 clears the 9th bit flag:
     UShort frame = 0;
     if (bit_is_set(UCSR1B, RXB81)) {
@@ -73,42 +72,47 @@ SIGNAL(USART1_RX_vect)
 	//    UCSR1A |= _BV(MPCM1);
 	//} // else we should not get an address byte in master mode:
     }
-    //trace_char(']');
+    //trace_char('}');
 }
 
 // Interrupt handler for UART1 Data Register Empty flag:
 ISR(USART1_UDRE_vect)
 {
-    //trace_char('[');
+    trace_char('<');
 
     // The transmit buffer is ready for a new frame.  Now check to
     // see if we have a frame to feed it:
     UByte put_tail = bus._put_tail;
     if (bus._put_head == put_tail) {
 	// Put ring buffer is empty, so disable interrupts:
+        trace_char('%');
 	UCSR1B &= ~_BV(UDRIE1);
     } else {
+        //trace_char('^');
+        //trace_char('^');
+        //trace_char('^');
 	// Buffer is not empty so send the next byte on its way:
 	UShort frame = bus._put_ring[put_tail];
-	bus._put_tail = (put_tail + 1) % PUT_RING_MASK;
+        //trace_char('?');
+	bus._put_tail = (put_tail + 1) & PUT_RING_MASK;
 
+        //trace_char('&');
 	// Output the frame.  Set 9th bit first, followed by remaining 8 bits:
 	UCSR1B &= ~_BV(TXB81);
 	if ((frame & 0x100) != 0) {
 	    UCSR1B |= _BV(TXB81);
 	}
 
+        trace_char('*');
 	// Send next byte:
 	UDR1 = (UByte)frame;
 
 	// Supress echo:
 	bus._echo_suppress = frame | 0x8000;
+        trace_char(';');
     }
-    //trace_char(']');
+    trace_char('>');
 }
-
-#endif //ZAP
-
 
 /*
  */
@@ -133,15 +137,15 @@ Bus::Bus() {
     //   UCSRnC = USART Control status register C
     // They will be initialized in the order above.
 
-    // Initialize USART1 baud rate to 1Mbps:
+    // Initialize USART1 baud rate to 500KBPS with U2X1=1:
     //     f_cpu = 16000000L
-    //     baud_rate = 1000000L
-    //     uubrr1 = f_cpu / (baud_rate * 16L) - 1
-    //            = 16000000 / (1000000 * 16) - 1
-    //            = 16000000 / 16000000 - 1
-    //            = 1 - 1
-    //            = 0
-    UBRR1L = 0;
+    //     baud_rate = 500000L
+    //     uubrr1 = f_cpu / (baud_rate * 8L) - 1
+    //            = 16000000 / (500000 * 8) - 1
+    //            = 16000000 / 4000000 - 1
+    //            = 4 - 1
+    //            = 3
+    UBRR1L = 3;
     UBRR1H = 0;
 
     // UCSR0A: USART Control and Status Register 0 A:
@@ -154,9 +158,9 @@ Bus::Bus() {
     //      p: Parity error
     //      d: Double transmission speed
     //	    m: Multi-processor communication mode
-    // Only d and m can be set:  We want d=0 and m=0:
-    //   rtef opdm = 0000 0000 = 0
-    UCSR1A = 0;
+    // Only d and m can be set:  We want d=1 and m=0:
+    //   rtef opdm = 0000 0010 = 0x02
+    UCSR1A = _BV(U2X1);
 
     // UCSR0B: USART Control and Status Register 0 B:
     //   rtea bcde: (0000 0000: Default):
@@ -168,7 +172,8 @@ Bus::Bus() {
     //      c: (C) size bit 2 (see register C):
     //      d: Receive data bit 8
     //	    e: Transmit data bit 8
-    // All bits except d can be set.  We want 0001 1100 = 0x1c
+    // All bits except d can be set.  Bit c is assocaiated with the
+    // 3-bit SIZE field (see czz in register C.)  We want 0001 1100 = 0x1c:
     UCSR1B = _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x1c
 
     // UCSR0C: USART Control and Status Register 0 C:
@@ -197,22 +202,39 @@ Bus::Bus() {
     UCSR1C = _BV(UCSZ11) | _BV(UCSZ10);	// = 6
 
     // Initialize some the private member values:
-    _slave_address = 0xffff;
     _address = 0;
-    _put_count = 0;
+    _echo_suppress = 0;
     _get_count = 0;
-    _last_address = 0xff;
-
     _get_head = 0;
     _get_tail = 0;
+    _get_total = 0;
+    _last_address = 0xff;
+    _put_count = 0;
     _put_head = 0;
     _put_tail = 0;
+    _slave_address = 0xffff;
 
+    // Keep multi-processor mode turned off for now:
     UCSR1A &= ~_BV(MPCM1);
-    UCSR1B |= _BV(RXEN1);
 
-    // UByte zilch = UDR1;
-    // zilch = UDR1;
+    // Time to enable the recevie interrupts:
+    UCSR1B |= _BV(RXCIE1);
+
+    //trace_char('a');
+    //trace_char(':');
+    //trace_hex(UCSR1A);
+    //trace_char(' ');
+    //trace_char('b');
+    //trace_char(':');
+    //trace_hex(UCSR1B);
+    //trace_char(' ');
+    //trace_char('c');
+    //trace_char(':');
+    //trace_hex(UCSR1C);
+    //trace_char(' ');
+
+    // Turn on global interrupts:
+    sei();
 }
 
 void Bus::begin(UByte address) {
@@ -344,7 +366,7 @@ void Bus::end() {
 UShort Bus::frame_get() {
     // Wait for a 9-bit frame to arrive and return it:
 
-    trace_char('g');
+    //trace_char('g');
     UCSR1B |= _BV(RXEN1);
     UShort frame = 0;
     if (1) {
@@ -366,7 +388,7 @@ UShort Bus::frame_get() {
 	}
 	frame |= (UShort)UDR1;
     }
-    trace_hex(frame);
+    //trace_hex(frame);
     return frame;
 }
 
@@ -380,7 +402,7 @@ void Bus::frame_put(UShort frame) {
 
     if (1) {
 	UByte put_head = bus._put_head;
-	UByte new_put_head = (put_head + 1) % PUT_RING_MASK;
+	UByte new_put_head = (put_head + 1) & PUT_RING_MASK;
 	while (new_put_head == bus._put_tail) {
 	    // Wait for space to show up in put ring buffer:
  	}
@@ -388,7 +410,9 @@ void Bus::frame_put(UShort frame) {
 	bus._put_ring[put_head] = frame;
 	bus._put_head = new_put_head;
 
+	trace_char('t');
         UCSR1B |= _BV(UDRIE1);
+	trace_char('u');
 
     } else {
 	// Wait until UART can take another character to output:
@@ -406,6 +430,8 @@ void Bus::frame_put(UShort frame) {
 	// UART is ready, output the character:
 	UDR1 = (UByte)frame;
     }
+
+    trace_char('v');
 
     // Clear the echo:
     //(void)frame_get();
