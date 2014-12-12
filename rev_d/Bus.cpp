@@ -1,17 +1,6 @@
-#define UART1_DISABLED
 
 #include "Arduino.h"
 #include "Bus.h"
-
-#define TRACE
-
-//#ifdef TRACE
-#define trace_char(ch) Serial.write(ch);
-#define trace_hex(hex) Serial.print(hex, HEX);
-//#else
-//#define trace_char(ch)
-//#define trace_hex(hex)
-//#endif
 
 void serialEvent1() __attribute__((weak));
 void serialEvent1() {}
@@ -23,48 +12,74 @@ void serialEvent1() {}
 //    }
 //}
 
-// Interrupt handler for UART1 Receive:
-ISR(USART1_RX_vect)
+SIGNAL(USART1_RX_vect)
 {
-    //trace_char('{');
-    // Read the 9th bit first, because reading UDR1 clears the 9th bit flag:
+    // This is the interrupt service routine that is called to when there
+    // is a new frame (i.e. 9-bit value) from the Maker Bus USART.  This
+    // Routine read the 9-bit value and either ignores for echo suppression,
+    // or takes it and stuffs into the {_get_ring} buffer.
+
+    // Read the data out; 9th bit is in UCSR1B, remaining 8-bits are in UDR1:
     UShort frame = 0;
-    if (bit_is_set(UCSR1B, RXB81)) {
+    if ((UCSR1B & _BV(RXB81)) != 0) {
 	frame = 0x100;
     }
-
-    // Read the remaining 8-bits out:
     frame |= (UShort)UDR1;
 
-    // On an address select, we always reset the bus input buffer:
-    if ((frame & 0x100) != 0) {
-	bus._get_tail = 0;
-	bus._get_head = 0;
-	bus._echo_suppress = 0;
-    }
+    // If MAKER_BUS_DEBUG is set to 1, set {log_frame} to {frame} OR'ed
+    // with 0x1000 to indicate that this is a "get" frame:
+    #if MAKER_BUS_DEBUG != 0
+	UShort log_frame = frame | 0x1000;
+    #endif //MAKER_BUS_DEBUG != 0
 
-    // When *echo_suppress* is enabled, we wait until we get a match:
-    UShort echo_suppress = bus._echo_suppress;
+    //if ((frame & 0x100) != 0) {
+    //	maker_bus._get_tail = 0;
+    //	maker_bus._get_head = 0;
+    //}
+
+    UShort echo_suppress = maker_bus._echo_suppress;
     if ((echo_suppress & 0x8000) != 0) {
+	// Mark that an echo suppress has occured with 0x200:
+	#if MAKER_BUS_DEBUG != 0
+	    log_frame |= 0x200;
+	#endif // MAKER_BUS_DEBUG != 0
+
 	// Ignore frames until it matches {echo_suppress};
 	if ((echo_suppress & 0x1ff) == frame) {
 	    // We have an echo match:
-	    bus._echo_suppress = 0;
+	    maker_bus._echo_suppress = 0;
 	} // else keep on suppressing...
     } else {
-	// We have to deal with this frame, since it is not an echo:
-	UByte get_head = (bus._get_head + 1) & GET_RING_MASK;
-	if (get_head != bus._get_tail) {
-	    // Stuff frame into buffer and update buffer total:
-	    bus._get_ring[get_head] = frame;
-	    bus._get_head = get_head;
-	}
+	// Mark that we have a non-echo suppressed frame with 0x400:
+	#if MAKER_BUS_DEBUG != 0
+	    log_frame |= 0x400;
+	#endif // MAKER_BUS_DEBUG != 0
 
-	// For now, leave Multi-Processor Communication Mode disabled:
+	// We need to insert {frame} into {_get_ring}.  If the {ring}
+	// is full we drop {frame} on the floor:
+	UByte get_head = maker_bus._get_head;
+	UByte new_get_head = (get_head + 1) & GET_RING_MASK;
+
+	// Is {_get_ring} full?
+	if (new_get_head != maker_bus._get_tail) {
+	    // No, {_get_ring} has some space for at least one more frame:
+
+	    // Stuff {frame} into {_get_ring}, and bump {_get_head} forward:
+	    maker_bus._get_ring[get_head] = frame;
+	    maker_bus._get_head = new_get_head;
+
+	    // If MAKER_BUS_DEBUG is 1, mark the log frame with 0x800
+	    // to indicate that it mad it into {_get_ring}:
+	    #if MAKER_BUS_DEBUG != 0
+		log_frame |= 0x800;
+	    #endif // MAKER_BUS_DEBUG != 0
+	} // else {_get_ring} is full; drop {frame} on the floor:
+
+	// For now we stay out of Multi-Processor Mode:
 	UCSR1A &= ~_BV(MPCM1);
 
 	// We should only get an address frame in slave mode:
-	//if (frame == bus._slave_address) {
+	//if (frame == maker_bus._slave_address) {
 	//    // {address} does match, receive address and data bytes:
 	//    UCSR1A &= ~_BV(MPCM1);
 	//} else {
@@ -72,58 +87,145 @@ ISR(USART1_RX_vect)
 	//    UCSR1A |= _BV(MPCM1);
 	//} // else we should not get an address byte in master mode:
     }
-    //trace_char('}');
+
+    // We only stuff {log_frame} into {_log_buffer} is MAKE_BUS_DEBUG is 1:
+    #if MAKER_BUS_DEBUG != 0
+	UByte log_total = maker_bus._log_total;
+	maker_bus._log_buffer[log_total & MAKER_BUS_LOG_MASK] = log_frame;
+	maker_bus._log_total = log_total + 1;
+    #endif // MAKER_BUS_DEBUG != 0
 }
 
-// Interrupt handler for UART1 Data Register Empty flag:
 ISR(USART1_UDRE_vect)
 {
-    trace_char('<');
+    // This is the interrupt service routine that is invoked when the
+    // transmit frame buffer is ready for another 9-bit frame.  The
+    // frame is removed from {_put_buffer}.  If there are no frames
+    // ready for transmission, the interrupt is disabled.
 
     // The transmit buffer is ready for a new frame.  Now check to
     // see if we have a frame to feed it:
-    UByte put_tail = bus._put_tail;
-    if (bus._put_head == put_tail) {
-	// Put ring buffer is empty, so disable interrupts:
-        trace_char('%');
+    UByte put_tail = maker_bus._put_tail;
+    if (maker_bus._put_head == put_tail) {
+	// {_put_buffer} is empty, so disable interrupts:
 	UCSR1B &= ~_BV(UDRIE1);
     } else {
-        //trace_char('^');
-        //trace_char('^');
-        //trace_char('^');
-	// Buffer is not empty so send the next byte on its way:
-	UShort frame = bus._put_ring[put_tail];
-        //trace_char('?');
-	bus._put_tail = (put_tail + 1) & PUT_RING_MASK;
+	// {_put_buffer} is not empty; grab {frame} from {_put_buffer} and
+	// update {_put_tail}:
+	UShort frame = maker_bus._put_ring[put_tail];
+	maker_bus._put_tail = (put_tail + 1) % PUT_RING_MASK;
 
-        //trace_char('&');
-	// Output the frame.  Set 9th bit first, followed by remaining 8 bits:
+	// Deal with 9th bit of {frame}.  Most of the time the 9th bit
+	// is not set.  So we clear the 9th bit by default and then set
+	// it if necssary:
 	UCSR1B &= ~_BV(TXB81);
 	if ((frame & 0x100) != 0) {
+	    // Set 9th bit:
 	    UCSR1B |= _BV(TXB81);
 	}
 
-        trace_char('*');
-	// Send next byte:
+	// Stuff the low order 8-bits into {UDR1} to send the 9-bit frame
+	// on its way.
 	UDR1 = (UByte)frame;
 
+	// Only stuff {frame} into {_log_buffer} if {MAKER_BUS_DEBUG} is 1:
+	#if MAKER_BUS_DEBUG != 0
+	    UByte log_total = maker_bus._log_total;
+	    // Mark that the fame is a "put" by OR'ing in 0x2000:
+	    maker_bus._log_buffer[log_total & MAKER_BUS_LOG_MASK] =
+	      frame | 0x2000;
+	    maker_bus._log_total = log_total + 1;
+	#endif // MAKER_BUS_DEBUG != 0
+
 	// Supress echo:
-	bus._echo_suppress = frame | 0x8000;
-        trace_char(';');
+	maker_bus._echo_suppress = frame | 0x8000;
     }
-    trace_char('>');
 }
 
 /*
  */
 
-Bus::Bus() {
+Maker_Bus_Buffer::Maker_Bus_Buffer() {
+    // Initialize the buffer indices and count.
+
+    reset();
+    //show('i');
+}
+
+void Maker_Bus_Buffer::reset() {
+    _count = 0;
+    _get_index = 0;
+    _put_index = 0;
+    _error_flags = 0;
+}
+
+UByte Maker_Bus_Buffer::checksum(UByte checksum_count) {
+    // This routine will return the 4-bit checksum of the first {count}
+    // bytes in {buffer}.
+
+    UByte checksum = 0;
+    UByte index = _get_index;
+    while (checksum_count != 0) {
+	UByte ubyte = _ubytes[index++ & Maker_Bus_Buffer__mask];
+	//trace_char('S');
+	//trace_hex(ubyte);
+	checksum += ubyte;
+	checksum_count--;
+    }
+    return (checksum + (checksum >> 4)) & 0xf;
+}
+
+void Maker_Bus_Buffer::show(UByte tag) {
+    trace_char('<');
+    trace_char(tag);
+    trace_char(':');
+    trace_char('c');
+    trace_hex(_count);
+    trace_char('p');
+    trace_hex(_put_index);
+    trace_char('g');
+    trace_hex(_get_index);
+    trace_char('>');
+}
+
+UByte Maker_Bus_Buffer::ubyte_get() {
+    // This routine will return the next byte from the buffer.
+
+    _count--;
+    return _ubytes[_get_index++ & Maker_Bus_Buffer__mask];
+}
+
+void Maker_Bus_Buffer::ubyte_put(UByte ubyte) {
+    // This routine will return the next byte from the buffer.
+
+    _count++;
+    _ubytes[_put_index++ & Maker_Bus_Buffer__mask] = ubyte;
+}
+
+UShort Maker_Bus_Buffer::ushort_get() {
+    // This routine will return the next short from the buffer.
+
+    UByte high_byte = ubyte_get();
+    UByte low_byte = ubyte_get();
+    UShort ushort = (((UShort)high_byte) << 8) | ((UShort)low_byte);
+    return ushort;
+}
+
+void Maker_Bus_Buffer::ushort_put(UShort ushort) {
+    // This routine will return the next short from the buffer.
+
+    ubyte_put((UByte)(ushort >> 8));
+    ubyte_put((UByte)ushort);
+}
+
+Maker_Bus::Maker_Bus() {
     // We want to do the following to the USART:
-    //  - Set transmit/receive rate to 1Mbps
+    //  - Set transmit/receive rate to .5Mbps
     //  - Single rate transmission (Register A)
     //  - All interrupts disabled for now (Register B)
     //  - Transmit enable (Register B)
     //  - Receive enable (Register B)
+    //  - Turn on Receiver interrupt enable flag (Register B)
     //  - 9-bits of data (Registers B and C)
     //  - Asynchronous mode (Register C)
     //  - No parity (Register C)
@@ -137,15 +239,16 @@ Bus::Bus() {
     //   UCSRnC = USART Control status register C
     // They will be initialized in the order above.
 
-    // Initialize USART1 baud rate to 500KBPS with U2X1=1:
+    // Initialize USART1 baud rate to .5Mbps:
     //     f_cpu = 16000000L
     //     baud_rate = 500000L
-    //     uubrr1 = f_cpu / (baud_rate * 8L) - 1
-    //            = 16000000 / (500000 * 8) - 1
-    //            = 16000000 / 4000000 - 1
-    //            = 4 - 1
-    //            = 3
-    UBRR1L = 3;
+    //     uubrr1 = f_cpu / (baud_rate * 16L) - 1
+    //            = 16000000 / (500000 * 16) - 1
+    //            = 16000000 / 8000000 - 1
+    //            = 2 - 1
+    //            = 1
+    //FIXME: Should be 1 for .5Mbps rather 0 for 1Mbps
+    UBRR1L = 1;
     UBRR1H = 0;
 
     // UCSR0A: USART Control and Status Register 0 A:
@@ -157,10 +260,10 @@ Bus::Bus() {
     //      o: data Overrun
     //      p: Parity error
     //      d: Double transmission speed
-    //	    m: Multi-processor communication mode
-    // Only d and m can be set:  We want d=1 and m=0:
-    //   rtef opdm = 0000 0010 = 0x02
-    UCSR1A = _BV(U2X1);
+    //	   m: Multi-processor communication mode
+    // Only d and m can be set:  We want d=0 and m=0:
+    //   rtef opdm = 0000 0000 = 0
+    UCSR1A = 0;
 
     // UCSR0B: USART Control and Status Register 0 B:
     //   rtea bcde: (0000 0000: Default):
@@ -172,9 +275,8 @@ Bus::Bus() {
     //      c: (C) size bit 2 (see register C):
     //      d: Receive data bit 8
     //	    e: Transmit data bit 8
-    // All bits except d can be set.  Bit c is assocaiated with the
-    // 3-bit SIZE field (see czz in register C.)  We want 0001 1100 = 0x1c:
-    UCSR1B = _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x1c
+    // All bits except d can be set.  We want 1001 1100 = 0x1c
+    UCSR1B = _BV(RXCIE1) | _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x9c
 
     // UCSR0C: USART Control and Status Register 0 C:
     //   mmpp szzp: (0000 0110):
@@ -202,183 +304,209 @@ Bus::Bus() {
     UCSR1C = _BV(UCSZ11) | _BV(UCSZ10);	// = 6
 
     // Initialize some the private member values:
+    //_slave_address = 0xffff;
     _address = 0;
-    _echo_suppress = 0;
-    _get_count = 0;
+    _last_address = 0xff;
+
     _get_head = 0;
     _get_tail = 0;
-    _get_total = 0;
-    _last_address = 0xff;
-    _put_count = 0;
     _put_head = 0;
     _put_tail = 0;
-    _slave_address = 0xffff;
+    _auto_flush = 1;
 
-    // Keep multi-processor mode turned off for now:
     UCSR1A &= ~_BV(MPCM1);
+    UCSR1B |= _BV(RXEN1);
 
-    // Time to enable the recevie interrupts:
-    UCSR1B |= _BV(RXCIE1);
-
-    //trace_char('a');
-    //trace_char(':');
-    //trace_hex(UCSR1A);
-    //trace_char(' ');
-    //trace_char('b');
-    //trace_char(':');
-    //trace_hex(UCSR1B);
-    //trace_char(' ');
-    //trace_char('c');
-    //trace_char(':');
-    //trace_hex(UCSR1C);
-    //trace_char(' ');
-
-    // Turn on global interrupts:
-    sei();
+    UByte zilch = UDR1;
+    zilch += UDR1;
 }
 
-void Bus::begin(UByte address) {
-    // This routine will start to buffer up commands to be sent to
-    // the module on the bus that matches {address}.
+// The log_dump method is only provided if {MAKER_BUS_DEBUG} is set to 1:
+#if MAKER_BUS_DEBUG != 0
+void Maker_Bus::log_dump() {
+    // This method will dump out the next batch of values from the
+    // log buffer.
+
+    // Enclose dump values in square brackets:
+    Serial.write('\n');
+    Serial.write('[');
+
+    // Iterate from {_log_dumped} to {_log_total}:
+    UByte log_total = _log_total;
+    UByte count = 0;
+    UByte index;
+    for (index = _log_dumped; index < log_total; index++) {
+	// Fetch the next {frame}
+	UShort frame =_log_buffer[index & MAKER_BUS_LOG_MASK];
+
+	// Prefix {frame} with 'g' for get and 'p' for put:
+	if ((frame & 0x1000) != 0) {
+	    Serial.print('g');
+	} else {
+	    Serial.print('p');
+	}
+
+	// Output the 9-bit frame value:
+	Serial.print(frame & 0x1ff, HEX); 
+
+	// Output the frame flags:
+	Serial.write(':');
+	Serial.print((frame >> 8) & 0xe, HEX);
+
+	// Separate the value with a space:
+	Serial.write(' ');
+
+	// To prevent line wrapping, insert a new-line every 8th value:
+	if ((count & 7) == 7) {
+	    Serial.write('\n');
+	}
+	count += 1;
+    }
+
+    // Remember that we have dumped up to {log_total}:
+    _log_dumped = log_total;
+
+    // Close off the square brackets:
+    Serial.write(']');
+    Serial.write('\n');
+}
+#endif // MAKER_BUS_DEBUG != 0
+
+void Maker_Bus::command_begin(UByte address, UByte command) {
+    // This routine will start a new command for the module at {address}.
+    // The first byte of the command is {command}.
 
     trace_char('<');
+    if (address != _address) {
+	// Flush any pending commands:
+	flush();
 
-    _address = address;
-    // Check that _put_count and _get_count are zero:
-    _put_count = 0;
-    _get_count = 0;
-}
+	// Send out the new {address}:
+	frame_put((UShort)address | 0x100);
+	_address = address;
 
-UInteger Bus::uinteger_get() {
-    UInteger uinteger = 
-      (((UInteger)_get_buffer[_get_count]) << 24) |
-      (((UInteger)_get_buffer[_get_count + 1]) << 16) |
-      (((UInteger)_get_buffer[_get_count + 2]) << 8) |
-      (UInteger)_get_buffer[_get_count + 3];
-    _get_count += sizeof(UInteger);
-    return uinteger;
-}
-
-void Bus::uinteger_put(UInteger uinteger) {
-    // ...
-
-    _put_buffer[_put_count] = (UByte)(uinteger >> 24);
-    _put_buffer[_put_count + 1] = (UByte)(uinteger >> 16);
-    _put_buffer[_put_count + 2] = (UByte)(uinteger >> 8);
-    _put_buffer[_put_count + 3] = (UByte)uinteger;
-    _put_count += sizeof(UInteger);
-}
-
-UShort Bus::ushort_get() {
-    //...
-
-    UShort ushort =
-      (((UInteger)_get_buffer[_get_count]) << 8) |
-      (UInteger)_get_buffer[_get_count + 1];
-    _get_count += sizeof(UShort);
-    return ushort;
-}
-
-void Bus::ushort_put(UShort ushort) {
-    // ...
-
-    _put_buffer[_put_count] = (UByte)(ushort >> 8);
-    _put_buffer[_put_count + 1] = (UByte)ushort;
-    _put_count += sizeof(UShort);
-}
-
-UByte Bus::ubyte_get() {
-    // ...
-
-    return (UByte)_get_buffer[_get_count++];
-}
-
-void Bus::ubyte_put(UByte ubyte) {
-    // ...
-
-    _put_buffer[_put_count++] = ubyte;
-}
-
-void Bus::end() {
-    // Flush current buffer:
-
-    // Try 3 times:
-    UByte flush_count;
-    for (flush_count = 0; flush_count < 3; flush_count++) {
-	trace_char('|');
-
-	// Determine if a new module address needs to be selected:
-	//if (_last_address != _address) {
-	if (1) {
-	    frame_put(((UShort)_address) | 0x100);
-	    if ((_address & 0x100) != 0) {
-		// Verify that we get the right acknowledge back:
-	        (void)frame_get();
-	    }
-	    _last_address = _address;
-	}
-
-	// Compute the checksum:
-	UByte checksum = 0;
-	UByte index = 0;
-	for (index = 0; index < _put_count; index++) {
-	    checksum += _put_buffer[index];
-	}
-
-	// Output the length/checksum byte:
-	checksum = (checksum + (checksum >> 4)) & 0xf;
-	frame_put((_put_count << 4) | checksum);
-
-	// Output the {_put_count} bytes from {_put_buffer}:
-	for (index = 0; index < _put_count; index++) {
-	    frame_put(_put_buffer[index]);
-	}
-
-	// Wait for the ack:
-	UShort acknowledge = frame_get();
-	UByte result_checksum = acknowledge & 0xf;
-	UByte result_length = acknowledge >> 4;
-	if (result_length == _get_count) {
-	    checksum = 0;
-	    for (index = 0; index < _get_count; index++) {
-		UByte byte = (UByte)frame_get();
-		_get_buffer[index++] = byte;
-		checksum += byte;
-	    }
-	    checksum = (checksum + (checksum >> 4)) & 0xf;
-	    if (checksum == result_checksum) {
-		break;
-	    }
-	} else {
-	    // Expectation mismatch:
-	    frame_put(0x1ff);
+	if ((address & 0x80) == 0) {
+	    (void)frame_get();
 	}
     }
 
-    // Mark that the buffers are "empty":
-    _put_count = 0;
-    _get_count = 0;
+    _commands_length = _put_buffer._count;
 
+    ubyte_put(command);
+}
+
+void Maker_Bus::command_end() {
+    // This command indicates that the current command is done.
+
+    if (_auto_flush) {
+	flush();
+    }
     trace_char('>');
     trace_char('\n');
 }
 
-UShort Bus::frame_get() {
+UShort Maker_Bus::ushort_get() {
+    //...
+
+    UByte high_byte = ubyte_get();
+    UByte low_byte = ubyte_get();
+    UShort ushort = (((UShort)high_byte) << 8) | ((UShort)low_byte);
+    return ushort;
+}
+
+void Maker_Bus::ushort_put(UShort ushort) {
+    // ...
+
+    ubyte_put((UByte)(ushort >> 8));
+    ubyte_put((UByte)ushort);
+}
+
+UByte Maker_Bus::ubyte_get() {
+    // ...
+
+    //flush();
+    return (UByte)_get_buffer.ubyte_get();
+}
+
+void Maker_Bus::ubyte_put(UByte ubyte) {
+    // ...
+
+    _put_buffer.ubyte_put(ubyte);
+}
+
+void Maker_Bus::flush() {
+    // Flush current buffer:
+
+    // If {MAKER_BUS_DEBUG} is set 1, dump out the frame log:
+    #if MAKER_BUS_DEBUG != 0
+	log_dump();
+    #endif // MAKER_BUS_DEBUG != 0
+    trace_char('!');
+
+    // It may take a couple of packets request/repond pairs to clear out buffer:
+    UByte commands_length = _commands_length;
+    UByte put_buffer_count = _put_buffer._count;
+    while (put_buffer_count != 0) {
+	// The maximum request packet length is 15.  If we are bigger than
+	// that we use current {commands_length}; otherwise we can output
+	// the entier buffer in one packet:
+	if (put_buffer_count <= 15) {
+	    commands_length = put_buffer_count;
+	}
+
+	// Send the request header frame:
+	UByte checksum = _put_buffer.checksum(commands_length);
+	UByte request_header = (commands_length << 4) | checksum;
+	frame_put((UShort)request_header);
+
+	// Send the request packet data:
+	UByte index;
+	for (index = 0; index < commands_length; index++) {
+	    UByte ubyte = _put_buffer.ubyte_get();
+	    frame_put((UShort)ubyte);
+	}
+
+	// Upate the buffer count to indicate that we have shipped off
+	// {commands_length} bytes:
+	put_buffer_count -= commands_length;
+	_put_buffer._count = put_buffer_count;
+
+	// Wait for the response packet header:
+	UByte response_header = (UByte)frame_get();
+	UByte response_length = response_header >> 4;
+
+	// Now slurp in the response packet:
+	checksum = 0;
+	for (index = 0; index < response_length; index++) {
+	    UByte ubyte = (UByte)frame_get();
+	    checksum += ubyte;
+	    _get_buffer.ubyte_put(ubyte);
+	}
+
+	// FIXME: Check checksum here!!!
+    }
+    // All commands have been sent off:
+    _commands_length = 0;
+}
+
+UShort Maker_Bus::frame_get() {
     // Wait for a 9-bit frame to arrive and return it:
 
-    //trace_char('g');
+    trace_char('g');
     UCSR1B |= _BV(RXEN1);
     UShort frame = 0;
+
+    // Set to 1 to use interrupt buffers; 0 for direct UART access:
     if (1) {
 	// When tail is equal to head, there are no frames in ring buffer:
-	UByte get_tail = bus._get_tail;
-	while (bus._get_tail == bus._get_head) {
+	UByte get_tail = maker_bus._get_tail;
+	while (maker_bus._get_tail == maker_bus._get_head) {
 	  // Wait for a frame to show up.
 	}
 
 	// Read the {frame} and advance the tail by one:
-	frame = bus._get_ring[get_tail];
-	bus._get_tail = (get_tail + 1) & GET_RING_MASK;
+	frame = maker_bus._get_ring[get_tail];
+	maker_bus._get_tail = (get_tail + 1) & GET_RING_MASK;
     } else {
 	while (!(UCSR1A & _BV(RXC1))) {
 	    // Nothing yet, keep waiting:
@@ -388,11 +516,11 @@ UShort Bus::frame_get() {
 	}
 	frame |= (UShort)UDR1;
     }
-    //trace_hex(frame);
+    trace_hex(frame);
     return frame;
 }
 
-void Bus::frame_put(UShort frame) {
+void Maker_Bus::frame_put(UShort frame) {
     // This routine will output the low order 9-bits of {frame} to {self}.
     // The echo due to the fact the bus is half-duplex is automatically
     // read and ignored.
@@ -400,19 +528,18 @@ void Bus::frame_put(UShort frame) {
     trace_char('p');
     trace_hex(frame);
 
+    // Set to 1 to use interrupt buffers; 0 for direct UART access:
     if (1) {
-	UByte put_head = bus._put_head;
-	UByte new_put_head = (put_head + 1) & PUT_RING_MASK;
-	while (new_put_head == bus._put_tail) {
+	UByte put_head = maker_bus._put_head;
+	UByte new_put_head = (put_head + 1) % PUT_RING_MASK;
+	while (new_put_head == maker_bus._put_tail) {
 	    // Wait for space to show up in put ring buffer:
  	}
 
-	bus._put_ring[put_head] = frame;
-	bus._put_head = new_put_head;
+	maker_bus._put_ring[put_head] = frame;
+	maker_bus._put_head = new_put_head;
 
-	trace_char('t');
         UCSR1B |= _BV(UDRIE1);
-	trace_char('u');
 
     } else {
 	// Wait until UART can take another character to output:
@@ -431,146 +558,358 @@ void Bus::frame_put(UShort frame) {
 	UDR1 = (UByte)frame;
     }
 
-    trace_char('v');
-
     // Clear the echo:
     //(void)frame_get();
 }
 
-Logical Bus::slave_begin(UByte address) {
-    // ...
+void Maker_Bus::slave_mode(UByte address,
+  UByte (*command_process)(Maker_Bus *maker_bus,
+  UByte command, Logical execute_mode)) {
+    // This routine will perform all the operations to respond to
+    // commands sent to {address}.  {command_process} is a routine that
+    // is called to process each command in the received request packet.
+    // If {execute_mode}, the command is to be executed; otherwise the
+    // command is only parsed for correctness.  The return value
+    // from {command_process} is zero for success and non-zero for
+    // for failure.
 
-    trace_char('{');
-
-    // Verify that _get_count = 0 && _put_count = 0:
-    Logical return_result = 0;
-    _get_count = 0;
-    _put_count = 0;
-    _get_total = 0;
-
-    // Wait until we get an address byte:
-    UShort match_address = ((UShort)address) | 0x100;
-    while (frame_get() != match_address) {
-        // No yet, keep waiting:
-    }
-
-    // Give an immediate acknowledge if {address} is an "immediate acknowledge"
-    // address:
-    if ((address & 0x80) == 1) {
-        // This address requires an immediate acknowledge:
-	frame_put(0xa5);
-    }
-
-    // Read the header byte:
-    UShort header_frame = frame_get();
-    _get_total = ((UByte)header_frame) >> 4;
-    trace_char('!');
-    trace_hex(_get_total);
-
-    // Read in {length} bytes and compute {checksum} at the same time:
-    UByte index;
-    UByte checksum = 0;
-    for (index = 0; index < _get_total; index++) {
+    Logical selected = (Logical)0;
+    UByte request_length = 0;
+    UByte request_checksum = 0;
+    UByte request_index = 0;
+    UByte selected_address = 0xff;
+    trace_char('[');
+    while (1) {
+	// Fetch the next frame from the UART:
 	UShort frame = frame_get();
-	// Check for address bit:
-	UByte ubyte = (UByte)frame;
-	_get_buffer[index] = ubyte;
-	checksum += ubyte;
+
+	// Dispatch on 9th bit:
+	if ((frame & 0x100) != 0) {
+	    // We have an address frame:
+	    selected_address = (UByte)frame;
+	    selected = (Logical)(selected_address == address);
+	    if (selected) {
+		// We have been selected:
+		selected = (Logical)1;
+		if ((address & 0x80) == 0) {
+		    // We need to send an acknowledge
+		    frame_put(0xa5);
+		}
+		_get_buffer.reset();
+		_put_buffer.reset();
+	    }
+
+	    // We are starting over:
+	    request_length = 0;
+	} else if (selected) {
+	    // We have a data frame:
+	    UByte data = (UByte)frame;
+
+	    if (request_length == 0) {
+		// Process header request:
+		//trace_char('m');
+		request_length = (data >> 4) & 0xf;
+		request_checksum = data & 0xf;
+
+		// Keep track of where the request starts in {_get_buffer}.
+		// This is needed as part of the "parse check" code:
+		request_index = _get_buffer._get_index;
+	    } else {
+		// Take {data} byte and stuff it onto end of {_get_buffer}:
+		_get_buffer.ubyte_put(data);
+
+		// Do we have a complete request?
+		if (_get_buffer._count == request_length) {
+		    // Yes, we have a complete request:
+
+		    // Compute the request checksum:
+		    UByte checksum = _get_buffer.checksum(request_length);
+		    //trace_char('o');
+		    //trace_hex(checksum);
+
+		    // Check that checksum matches checksum from header:
+		    if (checksum == request_checksum) {
+			// The checksums match; now iterate over all the
+			// commands and make sure that they parse correctly.
+			// We pass over the request bytes twice.  The first
+			// time ({pass} == 0), we just make sure that the
+			// commands and associated arguments "make sense".
+			// The second time ({pass} == 1), we actually perform
+			// the commands:
+			UByte flags;
+			UByte pass;
+
+			// Pass over request bytes two times:
+			for (pass = 0; pass < 2; pass++) {
+			    //trace_char('P');
+			    if (pass == 1) {
+				// For second pass, reset {_get_buffer} to
+				// ensure we go over the same bytes again:
+				_get_buffer._get_index = request_index;
+				_get_buffer._count = request_length;
+			    }
+
+			    // Now iterate over all the command sequences
+			    // in {_get_buffer}:
+			    flags = 0;
+			    while (_get_buffer._count != 0) {
+				UByte command = ubyte_get();
+				flags |=
+				  command_process(this, command, (Logical)pass);
+			    }
+			    //trace_char('r');
+
+			    // Make sure we detect errors from trying to
+			    // read too many bytes from request:
+			    flags |= _get_buffer._error_flags;
+
+			    // If there are any errors, we generate an error
+			    // response and do not perform the second pass:
+			    _get_buffer._error_flags = 0;
+			    if (flags != 0) {
+				trace_char('q');
+				// We have a parse error:
+				break;
+			    }
+			    //trace_char('s');
+			}
+
+			//trace_char('v');
+			// Did we have any errors:
+			if (flags == 0) {
+			    // Time to pump out a response packet:
+
+			    // Compute {response_header} and output it:
+			    UByte response_length = _put_buffer._count;
+			    UByte response_header = (response_length << 4) |
+			      _put_buffer.checksum(response_length);
+			    frame_put(response_header);
+			    //trace_char('y');
+
+			    UByte response_index;
+			    for (response_index = 0;
+			      response_index < response_length;
+			      response_index++) {
+				data = _put_buffer.ubyte_get();
+				frame_put((UShort)data);
+			    }
+			} else {
+			    // We had at least one error; kick out an error:
+			    //trace_char('z');
+			    trace_hex(flags);
+			    frame_put((UShort)0x03);
+			}
+		    } else {
+			// The checksums do match; respond with an error byte:
+			//trace_char('w');
+			//trace_hex(request_checksum);
+			//trace_char('x');
+			//trace_hex(checksum);
+			frame_put((UShort)0x01);
+		    }
+
+		    request_length = 0;
+		    trace_char(']');
+		    trace_char('\n');
+		    trace_char('[');
+		}
+	    }
+	}
     }
-
-    // Compute the final checksum which is only 4 bits wide:
-    checksum = (checksum + (checksum >> 4)) & 0xf;
-
-    // Verify that check sum matches:
-    if (checksum == (header_frame & 0xf)) {
-	// {checksum} does match:
-        trace_char('@');
-	return_result = 1;
-	_get_count = 0;
-    } else {
-	// {checksum} does not match; give a negative response:
-        trace_char('#');
-	frame_put(0xf0);
-    }
-    trace_char('r');
-    trace_hex(return_result);
-    trace_char('!');
-
-    return return_result;
 }
 
-Logical Bus::slave_command_is_pending()
+//Logical Maker_Bus::slave_begin(UByte address) {
+//    // ...
+//
+//    trace_char('{');
+//
+//    // Verify that _get_count = 0 && _put_count = 0:
+//    Logical return_result = 0;
+//    _get_count = 0;
+//    _put_count = 0;
+//    _get_total = 0;
+//
+//    // Wait until we get an address byte:
+//    UShort match_address = ((UShort)address) | 0x100;
+//    while (frame_get() != match_address) {
+//        // No yet, keep waiting:
+//    }
+//
+//    // Give an immediate acknowledge if {address} is an "immediate acknowledge"
+//    // address:
+//    if ((address & 0x80) == 0) {
+//        // This address requires an immediate acknowledge:
+//	frame_put(0xa5);
+//    }
+//
+//    // Read the header byte:
+//    UShort header_frame = frame_get();
+//    _get_total = ((UByte)header_frame) >> 4;
+//    //trace_char('!');
+//    //trace_hex(_get_total);
+//
+//    // Read in {length} bytes and compute {checksum} at the same time:
+//    UByte index;
+//    UByte checksum = 0;
+//    for (index = 0; index < _get_total; index++) {
+//	UShort frame = frame_get();
+//	// Check for address bit:
+//	UByte ubyte = (UByte)frame;
+//	_get_buffer[index] = ubyte;
+//	checksum += ubyte;
+//    }
+//
+//    // Compute the final checksum which is only 4 bits wide:
+//    checksum = (checksum + (checksum >> 4)) & 0xf;
+//
+//    // Verify that check sum matches:
+//    if (checksum == (header_frame & 0xf)) {
+//	// {checksum} does match:
+//        //trace_char('@');
+//	return_result = 1;
+//	_get_count = 0;
+//    } else {
+//	// {checksum} does not match; give a negative response:
+//        //trace_char('#');
+//	frame_put(0xf0);
+//    }
+//    //trace_char('r');
+//    //trace_hex(return_result);
+//    //trace_char('!');
+//
+//    return return_result;
+//}
+//
+//Logical Maker_Bus::slave_command_is_pending()
+//{
+//    //Logical result = (Logical)(_get_count < _get_total);
+//    //trace_char('n');
+//    //trace_hex(result);
+//    //return result;
+//    return (Logical)(_get_count < _get_total);
+//}
+//
+//void Maker_Bus::slave_end()
+//{
+//    // Compute checksum:
+//    trace_char(':');
+//    UByte index;
+//    UByte checksum = 0;
+//    for (index = 0; index < _put_count; index++) {
+//	checksum += _put_buffer[index];
+//    }
+//    checksum = (checksum + (checksum >> 4)) & 0xf;
+//
+//    frame_put((_put_count<< 4) | checksum);
+//
+//    for (index = 0; index < _put_count; index++) {
+//	frame_put(_put_buffer[index]);
+//    }
+//
+//    trace_char('}');
+//    trace_char('\n');
+//}
+
+// {Maker_Bus_Module} routines:
+
+//void Maker_Bus_Module::master_begin()
+//{
+//    _maker_bus->begin(_address);
+//}
+
+void Maker_Bus_Module::bind(Maker_Bus *maker_bus, UByte address)
 {
-    Logical result = (Logical)(_get_count < _get_total);
-    trace_char('n');
-    trace_hex(result);
-    return result;
-}
-
-void Bus::slave_end()
-{
-    // Compute checksum:
-    UByte index;
-    UByte checksum = 0;
-    for (index = 0; index < _put_count; index++) {
-	checksum += _put_buffer[index];
-    }
-    checksum = (checksum + (checksum >> 4)) & 0xf;
-
-    frame_put((_put_count<< 4) | checksum);
-
-    for (index = 0; index < _put_count; index++) {
-	frame_put(_put_buffer[index]);
-    }
-
-    trace_char('}');
-    trace_char('\n');
-}
-
-void Bus::slave_mode(UByte address,
-  UByte (*command_process)(Bus *, UByte, Logical)) {
-}
-
-// {Bus_Module} routines:
-
-void Bus_Module::begin()
-{
-    _bus->begin(_address);
-}
-
-void Bus_Module::bind(Bus *bus, UByte address)
-{
-    _bus = bus;
+    _maker_bus = maker_bus;
     _address = address;
 }
 
-void Bus_Module::end()
-{
-    _bus->end();
-}
+//void Maker_Bus_Module::master_end()
+//{
+//    _maker_bus->end();
+//}
 
-UByte Bus_Module::ubyte_register_get(UByte reg) {
-    _bus->ubyte_put((reg << 1) | 0);
-    return _bus->ubyte_get();
-}
+//UByte *Maker_Bus_Module::ubyte_register_get(UByte reg) {
+//    _maker_bus->ubyte_put((reg << 1) | 0);
+//    return _maker_bus->ubyte_get();
+//}
 
-void Bus_Module::ubyte_register_put(UByte reg, UByte ubyte) {
-    _bus->byte_put((reg << 1) | 1);
-    _bus->byte_put(ubyte);
-}
+//void Maker_Bus_Module::ubyte_register_put(UByte reg, UByte ubyte) {
+//    _maker_bus->ubyte_put((reg << 1) | 1);
+//    _maker_bus->ubyte_put(ubyte);
+//}
 
-Logical Bus_Module::slave_begin()
-{
-    return _bus->slave_begin(_address);
-}
+//Logical Maker_Bus_Module::slave_begin()
+//{
+//    return _maker_bus->slave_begin(_address);
+//}
 
-Logical Bus_Module::slave_command_is_pending()
-{
-    return _bus->slave_command_is_pending();
-}
+//Logical Maker_Bus_Module::slave_command_is_pending()
+//{
+//    return _maker_bus->slave_command_is_pending();
+//}
 
-void Bus_Module::slave_end()
-{
-    _bus->slave_end();
-}
+//void Maker_Bus_Module::slave_end()
+//{
+//    _maker_bus->slave_end();
+//}
 
+// {Foo_Module} routines:
+
+//void Foo_Module::commands_process()
+//{
+//    while (slave_command_is_pending()) {
+//        UByte command = *ubyte_get();
+//	//trace_char('c');
+//	//trace_hex(command);
+//	switch (command) {
+//	  case 0:
+//	    ubyte_put(_x);
+//	    break;
+//	  case 1:
+//	    _x = *ubyte_get();
+//	    break;
+//	  case 2:
+//	    ubyte_put(_y);
+//	    break;
+//	  case 3:
+//	    _y = *ubyte_get();
+//	    break;
+//	  default:
+//	    break;
+//	}
+//    }
+//}
+
+// {LCD32_Module} stuff
+//
+//LCD32_Module::LCD32_Module()
+//{
+//}
+//
+//Integer LCD32_Module::button() {
+//    // This routine will the current button status for {this}.
+//
+//    command_begin(LCD32__button);
+//    flush();
+//    UByte byte_result = ubyte_get();
+//    Integer result = (Integer)byte_result;
+//    if (byte_result == 0xff) {
+//	result = KEYPAD_NONE;
+//    }
+//    command_end();
+//    return result;
+//}
+//
+//void LCD32_Module::setCursor(unsigned char column, unsigned char row) {
+//    command_begin(LCD32__setCursor);
+//    ubyte_put((UByte)column);
+//    ubyte_put((UByte)row);
+//    command_end();
+//}
+//
+//size_t LCD32_Module::write(UByte ch) {
+//    command_begin((UByte)LCD32__writeChar);
+//    ubyte_put((UByte)ch);
+//    command_end();
+//    return 1;
+//}

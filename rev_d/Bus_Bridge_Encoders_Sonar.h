@@ -3,13 +3,12 @@
 #ifndef MOTOR3_LOCAL_H
 #define MOTOR3_LOCAL_H
 
-//#include <MB7.h>
 #include <Bus.h>
 
   //////// Edit begins here: TOP_LEVEL
   //////// Edit ends here: TOP_LEVEL
 
-class Bus_Bridge_Encoders_Sonar : public Bus_Module {
+class Bus_Bridge_Encoders_Sonar : public Maker_Bus_Module {
   public:
     // Constructor
     Bus_Bridge_Encoders_Sonar(UByte address);
