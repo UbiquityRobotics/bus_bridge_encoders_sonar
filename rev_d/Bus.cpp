@@ -328,6 +328,7 @@ void Bus::log_dump() {
     // log buffer.
 
     // Enclose dump values in square brackets:
+    Serial.write('\r');
     Serial.write('\n');
     Serial.write('[');
 
@@ -358,6 +359,7 @@ void Bus::log_dump() {
 
 	// To prevent line wrapping, insert a new-line every 8th value:
 	if ((count & 7) == 7) {
+	    Serial.write('\r');
 	    Serial.write('\n');
 	}
 	count += 1;
@@ -368,6 +370,7 @@ void Bus::log_dump() {
 
     // Close off the square brackets:
     Serial.write(']');
+    Serial.write('\r');
     Serial.write('\n');
 }
 #endif // BUS_DEBUG != 0
@@ -402,6 +405,7 @@ void Bus::command_end() {
 	flush();
     }
     trace_char('>');
+    trace_char('\r');
     trace_char('\n');
 }
 
@@ -586,18 +590,22 @@ void Bus::slave_mode(UByte address,
 	// Dispatch on 9th bit:
 	if ((frame & 0x100) != 0) {
 	    // We have an address frame:
+	    trace_char('A');
 	    selected_address = (UByte)frame;
 	    selected = (Logical)(selected_address == address);
 	    if (selected) {
 		// We have been selected:
+		trace_char('B');
 		selected = (Logical)1;
 		if ((address & 0x80) == 0) {
 		    // We need to send an acknowledge
-		    frame_put(0xa5);
+		    trace_char('C');
+		    frame_put(0x0);
 		}
 		_get_buffer.reset();
 		_put_buffer.reset();
 	    }
+	    trace_char('A');
 
 	    // We are starting over:
 	    request_length = 0;
@@ -710,6 +718,7 @@ void Bus::slave_mode(UByte address,
 
 		    request_length = 0;
 		    trace_char(']');
+		    trace_char('\r');
 		    trace_char('\n');
 		    trace_char('[');
 		}
@@ -807,6 +816,7 @@ void Bus::slave_mode(UByte address,
 //    }
 //
 //    trace_char('}');
+//    trace_char('\r');
 //    trace_char('\n');
 //}
 

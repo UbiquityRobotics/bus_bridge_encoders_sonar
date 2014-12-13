@@ -13,7 +13,7 @@
 // set it to 0 to disable debugging:
 #define BUS_DEBUG 0
 
-//#define TRACE
+#define TRACE
 
 #ifdef TRACE
 #define trace_char(ch) Serial.write(ch)

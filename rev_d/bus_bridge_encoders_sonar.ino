@@ -5,7 +5,7 @@
 #define TEST_BUS_COMMAND 4
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_INTERRUPT_INPUT
+#define TEST TEST_BUS_COMMAND
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
