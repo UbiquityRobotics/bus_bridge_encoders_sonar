@@ -58,6 +58,7 @@ class Bus_Buffer
   public:
     Bus_Buffer();
     UByte checksum(UByte count);
+    void mode_set(Logical poll_mode);
     void reset();
     void show(UByte Tag);
     UByte ubyte_get();
@@ -220,7 +221,7 @@ class Bus
   private:
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
-
+    Logical _poll_mode;		// 1=>poll; 0=>use interrupts
     Logical _auto_flush;	// 1=>Auto flush every cmd; 0=>queue up cmds
     Logical _master_mode;	// 1=>master mode; 0=>slave mode
     UByte _address;		// Currently selected address;

@@ -5,7 +5,7 @@
 #define TEST_BUS_COMMAND 4
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_COMMAND
+#define TEST TEST_BUS_INPUT
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
@@ -25,8 +25,6 @@ typedef unsigned short Frame;
 typedef struct Frame_Buffer__Struct *Frame_Buffer;
 typedef unsigned short UInt16;
 
-#if TEST == TEST_BUS_COMMAND || TEST == TEST_BUS_INTERRUPT_INPUT
-
 // Object variables:
 Bus bus;
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
@@ -34,14 +32,6 @@ Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
 Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
   _address = address;
   _led = (Logical)0;
-}
-
-#endif // TEST == TEST_BUS_COMMAND || TEST == TEST_BUS_INTERRUPT_INPUT
-
-#if TEST == TEST_BUS_COMMAND
-
-Logical Bus_Bridge_Encoders_Sonar::led_get() {
-  return _led;
 }
 
 void Bus_Bridge_Encoders_Sonar::led_set(Logical led) {
@@ -71,6 +61,12 @@ UByte command_process(Bus *bus, UByte command, Logical execute_mode) {
   }
   return 0;
 }
+
+Logical Bus_Bridge_Encoders_Sonar::led_get() {
+  return _led;
+}
+
+#if TEST == TEST_BUS_COMMAND
 
 void loop() {
   bus.slave_mode(33, command_process);
@@ -106,7 +102,7 @@ void loop() {
 // The code from here on down is all polling based.  It is useful
 // only for the initial hardware debugging.
 
-#if TEST == TEST_BUS_INPUT || TEST == TEST_BUS_ECHO
+#if 0
 
 void Bus_Serial__initialize(Byte baud_lsb) {
     // Clear out the three USART1 control/status registers:
@@ -244,18 +240,18 @@ void loop() {
 // transceiver is not in standby mode, etc. :
 
 void loop() {
-  Serial.write("A:");
-  Serial.print(UCSR1A, HEX);
-  Serial.write(' ');
-  Serial.write("B:");
-  Serial.print(UCSR1B, HEX);
-  Serial.write(' ');
-  Serial.write("C:");
-  Serial.print(UCSR1C, HEX);
-  Serial.write("\r\n");
+  //Serial.write("A:");
+  //Serial.print(UCSR1A, HEX);
+  //Serial.write(' ');
+  //Serial.write("B:");
+  //Serial.print(UCSR1B, HEX);
+  //Serial.write(' ');
+  //Serial.write("C:");
+  //Serial.print(UCSR1C, HEX);
+  //Serial.write("\r\n");
 
   // Get a *frame* from the bus:
-  Frame frame = Bus_Serial__frame_get();
+  Frame frame = bus.frame_get();
 
   // Print it out for debugging:
   Serial.write(frame);
@@ -289,7 +285,7 @@ void setup() {
 
   #if TEST == TEST_BUS_INPUT || TEST == TEST_BUS_ECHO
     // Initialize the BUS uart:
-    Bus_Serial__initialize(BUS_BAUD_500KBPS);
+    //Bus_Serial__initialize(BUS_BAUD_500KBPS);
   #endif // TEST == TEST_BUS_INPUT || TEST == TEST_BUS_ECHO
 }
 

@@ -275,8 +275,8 @@ Bus::Bus() {
     //      c: (C) size bit 2 (see register C):
     //      d: Receive data bit 8
     //	    e: Transmit data bit 8
-    // All bits except d can be set.  We want 1001 1100 = 0x1c
-    UCSR1B = _BV(RXCIE1) | _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x9c
+    // All bits except d can be set.  We want 0001 1100 = 0x1c
+    UCSR1B = _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x1c
 
     // UCSR0C: USART Control and Status Register 0 C:
     //   mmpp szzp: (0000 0110):
@@ -308,6 +308,7 @@ Bus::Bus() {
     _address = 0;
     _last_address = 0xff;
 
+    _poll_mode = (Logical)1;
     _get_head = 0;
     _get_tail = 0;
     _put_head = 0;
@@ -501,7 +502,22 @@ UShort Bus::frame_get() {
     UShort frame = 0;
 
     // Set to 1 to use interrupt buffers; 0 for direct UART access:
-    if (1) {
+    if (_poll_mode) {
+	// Poll mode:
+	while (!(UCSR1A & _BV(RXC1))) {
+	    // Nothing there yet, keep waiting:
+	}
+
+	// Grab the 9th bit:
+	if ((UCSR1B & _BV(RXB81)) != 0) {
+	    frame = 0x100;
+	}
+
+	// Grab the remaining 8 bits:
+	frame |= (UShort)UDR1;
+    } else {
+	// Interrupt mode:
+
 	// When tail is equal to head, there are no frames in ring buffer:
 	UByte get_tail = bus._get_tail;
 	while (bus._get_tail == bus._get_head) {
@@ -511,14 +527,6 @@ UShort Bus::frame_get() {
 	// Read the {frame} and advance the tail by one:
 	frame = bus._get_ring[get_tail];
 	bus._get_tail = (get_tail + 1) & GET_RING_MASK;
-    } else {
-	while (!(UCSR1A & _BV(RXC1))) {
-	    // Nothing yet, keep waiting:
-	}
-	if ((UCSR1B & _BV(RXB81)) != 0) {
-	    frame |= 0x100;
-	}
-	frame |= (UShort)UDR1;
     }
     trace_hex(frame);
     return frame;
