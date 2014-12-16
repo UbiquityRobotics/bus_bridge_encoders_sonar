@@ -322,6 +322,17 @@ Bus::Bus() {
     zilch += UDR1;
 }
 
+void Bus::mode_set(Logical poll_mode) {
+    if (poll_mode) {
+	// Disable transmit and receive interrupts:
+	UCSR1B &= ~(_BV(RXCIE1) | ~_BV(UDRIE1));
+    } else {
+	// Enable transmit and receive interrupts:
+	UCSR1B |= _BV(RXCIE1) | ~_BV(UDRIE1);
+    }
+    _poll_mode = poll_mode;
+}
+
 // The log_dump method is only provided if {BUS_DEBUG} is set to 1:
 #if BUS_DEBUG != 0
 void Bus::log_dump() {
@@ -439,6 +450,22 @@ void Bus::ubyte_put(UByte ubyte) {
     _put_buffer.ubyte_put(ubyte);
 }
 
+Logical Bus::can_receive() {
+    Logical can_receive = (Logical)0;
+    if ((UCSR1A & (1<<RXC1)) != 0) {
+	can_receive = (Logical)1;
+    }
+    return can_receive;
+}
+
+Logical Bus::can_transmit() {
+    Logical can_transmit = (Logical)0;
+    if ((UCSR1A & (1<<UDR1)) != 0) {
+	can_transmit = (Logical)1;
+    }
+    return can_transmit;
+}
+
 void Bus::flush() {
     // Flush current buffer:
 
@@ -503,6 +530,7 @@ UShort Bus::frame_get() {
 
     // Set to 1 to use interrupt buffers; 0 for direct UART access:
     if (_poll_mode) {
+	trace_char('P');
 	// Poll mode:
 	while (!(UCSR1A & _BV(RXC1))) {
 	    // Nothing there yet, keep waiting:
@@ -516,7 +544,10 @@ UShort Bus::frame_get() {
 	// Grab the remaining 8 bits:
 	frame |= (UShort)UDR1;
     } else {
-	// Interrupt mode:
+	trace_char('I');
+
+	// Enable the interrupt mode:
+	UCSR1B |= _BV(RXCIE1);
 
 	// When tail is equal to head, there are no frames in ring buffer:
 	UByte get_tail = bus._get_tail;
@@ -541,19 +572,8 @@ void Bus::frame_put(UShort frame) {
     trace_hex(frame);
 
     // Set to 1 to use interrupt buffers; 0 for direct UART access:
-    if (1) {
-	UByte put_head = bus._put_head;
-	UByte new_put_head = (put_head + 1) % PUT_RING_MASK;
-	while (new_put_head == bus._put_tail) {
-	    // Wait for space to show up in put ring buffer:
- 	}
-
-	bus._put_ring[put_head] = frame;
-	bus._put_head = new_put_head;
-
-        UCSR1B |= _BV(UDRIE1);
-
-    } else {
+    if (_poll_mode) {
+	trace_char('P');
 	// Wait until UART can take another character to output:
 	while (!(UCSR1A & _BV(UDRE1))) {
 	    // UART is still busy, keep waiting:
@@ -568,6 +588,19 @@ void Bus::frame_put(UShort frame) {
 
 	// UART is ready, output the character:
 	UDR1 = (UByte)frame;
+    } else {
+	trace_char('I');
+	UByte put_head = bus._put_head;
+	UByte new_put_head = (put_head + 1) & PUT_RING_MASK;
+	while (new_put_head == bus._put_tail) {
+	    // Wait for space to show up in put ring buffer:
+ 	}
+	bus._put_ring[put_head] = frame;
+	bus._put_head = new_put_head;
+
+	// Enable the interrupt to slurp the byte out:
+        UCSR1B |= _BV(UDRIE1);
+
     }
 
     // Clear the echo:

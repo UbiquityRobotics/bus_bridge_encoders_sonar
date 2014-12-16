@@ -5,7 +5,7 @@
 #define TEST_BUS_COMMAND 4
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_INPUT
+#define TEST TEST_BUS_INTERRUPT_INPUT
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
@@ -198,7 +198,7 @@ void Bus_Serial__frame_put(Frame frame) {
     UDR1 = (Byte)frame;
 }
 
-#endif // TEST == TEST_BUS_INPUT || TEST == TEST_BUS_ECHO
+#endif // 0
 
 #if TEST == TEST_BUS_ECHO
 
@@ -206,12 +206,11 @@ void Bus_Serial__frame_put(Frame frame) {
 // is occuring over the bus:
 
 void loop() {
-  if (Bus_Serial__can_receive())
-  {
-    Frame receive_frame = Bus_Serial__frame_get();
+  if (bus.can_receive()) {
+    Frame receive_frame = bus.frame_get();
     Frame send_frame = receive_frame;
-    Bus_Serial__frame_put(send_frame);
-    Frame echo_frame = Bus_Serial__frame_get();
+    bus.frame_put(send_frame);
+    Frame echo_frame = bus.frame_get();
     
     if (receive_frame == echo_frame) {
       Serial.write(echo_frame);
@@ -283,9 +282,9 @@ void setup() {
   pinMode(BUS_STANDBY, OUTPUT);
   digitalWrite(BUS_STANDBY, LOW);
 
-  #if TEST == TEST_BUS_INPUT || TEST == TEST_BUS_ECHO
-    // Initialize the BUS uart:
-    //Bus_Serial__initialize(BUS_BAUD_500KBPS);
-  #endif // TEST == TEST_BUS_INPUT || TEST == TEST_BUS_ECHO
+  #if TEST == TEST_BUS_INTERRUPT_INPUT || TEST == TEST_BUS_COMMAND
+    // Force into interrupt mode:
+    bus.mode_set((Logical)0);
+  #endif // TEST == TEST_BUS_INTERRUPT_INPUT || TEST == TEST_BUS_COMMAND
 }
 

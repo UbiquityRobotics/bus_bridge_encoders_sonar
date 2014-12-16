@@ -58,7 +58,6 @@ class Bus_Buffer
   public:
     Bus_Buffer();
     UByte checksum(UByte count);
-    void mode_set(Logical poll_mode);
     void reset();
     void show(UByte Tag);
     UByte ubyte_get();
@@ -104,6 +103,9 @@ class Bus
 	// Queue {byte} to be sent off to bus:
 	ubyte_put((UByte)byte);
     }
+
+    Logical can_receive();
+    Logical can_transmit();
 
     Logical character_get() {
 	// Return the next {character} from recieve buffer:
@@ -157,6 +159,7 @@ class Bus
 	ubyte_put((UByte)logical);
     }
 
+    void mode_set(Logical poll_mode);
     UShort frame_get();
     void frame_put(UShort);
     void flush();
