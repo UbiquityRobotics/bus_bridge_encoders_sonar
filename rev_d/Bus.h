@@ -104,9 +104,6 @@ class Bus
 	ubyte_put((UByte)byte);
     }
 
-    Logical can_receive();
-    Logical can_transmit();
-
     Logical character_get() {
 	// Return the next {character} from recieve buffer:
 	return (Character)ubyte_get();
@@ -159,7 +156,11 @@ class Bus
 	ubyte_put((UByte)logical);
     }
 
-    void mode_set(Logical poll_mode);
+    void interrupts_disable();
+    void interrupts_enable();
+    void pole_mode_set();
+    Logical can_receive();
+    Logical can_transmit();
     UShort frame_get();
     void frame_put(UShort);
     void flush();
@@ -211,6 +212,8 @@ class Bus
     // out how to do this with a friend fuction to a function with C linkage
     // was too hard:
 
+    Logical _interrupt_mode;	// 1=>interrupt mode; 0=>poll mode
+
     UShort _get_ring[GET_RING_SIZE];	// Ring buffer for received frames
     volatile UByte _get_head;
     volatile UByte _get_tail;
@@ -224,7 +227,7 @@ class Bus
   private:
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
-    Logical _poll_mode;		// 1=>poll; 0=>use interrupts
+
     Logical _auto_flush;	// 1=>Auto flush every cmd; 0=>queue up cmds
     Logical _master_mode;	// 1=>master mode; 0=>slave mode
     UByte _address;		// Currently selected address;
