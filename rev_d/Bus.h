@@ -57,7 +57,7 @@ class Bus_Buffer
 {
   public:
     Bus_Buffer();
-    UByte checksum(UByte count);
+    UByte check_sum();
     void reset();
     void show(UByte Tag);
     UByte ubyte_get();
@@ -68,7 +68,6 @@ class Bus_Buffer
     UByte _ubytes[Bus_Buffer__size];
     UByte _get_index;
     UByte _put_index;
-    UByte _count;
     UByte _error_flags;
 };
 
@@ -141,11 +140,6 @@ class Bus
     //! call to *flush*() occurs.
     void command_end();
 
-    Logical logical_get() {
-	// Return the next {Byte} from recieve buffer:
-	return (Logical)ubyte_get();
-    }
-
     //! @brief Send *byte* to currently selected module.
     //!   @param byte byte value to send to command.
     //!
@@ -156,15 +150,17 @@ class Bus
 	ubyte_put((UByte)logical);
     }
 
-    void interrupts_disable();
-    void interrupts_enable();
-    void pole_mode_set();
     Logical can_receive();
     Logical can_transmit();
+    UByte command_ubyte_get(UByte address, UByte command);
+    void command_ubyte_put(UByte address, UByte command, UByte ubyte);
     UShort frame_get();
     void frame_put(UShort);
-    void flush();
+    Logical flush();
     Logical flush_mode(Logical auto_flush);
+    void interrupts_disable();
+    void interrupts_enable();
+    Logical logical_get();
 
     //! @brief Return next byte from currently selected module.
     //!   @return the next byte from currently selected module.
@@ -224,17 +220,16 @@ class Bus
 
     UShort _echo_suppress;	// Frame to suppress; (OR in 0x8000 to suppress)
 
+    Logical put_buffer_send();
+
   private:
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
 
     Logical _auto_flush;	// 1=>Auto flush every cmd; 0=>queue up cmds
-    Logical _master_mode;	// 1=>master mode; 0=>slave mode
-    UByte _address;		// Currently selected address;
-    UByte _last_address;	// Last selected address
-    //UShort _slave_address;	// Slave address to match as a slave
-
-    UByte _commands_length;	// No. of valid command bytes in {_put_buffer}
+    //Logical _master_mode;	// 1=>master mode; 0=>slave mode 
+    UByte _desired_address;	// Desired address
+    UByte _current_address;	// Current address
 
     // The frame log is only enabled when {BUS_DEBUG} is set to 1:
     #if BUS_DEBUG != 0

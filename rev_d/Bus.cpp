@@ -133,8 +133,7 @@ ISR(USART1_UDRE_vect)
     }
 }
 
-/*
- */
+// *Bus_Buffer* routines:
 
 Bus_Buffer::Bus_Buffer() {
     // Initialize the buffer indices and count.
@@ -144,34 +143,28 @@ Bus_Buffer::Bus_Buffer() {
 }
 
 void Bus_Buffer::reset() {
-    _count = 0;
     _get_index = 0;
     _put_index = 0;
     _error_flags = 0;
 }
 
-UByte Bus_Buffer::checksum(UByte checksum_count) {
+UByte Bus_Buffer::check_sum() {
     // This routine will return the 4-bit checksum of the first {count}
     // bytes in {buffer}.
 
-    UByte checksum = 0;
-    UByte index = _get_index;
-    while (checksum_count != 0) {
-	UByte ubyte = _ubytes[index++ & Bus_Buffer__mask];
+    UByte check_sum = 0;
+    for (UByte index = 0; index < _put_index; index++) {
+	check_sum += _ubytes[index];
 	//trace_char('S');
 	//trace_hex(ubyte);
-	checksum += ubyte;
-	checksum_count--;
     }
-    return (checksum + (checksum >> 4)) & 0xf;
+    return (check_sum + (check_sum >> 4)) & 0xf;
 }
 
 void Bus_Buffer::show(UByte tag) {
     trace_char('<');
     trace_char(tag);
     trace_char(':');
-    trace_char('c');
-    trace_hex(_count);
     trace_char('p');
     trace_hex(_put_index);
     trace_char('g');
@@ -182,14 +175,12 @@ void Bus_Buffer::show(UByte tag) {
 UByte Bus_Buffer::ubyte_get() {
     // This routine will return the next byte from the buffer.
 
-    _count--;
     return _ubytes[_get_index++ & Bus_Buffer__mask];
 }
 
 void Bus_Buffer::ubyte_put(UByte ubyte) {
     // This routine will return the next byte from the buffer.
 
-    _count++;
     _ubytes[_put_index++ & Bus_Buffer__mask] = ubyte;
 }
 
@@ -208,6 +199,8 @@ void Bus_Buffer::ushort_put(UShort ushort) {
     ubyte_put((UByte)(ushort >> 8));
     ubyte_put((UByte)ushort);
 }
+
+// *Bus* routines:
 
 Bus::Bus() {
     // We want to do the following to the USART:
@@ -296,8 +289,8 @@ Bus::Bus() {
 
     // Initialize some the private member values:
     //_slave_address = 0xffff;
-    _address = 0;
-    _last_address = 0xff;
+    _desired_address = 0;
+    _current_address = 0xff;
 
     _interrupt_mode = (Logical)0;
     _get_head = 0;
@@ -311,6 +304,19 @@ Bus::Bus() {
 
     UByte zilch = UDR1;
     zilch += UDR1;
+}
+
+UByte Bus::command_ubyte_get(UByte address, UByte command) {
+  command_begin(address, command);
+  UByte ubyte = ubyte_get();
+  command_end();
+  return ubyte;
+}
+
+void Bus::command_ubyte_put(UByte address, UByte command, UByte ubyte) {
+  command_begin(address, command);
+  ubyte_put(ubyte);
+  command_end();
 }
 
 void Bus::interrupts_enable() {
@@ -381,21 +387,11 @@ void Bus::command_begin(UByte address, UByte command) {
     // This routine will start a new command for the module at {address}.
     // The first byte of the command is {command}.
 
-    trace_char('<');
-    if (address != _address) {
-	// Flush any pending commands:
-	flush();
+    trace_char('{');
+    _desired_address = address;
 
-	// Send out the new {address}:
-	frame_put((UShort)address | 0x100);
-	_address = address;
-
-	if ((address & 0x80) == 0) {
-	    (void)frame_get();
-	}
-    }
-
-    _commands_length = _put_buffer._count;
+    _put_buffer.reset();
+    _get_buffer.reset();
 
     ubyte_put(command);
 }
@@ -403,10 +399,11 @@ void Bus::command_begin(UByte address, UByte command) {
 void Bus::command_end() {
     // This command indicates that the current command is done.
 
-    if (_auto_flush) {
+    //if (_auto_flush) {
+    if (1) {
 	flush();
     }
-    trace_char('>');
+    trace_char('}');
     trace_char('\r');
     trace_char('\n');
 }
@@ -440,59 +437,93 @@ void Bus::ubyte_put(UByte ubyte) {
     _put_buffer.ubyte_put(ubyte);
 }
 
-void Bus::flush() {
+Logical Bus::flush() {
     // Flush current buffer:
+    trace_char('!');
+
+    Logical error = (Logical)0;
 
     // If {BUS_DEBUG} is set 1, dump out the frame log:
     #if BUS_DEBUG != 0
 	log_dump();
     #endif // BUS_DEBUG != 0
-    trace_char('!');
 
-    // It may take a couple of packets request/repond pairs to clear out buffer:
-    UByte commands_length = _commands_length;
-    UByte put_buffer_count = _put_buffer._count;
-    while (put_buffer_count != 0) {
-	// The maximum request packet length is 15.  If we are bigger than
-	// that we use current {commands_length}; otherwise we can output
-	// the entier buffer in one packet:
-	if (put_buffer_count <= 15) {
-	    commands_length = put_buffer_count;
+    // For now force the *desired_address* out:
+    _current_address = _desired_address + 1;
+
+    // Keep sending out an address until we succeed:
+    while (_current_address != _desired_address) {
+	// Make sure that there is nothing left in receive queue:
+	while (can_receive()) {
+	    (void)frame_get();
 	}
 
-	// Send the request header frame:
-	UByte checksum = _put_buffer.checksum(commands_length);
-	UByte request_header = (commands_length << 4) | checksum;
-	frame_put((UShort)request_header);
-
-	// Send the request packet data:
-	UByte index;
-	for (index = 0; index < commands_length; index++) {
-	    UByte ubyte = _put_buffer.ubyte_get();
-	    frame_put((UShort)ubyte);
+	// Send the *desired_address*:
+	UShort address_frame = 0x100 | (UShort)_desired_address;
+	frame_put(address_frame);
+	UShort address_echo = frame_get();
+	if (address_frame != address_echo) {
+	    trace_char('@');
 	}
 
-	// Upate the buffer count to indicate that we have shipped off
-	// {commands_length} bytes:
-	put_buffer_count -= commands_length;
-	_put_buffer._count = put_buffer_count;
+	// Deal with addresses that are in the lower half:
+	if ((_desired_address & 0x80) == 0) {
+	    // Wait for an acknowledgement byte:
+	    UShort acknowledge_frame = frame_get();
+	    if (acknowledge_frame == 0) {
+		_current_address = _desired_address;
+	    }
+	}
+    }
 
-	// Wait for the response packet header:
-	UByte response_header = (UByte)frame_get();
-	UByte response_length = response_header >> 4;
+    // Send the *request_header*:
+    UByte request_size = _put_buffer._put_index;
+    UByte request_check_sum = _put_buffer.check_sum();
+    UByte request_ubyte = (request_size << 4) | request_check_sum;
+    UShort request_frame = (UShort)request_ubyte;    
+    frame_put(request_frame);
+    UByte request_echo = frame_get();
+    if (request_frame != request_echo) {
+ 	trace_char('#');
+    }
 
-	// Now slurp in the response packet:
-	checksum = 0;
+    // Send the request data followed by reseting the buffer:
+    UByte index;
+    for (index = 0; index < request_size; index++) {
+	UShort ubyte_frame = (UShort)_put_buffer.ubyte_get();
+	frame_put(ubyte_frame);
+	UShort ubyte_echo = frame_get();
+	if (ubyte_frame != ubyte_echo) {
+	    trace_char('$');
+	}
+    }
+    _put_buffer.reset();
+
+    // Wait for the response packet header:
+    UByte response_header = (UByte)frame_get();
+
+    // Process *response_header*:
+    UByte response_length = response_header >> 4;
+    if (response_length == 0) {
+	// A *response_length* of 0 indicates an error:
+	error = (Logical)1;
+    } else {
+	// Now slurp in the rest of response packet:
+	_get_buffer.reset();
 	for (index = 0; index < response_length; index++) {
 	    UByte ubyte = (UByte)frame_get();
-	    checksum += ubyte;
 	    _get_buffer.ubyte_put(ubyte);
 	}
 
-	// FIXME: Check checksum here!!!
+	// Check for a check sum error:
+	UByte response_check_sum = response_header & 0xf;
+	if (_get_buffer.check_sum() != response_check_sum) {
+	    error = (Logical)1;
+	}
     }
-    // All commands have been sent off:
-    _commands_length = 0;
+
+    trace_char('!');
+    return error;
 }
 
 Logical Bus::can_receive() {
@@ -590,21 +621,20 @@ void Bus::frame_put(UShort frame) {
     //(void)frame_get();
 }
 
+// This routine will perform all the operations to respond to
+// commands sent to *address*.  *command_process* is a routine that
+// is called to process each command in the received request packet.
+// If *execute_mode*, the command is to be executed; otherwise the
+// command is only parsed for correctness.  The return value
+// from *command_process* is zero for success and non-zero for
+// for failure.
+
 void Bus::slave_mode(UByte address,
   UByte (*command_process)(Bus *bus,
   UByte command, Logical execute_mode)) {
-    // This routine will perform all the operations to respond to
-    // commands sent to {address}.  {command_process} is a routine that
-    // is called to process each command in the received request packet.
-    // If {execute_mode}, the command is to be executed; otherwise the
-    // command is only parsed for correctness.  The return value
-    // from {command_process} is zero for success and non-zero for
-    // for failure.
-
     Logical selected = (Logical)0;
-    UByte request_length = 0;
-    UByte request_checksum = 0;
-    UByte request_index = 0;
+    UByte request_size = 0;
+    UByte request_check_sum = 0;
     UByte selected_address = 0xff;
     trace_char('[');
     while (1) {
@@ -632,36 +662,32 @@ void Bus::slave_mode(UByte address,
 	    trace_char('A');
 
 	    // We are starting over:
-	    request_length = 0;
+	    request_size = 0;
 	} else if (selected) {
 	    // We have a data frame:
 	    UByte data = (UByte)frame;
 
-	    if (request_length == 0) {
+	    if (request_size == 0) {
 		// Process header request:
 		//trace_char('m');
-		request_length = (data >> 4) & 0xf;
-		request_checksum = data & 0xf;
+		request_size = (data >> 4) & 0xf;
+		request_check_sum = data & 0xf;
 
-		// Keep track of where the request starts in {_get_buffer}.
-		// This is needed as part of the "parse check" code:
-		request_index = _get_buffer._get_index;
+		_get_buffer.reset();
 	    } else {
 		// Take {data} byte and stuff it onto end of {_get_buffer}:
 		_get_buffer.ubyte_put(data);
 
 		// Do we have a complete request?
-		if (_get_buffer._count == request_length) {
+		if (_get_buffer._put_index >= request_size) {
 		    // Yes, we have a complete request:
 
-		    // Compute the request checksum:
-		    UByte checksum = _get_buffer.checksum(request_length);
+		    // Check that *request_check_sum* matches *check_sum*:
+		    UByte check_sum = _get_buffer.check_sum();
 		    //trace_char('o');
-		    //trace_hex(checksum);
-
-		    // Check that checksum matches checksum from header:
-		    if (checksum == request_checksum) {
-			// The checksums match; now iterate over all the
+		    //trace_hex(check_sum);
+		    if (check_sum == request_check_sum) {
+			// The check sums match; now iterate over all the
 			// commands and make sure that they parse correctly.
 			// We pass over the request bytes twice.  The first
 			// time ({pass} == 0), we just make sure that the
@@ -673,18 +699,11 @@ void Bus::slave_mode(UByte address,
 
 			// Pass over request bytes two times:
 			for (pass = 0; pass < 2; pass++) {
-			    //trace_char('P');
-			    if (pass == 1) {
-				// For second pass, reset {_get_buffer} to
-				// ensure we go over the same bytes again:
-				_get_buffer._get_index = request_index;
-				_get_buffer._count = request_length;
-			    }
-
 			    // Now iterate over all the command sequences
 			    // in {_get_buffer}:
 			    flags = 0;
-			    while (_get_buffer._count != 0) {
+			    _get_buffer._get_index = 0;
+			    while (_get_buffer._get_index < request_size) {
 				UByte command = ubyte_get();
 				flags |=
 				  command_process(this, command, (Logical)pass);
@@ -712,18 +731,17 @@ void Bus::slave_mode(UByte address,
 			    // Time to pump out a response packet:
 
 			    // Compute {response_header} and output it:
-			    UByte response_length = _put_buffer._count;
-			    UByte response_header = (response_length << 4) |
-			      _put_buffer.checksum(response_length);
+			    UByte response_size = _put_buffer._put_index;
+			    UByte response_check_sum = _put_buffer.check_sum();
+			    UByte response_header =
+			      (response_size << 4) | response_check_sum;
 			    frame_put(response_header);
 			    //trace_char('y');
 
-			    UByte response_index;
-			    for (response_index = 0;
-			      response_index < response_length;
-			      response_index++) {
-				data = _put_buffer.ubyte_get();
-				frame_put((UShort)data);
+			    for (UByte index = 0;
+			      index < response_size; index++) {
+				UByte ubyte = _put_buffer.ubyte_get();
+				frame_put((UShort)ubyte);
 			    }
 			} else {
 			    // We had at least one error; kick out an error:
@@ -740,7 +758,7 @@ void Bus::slave_mode(UByte address,
 			frame_put((UShort)0x01);
 		    }
 
-		    request_length = 0;
+		    request_size = 0;
 		    trace_char(']');
 		    trace_char('\r');
 		    trace_char('\n');
@@ -755,5 +773,49 @@ void Bus_Module::bind(Bus *bus, UByte address)
 {
     _bus = bus;
     _address = address;
+}
+
+
+// Send the contents of *Bus_Serial__put_buffer* to the bus:
+Logical Bus::put_buffer_send() {
+  Logical error = (Logical)0;
+
+  // Compute the 4-bit *check_sum*:
+  UByte check_sum = _put_buffer.check_sum();
+
+  // Send *count_check_sum*:
+  UByte size = _put_buffer._put_index & 0xf;
+
+  UByte header = (size << 4) | check_sum;
+
+  Serial.write("P");
+  Serial.print(header, HEX);
+
+  bus.frame_put((UShort)header);
+  UShort header_echo = bus.frame_get();
+  if (header == header_echo) {
+    // Send the buffer:
+    for (Byte index = 0; index < size; index++) {
+      UShort put_frame = (UShort)_put_buffer._ubytes[index];
+
+      Serial.write("P");
+      Serial.print(put_frame, HEX);
+
+      bus.frame_put(put_frame);
+      UShort put_frame_echo = bus.frame_get();
+      if (put_frame != put_frame_echo) {
+        Serial.write('&');
+        error = (Logical)1;
+        break;
+      }
+    }
+  } else {
+    // *count_check_sum_echo* did not match *count_check_sum*:
+    error = (Logical)1;
+  }
+
+  // We mark *Bus_Serial__put_buffer* as sent:
+  _put_buffer.reset();
+  return error;
 }
 

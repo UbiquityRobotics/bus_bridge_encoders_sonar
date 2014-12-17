@@ -48,7 +48,7 @@ UByte command_process(Bus *bus, UByte command, Logical execute_mode) {
     }
     case 1: {
       // led_set:
-      Logical led = bus->logical_get();
+      Logical led = (Logical)bus->ubyte_get();
       if (execute_mode) {
 	bus_bridge_encoders_sonar.led_set(led);
       }
