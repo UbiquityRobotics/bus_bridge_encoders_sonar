@@ -1,32 +1,23 @@
-//! @file MB7.h
-//! @brief Header file for MB6 classes
+//! @file Bus.h
+//! @brief Header file for Bus classes
 //!
-//! This file defines the classes used by MB6
+//! This file defines the classes used for Bus communication
 
 #ifndef BUS_H
 #define BUS_H
 
-#include "Arduino.h"
-#include "Print.h"
+// All typedef's go up here before the #includes':
 
-// To enable debugging code, get {BUS_DEBUG} define to 1; otherewise 
+// To enable bus logging code, get *BUS_DEBUG* define to 1; otherewise 
 // set it to 0 to disable debugging:
-#define BUS_DEBUG 0
+#define BUS_LOG 0
 
-#define TRACE
-
-#ifdef TRACE
-#define trace_char(ch) Serial.write(ch)
-#define trace_hex(hex) Serial.print(hex, HEX);
-#else
-#define trace_char(ch)
-#define trace_hex(hex)
-#endif
-
-typedef char Character;			// 8-bit character (sign whatever)
+// Set *BUS_TRACE* to 1 to enable tracing:
+#define BUS_TRACE 1
 
 // Signed types:
 typedef signed char Byte;		// 8-bit signed byte (-128 ... 128):
+typedef char Character;			// 8-bit character (sign whatever)
 typedef double Double;			// 64-bit double precision float number
 typedef float Float;			// 32-bit single precision float number
 typedef signed int Integer;		// 32-bit signed integer
@@ -41,34 +32,50 @@ typedef unsigned long int ULong;	// 64-bit unsigned
 typedef unsigned short UShort;		// 16-bit unsigned
 typedef unsigned short Unicode;		// 16-bit Unicode character
 
-// Size of ring buffer must be power of 2:
-#define GET_RING_SIZE 16
-#define GET_RING_MASK (GET_RING_SIZE - 1)
-#define PUT_RING_SIZE 16
-#define PUT_RING_MASK (PUT_RING_SIZE - 1)
+#include "Arduino.h"
+#include "Print.h"
 
-// These two defines are only used when {BUS_DEBUG} is set to 1:
-#define BUS_LOG_SIZE 128
-#define BUS_LOG_MASK (BUS_LOG_SIZE - 1)
+// These two defines are only used when *BUS_DEBUG* is set to 1:
+#if BUS_DEBUG
+    #define BUS_LOG_SIZE 128
+    #define BUS_LOG_MASK (BUS_LOG_SIZE - 1)
+#endif // BUS_DEBUG
 
-static const UByte Bus_Buffer__size = 32;
-static const UByte Bus_Buffer__mask =  Bus_Buffer__size - 1;
+// These defines are empty when *BUS_TRACE* is 0:
+#if BUS_TRACE
+  #define trace_char(ch) Serial.write(ch)
+  #define trace_hex(hex) Serial.print(hex, HEX);
+#else // BUS_TRACE
+  #define trace_char(ch)
+  #define trace_hex(hex)
+#endif // BUS_TRACE
+
+//! @class Bus_Buffer
+//! @brief Send/Receive packet buffer.
+//!
+//! This is class to hold bus packets that are sent and received.
+
 class Bus_Buffer
 {
-  public:
-    Bus_Buffer();
-    UByte check_sum();
-    void reset();
-    void show(UByte Tag);
-    UByte ubyte_get();
-    void ubyte_put(UByte ubyte);
-    UShort ushort_get();
-    void ushort_put(UShort ushort);
+ public:				// In alphabetical order:
+    Bus_Buffer();			// Constructor
+    UByte check_sum();			// Compute 4-bit check sum
+    void reset();			// Reset/clear buffer
+    void show(UByte Tag);		// Show buffer (for debgging)
+    UByte ubyte_get();			// Get next *UByte* from buffer
+    void ubyte_put(UByte ubyte);	// Put a *UByte* into buffer
+    UShort ushort_get();		// Get next *UShort* from buffer
+    void ushort_put(UShort ushort);	// Put a *UShort* into buffer
 
-    UByte _ubytes[Bus_Buffer__size];
-    UByte _get_index;
-    UByte _put_index;
-    UByte _error_flags;
+    // Any fields with a preceeding underscore, should only be
+    // set byt *Bus_Buffer* methods.  Reading the values is OK:
+    UByte _error_flags;			// Error flags go here
+    UByte _get_index;			// Next byte to get index
+    UByte _put_index;			// Next byte to put index
+    static const UByte _ubytes_power = 4; // Bufere size must be power of 2
+    static const UByte _ubytes_size = 1 << _ubytes_power; // Actual buffer size
+    static const UByte _ubytes_mask = _ubytes_size - 1; // Index mask
+    UByte _ubytes[_ubytes_size];	// The actual buffer bytes
 };
 
 //! \class Bus
@@ -128,7 +135,7 @@ class Bus
     //! 1 or more bytes is sent to the selected module followed by 0,
     //! 1 or more returned bytes.  The final call is *command_end*().
     //! The first byte sent to the selected module is *command*.
-    void command_begin(UByte address, UByte command);
+    void command_begin(UByte address, UByte command, UByte put_bytes);
 
     //! @brief Mark current command as completed.
     //!
@@ -210,11 +217,17 @@ class Bus
 
     Logical _interrupt_mode;	// 1=>interrupt mode; 0=>poll mode
 
-    UShort _get_ring[GET_RING_SIZE];	// Ring buffer for received frames
+    static const UByte _get_ring_power = 4;
+    static const UByte _get_ring_size = 1 << _get_ring_power;
+    static const UByte _get_ring_mask = _get_ring_size - 1;
+    UShort _get_ring[_get_ring_size];	// Ring buffer for received frames
     volatile UByte _get_head;
     volatile UByte _get_tail;
 
-    UShort _put_ring[PUT_RING_SIZE];	// Ring buffer for received frames
+    static const UByte _put_ring_power = 4;
+    static const UByte _put_ring_size = 1 << _put_ring_power;
+    static const UByte _put_ring_mask = _put_ring_size - 1;
+    UShort _put_ring[_put_ring_size];	// Ring buffer for received frames
     volatile UByte _put_head;
     volatile UByte _put_tail;
 
@@ -223,13 +236,15 @@ class Bus
     Logical put_buffer_send();
 
   private:
+    static const UByte _maximum_request_size = 15;
+
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
 
     Logical _auto_flush;	// 1=>Auto flush every cmd; 0=>queue up cmds
     //Logical _master_mode;	// 1=>master mode; 0=>slave mode 
-    UByte _desired_address;	// Desired address
-    UByte _current_address;	// Current address
+    UShort _desired_address;	// Desired address
+    UShort _current_address;	// Current address
 
     // The frame log is only enabled when {BUS_DEBUG} is set to 1:
     #if BUS_DEBUG != 0
@@ -279,12 +294,12 @@ class Bus_Module
 	_bus->ubyte_put((UByte)character);
     }
 
-    void command_begin(UByte command) {
+    void command_begin(UByte command, UByte put_bytes) {
         // This routine will start a new bus command that starts
 	// with the byte {command}.  This command is sent to the
 	// current module selected by {this}.
 
-	_bus->command_begin(_address, command);
+        _bus->command_begin(_address, command, put_bytes);
     }
 
     void command_end() {

@@ -49,7 +49,7 @@ ISR(USART1_RX_vect)
 	// We need to insert {frame} into {_get_ring}.  If the {ring}
 	// is full we drop {frame} on the floor:
 	UByte get_head = bus._get_head;
-	UByte new_get_head = (get_head + 1) & GET_RING_MASK;
+	UByte new_get_head = (get_head + 1) & Bus::_get_ring_mask;
 
 	// Is {_get_ring} full?
 	if (new_get_head != bus._get_tail) {
@@ -104,7 +104,7 @@ ISR(USART1_UDRE_vect)
 	// {_put_buffer} is not empty; grab {frame} from {_put_buffer} and
 	// update {_put_tail}:
 	UShort frame = bus._put_ring[put_tail];
-	bus._put_tail = (put_tail + 1) % PUT_RING_MASK;
+	bus._put_tail = (put_tail + 1) & Bus::_put_ring_mask;
 
 	// Deal with 9th bit of {frame}.  Most of the time the 9th bit
 	// is not set.  So we clear the 9th bit by default and then set
@@ -175,13 +175,13 @@ void Bus_Buffer::show(UByte tag) {
 UByte Bus_Buffer::ubyte_get() {
     // This routine will return the next byte from the buffer.
 
-    return _ubytes[_get_index++ & Bus_Buffer__mask];
+    return _ubytes[_get_index++ & _ubytes_mask];
 }
 
 void Bus_Buffer::ubyte_put(UByte ubyte) {
     // This routine will return the next byte from the buffer.
 
-    _ubytes[_put_index++ & Bus_Buffer__mask] = ubyte;
+    _ubytes[_put_index++ & _ubytes_mask] = ubyte;
 }
 
 UShort Bus_Buffer::ushort_get() {
@@ -289,32 +289,32 @@ Bus::Bus() {
 
     // Initialize some the private member values:
     //_slave_address = 0xffff;
-    _desired_address = 0;
-    _current_address = 0xff;
+    _desired_address = (UShort)0;
+    _current_address = (UShort)0xffff;
 
     _interrupt_mode = (Logical)0;
     _get_head = 0;
     _get_tail = 0;
     _put_head = 0;
     _put_tail = 0;
-    _auto_flush = 1;
+    _auto_flush = (Logical)1;
 
     UCSR1A &= ~_BV(MPCM1);
-    UCSR1B |= _BV(RXEN1);
+    //UCSR1B |= _BV(RXEN1);
 
     UByte zilch = UDR1;
     zilch += UDR1;
 }
 
 UByte Bus::command_ubyte_get(UByte address, UByte command) {
-  command_begin(address, command);
+  command_begin(address, command, 0);
   UByte ubyte = ubyte_get();
   command_end();
   return ubyte;
 }
 
 void Bus::command_ubyte_put(UByte address, UByte command, UByte ubyte) {
-  command_begin(address, command);
+  command_begin(address, command, sizeof(UByte));
   ubyte_put(ubyte);
   command_end();
 }
@@ -383,26 +383,43 @@ void Bus::log_dump() {
 }
 #endif // BUS_DEBUG != 0
 
-void Bus::command_begin(UByte address, UByte command) {
-    // This routine will start a new command for the module at {address}.
-    // The first byte of the command is {command}.
+// *Bus::command_begin*() will queue up *command* to be sent to the
+// module at *address*.  The number of bytes to be sent after *command*
+// is *put_bytes*.  If there is inadequate space in the send buffer
+// for *command* and the following *put_bytes* of data, any previous
+// command(s) are flushed first.
 
+void Bus::command_begin(UByte address, UByte command, UByte put_bytes) {
+    // For debugging, commands get enclosed in '{' ... '}':
     trace_char('{');
-    _desired_address = address;
 
-    _put_buffer.reset();
-    _get_buffer.reset();
+    // Force a flush if the address is
+    UShort full_address = (UShort)address | 0x100;
+    if (_desired_address != full_address) {
+	flush();
+	_desired_address = full_address;
+    }
 
+    // If command will not fit into *remaining* bytes, force a flush:
+    UByte remaining = _maximum_request_size - _put_buffer._put_index;
+    if (1 + put_bytes > remaining) {
+	flush();
+    }
+
+    // Stuff the *command* byte into to the *put_buffer*:
     ubyte_put(command);
 }
 
 void Bus::command_end() {
     // This command indicates that the current command is done.
 
-    //if (_auto_flush) {
-    if (1) {
+    // When *auto_flush* is enabled, we force a flush at the
+    // end of each command:
+    if (_auto_flush) {
 	flush();
     }
+
+    // Close off '}' for debugging:
     trace_char('}');
     trace_char('\r');
     trace_char('\n');
@@ -437,11 +454,14 @@ void Bus::ubyte_put(UByte ubyte) {
     _put_buffer.ubyte_put(ubyte);
 }
 
+// Flush current buffer and get any response back:
 Logical Bus::flush() {
-    // Flush current buffer:
-    trace_char('!');
+  trace_char('!');
+  Logical error = (Logical)0;
 
-    Logical error = (Logical)0;
+  // See if there is anything to flush:
+  UByte request_size = _put_buffer._put_index;
+  if (request_size > 0) {
 
     // If {BUS_DEBUG} is set 1, dump out the frame log:
     #if BUS_DEBUG != 0
@@ -449,32 +469,38 @@ Logical Bus::flush() {
     #endif // BUS_DEBUG != 0
 
     // For now force the *desired_address* out:
-    _current_address = _desired_address + 1;
+   _current_address = (UShort)0xffff;
 
     // Keep sending out an address until we succeed:
     while (_current_address != _desired_address) {
-	// Make sure that there is nothing left in receive queue:
-	while (can_receive()) {
-	    (void)frame_get();
-	}
+      // Make sure that there is nothing left in receive queue:
+      while (can_receive()) {
+	(void)frame_get();
+      }
 
-	// Send the *desired_address*:
-	UShort address_frame = 0x100 | (UShort)_desired_address;
-	frame_put(address_frame);
-	UShort address_echo = frame_get();
-	if (address_frame != address_echo) {
-	    trace_char('@');
-	}
-
+      // Send the *desired_address*:
+      frame_put(_desired_address);
+      UShort address_echo = frame_get();
+      if (_desired_address == address_echo) {
 	// Deal with addresses that are in the lower half:
 	if ((_desired_address & 0x80) == 0) {
-	    // Wait for an acknowledgement byte:
-	    UShort acknowledge_frame = frame_get();
-	    if (acknowledge_frame == 0) {
-		_current_address = _desired_address;
-	    }
+	  // Wait for an acknowledgement byte:
+	  UShort acknowledge_frame = frame_get();
+	  if (acknowledge_frame == 0) {
+	    // Success: we have set the *current_address*:
+	    _current_address = _desired_address;
+	  } else {
+	    trace_char('?');
+	  }
+	} else {
+	  // Success: we have set the *current_address*:
+	  _current_address = _desired_address;
 	}
+      } else {
+	trace_char('@');
+      }
     }
+    // assert (_current_address == _desired_address);
 
     // Send the *request_header*:
     UByte request_size = _put_buffer._put_index;
@@ -484,18 +510,18 @@ Logical Bus::flush() {
     frame_put(request_frame);
     UByte request_echo = frame_get();
     if (request_frame != request_echo) {
- 	trace_char('#');
+      trace_char('#');
     }
 
     // Send the request data followed by reseting the buffer:
     UByte index;
     for (index = 0; index < request_size; index++) {
-	UShort ubyte_frame = (UShort)_put_buffer.ubyte_get();
-	frame_put(ubyte_frame);
-	UShort ubyte_echo = frame_get();
-	if (ubyte_frame != ubyte_echo) {
-	    trace_char('$');
-	}
+      UShort ubyte_frame = (UShort)_put_buffer.ubyte_get();
+      frame_put(ubyte_frame);
+      UShort ubyte_echo = frame_get();
+      if (ubyte_frame != ubyte_echo) {
+	trace_char('$');
+      }
     }
     _put_buffer.reset();
 
@@ -505,25 +531,26 @@ Logical Bus::flush() {
     // Process *response_header*:
     UByte response_length = response_header >> 4;
     if (response_length == 0) {
-	// A *response_length* of 0 indicates an error:
-	error = (Logical)1;
+      // A *response_length* of 0 indicates an error:
+      error = (Logical)1;
     } else {
-	// Now slurp in the rest of response packet:
-	_get_buffer.reset();
-	for (index = 0; index < response_length; index++) {
-	    UByte ubyte = (UByte)frame_get();
-	    _get_buffer.ubyte_put(ubyte);
-	}
+      // Now slurp in the rest of response packet:
+      _get_buffer.reset();
+      for (index = 0; index < response_length; index++) {
+      UByte ubyte = (UByte)frame_get();
+	_get_buffer.ubyte_put(ubyte);
+      }
 
-	// Check for a check sum error:
-	UByte response_check_sum = response_header & 0xf;
-	if (_get_buffer.check_sum() != response_check_sum) {
-	    error = (Logical)1;
-	}
+      // Check for a check sum error:
+      UByte response_check_sum = response_header & 0xf;
+      if (_get_buffer.check_sum() != response_check_sum) {
+	error = (Logical)1;
+      }
     }
 
-    trace_char('!');
-    return error;
+  }
+  trace_char('!');
+  return error;
 }
 
 Logical Bus::can_receive() {
@@ -540,7 +567,7 @@ Logical Bus::can_receive() {
 Logical Bus::can_transmit() {
     Logical result = (Logical)0;
     if (_interrupt_mode) {
-	UByte next_put_head = (_put_head + 1) & PUT_RING_MASK;
+	UByte next_put_head = (_put_head + 1) & _put_ring_mask;
 	result = (Logical)(next_put_head != _put_tail);
     } else {
 	result = (Logical)((UCSR1A & _BV(UDRE1)) != 0);
@@ -565,7 +592,7 @@ UShort Bus::frame_get() {
 
 	// Read the {frame} and advance the tail by one:
 	frame = bus._get_ring[get_tail];
-	bus._get_tail = (get_tail + 1) & GET_RING_MASK;
+	bus._get_tail = (get_tail + 1) & _get_ring_mask;
     } else {
 	while (!(UCSR1A & _BV(RXC1))) {
 	    // Nothing yet, keep waiting:
@@ -590,7 +617,7 @@ void Bus::frame_put(UShort frame) {
     // Set to 1 to use interrupt buffers; 0 for direct UART access:
     if (_interrupt_mode) {
 	UByte put_head = bus._put_head;
-	UByte new_put_head = (put_head + 1) % PUT_RING_MASK;
+	UByte new_put_head = (put_head + 1) & _put_ring_mask;
 	while (new_put_head == bus._put_tail) {
 	    // Wait for space to show up in put ring buffer:
  	}
