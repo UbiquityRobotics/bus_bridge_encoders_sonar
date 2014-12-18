@@ -13,7 +13,7 @@
 #define BUS_LOG 0
 
 // Set *BUS_TRACE* to 1 to enable tracing:
-#define BUS_TRACE 1
+#define BUS_TRACE 0
 
 // Signed types:
 typedef signed char Byte;		// 8-bit signed byte (-128 ... 128):
@@ -57,7 +57,7 @@ typedef unsigned short Unicode;		// 16-bit Unicode character
 
 class Bus_Buffer
 {
- public:				// In alphabetical order:
+  public:				// In alphabetical order:
     Bus_Buffer();			// Constructor
     UByte check_sum();			// Compute 4-bit check sum
     void reset();			// Reset/clear buffer
@@ -95,8 +95,8 @@ class Bus
     //!
     //! ...
     Byte byte_get() {
-	// Return the next {Byte} from recieve buffer:
-	return (Byte)ubyte_get();
+      // Return the next {Byte} from recieve buffer:
+      return (Byte)ubyte_get();
     }
 
     //! @brief Send *byte* to currently selected module.
@@ -106,13 +106,13 @@ class Bus
     //! currently selected module as part of a multi-byte command.
     //! *byte* is signed.
     void byte_put(Byte byte) {
-	// Queue {byte} to be sent off to bus:
-	ubyte_put((UByte)byte);
+      // Queue {byte} to be sent off to bus:
+      ubyte_put((UByte)byte);
     }
 
     Logical character_get() {
-	// Return the next {character} from recieve buffer:
-	return (Character)ubyte_get();
+      // Return the next {character} from recieve buffer:
+      return (Character)ubyte_get();
     }
 
     //! @brief Send *byte* to currently selected module.
@@ -121,8 +121,8 @@ class Bus
     //! This member function will queue *character* to be sent to the
     //! currently selected module as part of a multi-byte command.
     void character_put(Character character) {
-	// Queue {character} to be sent off to bus:
-	ubyte_put((UByte)character);
+      // Queue {character} to be sent off to bus:
+      ubyte_put((UByte)character);
     }
 
     //! @brief Send *command* to the module at *address*.
@@ -153,8 +153,8 @@ class Bus
     //! This member function will queue *logical* to be sent to the
     //! currently selected module as part of a multi-byte command.
     void logical_put(Logical logical) {
-	// Queue {byte} to be sent off to bus:
-	ubyte_put((UByte)logical);
+      // Queue {byte} to be sent off to bus:
+      ubyte_put((UByte)logical);
     }
 
     Logical can_receive();
@@ -206,8 +206,8 @@ class Bus
 
     // The {log_dump} method is only enabled when BUS_DEUBG is set to 1:
     #if BUS_DEBUG != 0
-	// Dump frame buffer:
-	void log_dump();
+      // Dump frame buffer:
+      void log_dump();
     #endif // BUS_DEBUG != 0
 
     // The following fields should be private, but the interrupt
@@ -246,113 +246,113 @@ class Bus
     UShort _desired_address;	// Desired address
     UShort _current_address;	// Current address
 
-    // The frame log is only enabled when {BUS_DEBUG} is set to 1:
-    #if BUS_DEBUG != 0
-	UShort _log_buffer[BUS_LOG_SIZE];	// Buffer of read/written frames
-	UByte _log_total;	// Total number read/written
-	UByte _log_dumped;	// Total number dumped out
-    #endif // BUS_DEBUG != 0
+    // The frame log is only enabled when *BUS_DEBUG* is set to 1:
+    #if BUS_DEBUG
+      UShort _log_buffer[BUS_LOG_SIZE];	// Buffer of read/written frames
+      UByte _log_total;			// Total number read/written
+      UByte _log_dumped;		// Total number dumped out
+    #endif // BUS_DEBUG
 };
 
 class Bus_Module
 {
   public:
     Bus_Module() {
-	// Construct an empty module:
-	_bus = (Bus *)0;
-	_address = 0xff;
+      // Construct an empty module:
+      _bus = (Bus *)0;
+      _address = 0xff;
     }
 
     void bind(Bus *bus, UByte address);
-	// Slave module is located at {address} on {bus}:
+      // Slave module is located at {address} on {bus}:
 
     Byte byte_get() {
-	// This routine will return next next {Byte} from the current
-	// module selected by {this}.
+      // This routine will return next next {Byte} from the current
+      // module selected by {this}.
 
 	return (Byte)_bus->ubyte_get();
     }
 
     void byte_put(Byte byte) {
-	// This routine will send {byte} to the current module
-	// selected by {this}.
+      // This routine will send {byte} to the current module
+      // selected by {this}.
 
  	_bus->ubyte_put((UByte)byte);
     }
 
     Character character_get() {
-	// This routine will return next {Character} from current
-	// module selected by {this}.
+      // This routine will return next {Character} from current
+      // module selected by {this}.
 
-	return (Logical)_bus->ubyte_get();
+      return (Logical)_bus->ubyte_get();
     }
 
     void character_put(Character character) {
-	// This routine will send {character} to the current module
-	// selected by {this}.
+      // This routine will send {character} to the current module
+      // selected by {this}.
 
-	_bus->ubyte_put((UByte)character);
+      _bus->ubyte_put((UByte)character);
     }
 
     void command_begin(UByte command, UByte put_bytes) {
-        // This routine will start a new bus command that starts
-	// with the byte {command}.  This command is sent to the
-	// current module selected by {this}.
+      // This routine will start a new bus command that starts
+      // with the byte {command}.  This command is sent to the
+      // current module selected by {this}.
 
-        _bus->command_begin(_address, command, put_bytes);
+      _bus->command_begin(_address, command, put_bytes);
     }
 
     void command_end() {
-	// This routine will end the current command being sent to
-	// the current module selected by {this}.
+      // This routine will end the current command being sent to
+      // the current module selected by {this}.
 
-	_bus->command_end();
+      _bus->command_end();
     }
 
     void flush() {
-	// This routine will flush all pending commands to the current
-	// module selected by {this}.
+      // This routine will flush all pending commands to the current
+      // module selected by {this}.
 
-        _bus->flush();
+      _bus->flush();
     }
 
     Logical flush_mode_set(Logical auto_flush) {
-	// This routine will Set the automatic flush mode for {this}
-	// to {auto_flush}.  If {auto_flush} is 1, each command as
-	// flushed as soon as possible.  If {auto_flush} is 0,
-	// commands are queued until an explicit flush occurs.
-	// The previous value of flush mode is returned.
+      // This routine will Set the automatic flush mode for {this}
+      // to {auto_flush}.  If {auto_flush} is 1, each command as
+      // flushed as soon as possible.  If {auto_flush} is 0,
+      // commands are queued until an explicit flush occurs.
+      // The previous value of flush mode is returned.
 
-	return _bus->flush_mode(auto_flush);
+      return _bus->flush_mode(auto_flush);
     }
 
     Logical logical_get() {
-	// This routine will return next next byte from current
-	// module selected by {this}.
+      // This routine will return next next byte from current
+      // module selected by {this}.
 
-	return (Logical)_bus->ubyte_get();
+      return (Logical)_bus->ubyte_get();
     }
 
     void logical_put(Logical logical) {
-	// Send {logical} to slave:
-	_bus->ubyte_put((UByte)logical);
+      // Send {logical} to slave:
+      _bus->ubyte_put((UByte)logical);
     }
 
     UByte ubyte_get() {
-	// This routine will return next next byte from current
-	// module selected by {this}.
+      // This routine will return next next byte from current
+      // module selected by {this}.
 
-        return _bus->ubyte_get();
+      return _bus->ubyte_get();
     }
 
     void ubyte_put(UByte ubyte) {
-	// Send {ubyte} to slave:
-	_bus->ubyte_put(ubyte);
+      // Send {ubyte} to slave:
+      _bus->ubyte_put(ubyte);
     }
 
     void slave_mode(UByte address,
-      UByte (*command_process)(Bus *, UByte, Logical)) {
-        return _bus->slave_mode(address, command_process);
+     UByte (*command_process)(Bus *, UByte, Logical)) {
+      return _bus->slave_mode(address, command_process);
     }
 
   private:

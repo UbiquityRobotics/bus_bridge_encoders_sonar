@@ -30,6 +30,10 @@ Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
   _led = (Logical)0;
 }
 
+Logical Bus_Bridge_Encoders_Sonar::led_get() {
+  return _led;
+}
+
 void Bus_Bridge_Encoders_Sonar::led_set(Logical led) {
   _led = led;
   digitalWrite(13, led);
@@ -42,7 +46,7 @@ UByte command_process(Bus *bus, UByte command, Logical execute_mode) {
       // led_get:
       if (execute_mode) {
 	Logical led = bus_bridge_encoders_sonar.led_get();
-	bus->logical_put(led);
+	bus->ubyte_put(led);
       }
       break;
     }
@@ -56,10 +60,6 @@ UByte command_process(Bus *bus, UByte command, Logical execute_mode) {
     }
   }
   return 0;
-}
-
-Logical Bus_Bridge_Encoders_Sonar::led_get() {
-  return _led;
 }
 
 void loop() {
