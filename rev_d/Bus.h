@@ -6,6 +6,7 @@
 #ifndef BUS_H
 #define BUS_H
 
+
 // All typedef's go up here before the #includes':
 
 // To enable bus logging code, get *BUS_DEBUG* define to 1; otherewise 
@@ -26,14 +27,87 @@ typedef signed short Short;		// 16-bit signed integer
 
 // Unsigned types start with 'U' character:
 typedef unsigned char UByte;		// 8-bits unsigned
-typedef unsigned int UInteger;		// 32-bits unsigned
+typedef unsigned long UInteger;		// 32-bits unsigned
 typedef unsigned char Logical;		// 1-bit logical value
-typedef unsigned long int ULong;	// 64-bit unsigned
+typedef unsigned long long int ULong;	// 64-bit unsigned
 typedef unsigned short UShort;		// 16-bit unsigned
 typedef unsigned short Unicode;		// 16-bit Unicode character
 
 #include "Arduino.h"
 #include "Print.h"
+
+class UART {
+  public:
+    virtual Logical can_transmit() = 0;
+    virtual Logical can_receive() = 0;
+    virtual UShort frame_get() = 0;
+    virtual void frame_put(UShort frame) = 0;
+    virtual void interrupt_set(Logical interrupt) = 0;
+    void print(UByte ubyte) { uinteger_print((UInteger)ubyte); }
+    void print(Character character) { frame_put(character); }
+    void print(UShort ushort) { uinteger_print((UInteger)ushort); }
+    void print(Character *string) { string_print(string); }
+    void string_print(Character *string);
+    void uinteger_print(UInteger uinteger);
+};
+
+class AVR_UART : public UART {
+  public:
+    AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
+     volatile UByte *ucsra, volatile UByte *ucsrb, volatile UByte *ucsrc,
+     volatile UByte *udr, UInteger baud_rate, Character *configuration);
+    virtual Logical can_receive();
+    virtual Logical can_transmit();
+    virtual UShort frame_get();
+    virtual void frame_put(UShort frame);
+    virtual void interrupt_set(Logical interrupt);
+    void receive_interrupt();
+    void transmit_interrupt();
+  private:
+    UByte static const _ring_power = 4;
+    UByte static const _ring_size = 1 << _ring_power;
+    UByte static const _ring_mask = _ring_size - 1;
+    volatile UByte _get_head;
+    UByte _get_ring[_ring_size];
+    volatile UByte _get_tail;
+    Logical _interrupt;
+    volatile UByte _put_head;
+    UByte _put_ring[_ring_size];
+    volatile UByte _put_tail;
+    UByte volatile *_ubrrh;
+    UByte volatile *_ubrrl;
+    UByte volatile *_ucsra;
+    UByte volatile *_ucsrb;
+    UByte volatile *_ucsrc;
+    UByte volatile *_udr;
+};
+
+class NULL_UART : public UART {
+  public:
+    Logical can_receive() { return (Logical)1; };
+    Logical can_transmit() { return (Logical)1; };
+    UShort frame_get() { return 0; };
+    void frame_put(UShort frame) { };
+    void interrupt_set(Logical interrupt) { };
+};
+
+#if defined(UDR0)
+  class AVR_UART0 : public AVR_UART {
+    public:
+      AVR_UART0(UInteger baud_rate, Character *configuration) :
+       AVR_UART(&UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UCSR0C, &UDR0,
+       baud_rate, configuration) { } ;
+  };
+#endif // defined(UDR0)
+
+#if defined(UDR1)
+  class AVR_UART1 : public AVR_UART {
+    public:
+      AVR_UART1(UInteger baud_rate, Character *configuration) :
+       AVR_UART(&UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UCSR1C, &UDR1,
+       baud_rate, configuration) { } ;
+  };
+#endif // defined(UDR1)
 
 // These two defines are only used when *BUS_DEBUG* is set to 1:
 #if BUS_DEBUG
@@ -88,7 +162,7 @@ class Bus
 {
   public:
     //! @brief Constructor for Bus object.
-    Bus();
+    Bus(UART *bus_uart, UART *debug_uart);
 
     //! @brief Return the a signed byte from currently selected module.
     //!   @return the next signed byte from the command.
@@ -238,6 +312,8 @@ class Bus
   private:
     static const UByte _maximum_request_size = 15;
 
+    UART *_bus_uart;		// UART connected to bus
+    UART *_debug_uart;		// UART used for debugging messages
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
 

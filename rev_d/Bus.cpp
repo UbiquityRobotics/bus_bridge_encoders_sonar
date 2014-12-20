@@ -118,6 +118,262 @@ ISR(USART1_UDRE_vect)
   }
 }
 
+// *UART* routines:
+
+void UART::string_print(Character *string) {
+  for (Character character = *string; *string != (Character)0; string++) {
+    print(character);
+  }
+}
+
+void UART::uinteger_print(UInteger uinteger) {
+  // If *uinteger* is 0, just output "0":
+  if (uinteger == 0) {
+    // *uinteger* is 0:
+    print('0');
+  } else {
+    // *uinteger* is non-zero; use *non_zero_output* to suppress leading zeros:
+    Logical non_zero_output = (Logical)0;
+
+    // Make *shift* iterate through 28, 24, 20, ... , 8 , 4, 0:
+    UByte shift = 32;
+    do {
+      shift -= 4;
+
+      // Use *shift* to extract the a *nibble* from left to right
+      // across *uinteger*:
+      UByte nibble = (uinteger >> shift) & 0xf;
+
+      // Check zero nibbles for leading zero suppression:
+      if (nibble == 0) {
+	if (non_zero_output) {
+	  print('0');
+	}
+      } else {
+	print("0123456789abcdef"[nibble]);
+	non_zero_output = (Logical)1;
+      }
+    } while (shift != 0);
+  }
+}
+
+// *AVR_UART* routines:
+
+AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
+ volatile UByte *ucsra, volatile UByte *ucsrb, volatile UByte *ucsrc,
+ volatile UByte *udr, UInteger baud_rate, Character *configuration) {
+  // First hang onto all of the register addresses:
+  _ucsra = ucsra;
+  _ucsrb = ucsrb;
+  _ucsrc = ucsrc;
+  _ubrrh = ubrrh;
+  _ubrrl = ubrrl;
+  _udr = udr;
+
+  // We want to do the following to the USART:
+  //  - Set transmit/receive rate to .5Mbps
+  //  - Single rate transmission (Register A)
+  //  - All interrupts disabled for now (Register B)
+  //  - Transmit enable (Register B)
+  //  - Receive enable (Register B)
+  //  - Turn on Receiver interrupt enable flag (Register B)
+  //  - 9-bits of data (Registers B and C)
+  //  - Asynchronous mode (Register C)
+  //  - No parity (Register C)
+  //  - 1 Stop bit (Register C)
+  //
+  // There are a total of 5 registers to deal with.
+  //   UBRRnH = USART Baud Rate Register (High byte)
+  //   UBRRnL = USART Baud Rate Register (low byte)
+  //   UCSRnA = USART Control status register A
+  //   UCSRnB = USART Control status register B
+  //   UCSRnC = USART Control status register C
+  // They will be initialized in the order above.
+
+  // Initialize USART baud rate to .5Mbps:
+  //     f_cpu = 16000000L
+  UInteger ubrr = 16000000L / (baud_rate * 16) - 1;
+  *_ubrrh = (UByte)(ubrr >> 8);
+  *_ubrrl = (UByte)ubrr;
+
+  // UCSR0A: USART Control and Status Register 0 A:
+  //   rtef opdm: (0010 0000: Default):
+  //      r: Receive complete
+  //      t: Transmit complete
+  //      e: data register Empty
+  //      f: Frame error
+  //      o: data Overrun
+  //      p: Parity error
+  //      d: Double transmission speed
+  //      m: Multi-processor communication mode
+  // Only d and m can be set:  We want d=0 and m=0:
+  //   rtef opdm = 0000 0000 = 0
+  UByte a_flags = 0;
+
+  // UCSR0B: USART Control and Status Register 0 B:
+  //   rtea bcde: (0000 0000: Default):
+  //      r: Receive complete interrupt enable
+  //      t: Transmit complete interrupt enable
+  //      e: data register Empty complete interrupt enable
+  //      a: (A) Transmitter enable
+  //      b: (B) Receiver enable
+  //      c: (C) size bit 2 (see register C):
+  //      d: Receive data bit 8
+  //      e: Transmit data bit 8
+  // All bits except d can be set.  We want 0001 1000 = 0x18
+  UByte b_flags = _BV(TXEN1) | _BV(RXEN1);
+
+  // UCSR0C: USART Control and Status Register 0 C:
+  //   mmpp szzp: (0000 0110):
+  //      mm: USART Mode
+  //          00 Asynchronous USART
+  //          01 Synchronous USART
+  //          10 reserved
+  //          11 Master SPI
+  //      pp: Parity mode
+  //          00 Disabled
+  //          01 reserved
+  //          10 enabled, even parity
+  //          11 enabled, odd parity
+  //      s: Stop bit (0=1 stop bit, 1=2 stop bits)
+  //      czz: Character size (include C bit from register B):
+  //          000 5-bit
+  //          001 6-bit
+  //          010 7-bit
+  //          011 8-bit
+  //          10x reserved
+  //          110 reserved
+  //          111 9-bit
+  //      p: Clock polarity (synchronous mode only)
+  // All bits can set.  We want:
+  //    mm=00 (=Asynchronous USART)
+  //    pp=00 (=None)
+  //    s =0  (= 1 stop bit)
+  //    p = 0 (= don't care)
+  // zz is set from the *size_bits.  Thus we set *c_flag* to 0000 0000:
+  UByte c_flags = 0;
+
+  // This is where we deal with *configuration*.  Right now we really
+  // only support a *configuration* value of "8N1" or "9N1".  Other,
+  // possiblities could be supported, but for now those are the only two:
+
+  // Use the 2nd character of *configuration* to get the size:
+  UByte size_bits = 0;	// = 0000 0czz
+  if (configuration[0] == '8') {
+    // 8 bit mode (czz = 011):
+    size_bits = 0b011;
+  } else {
+    // 9-bit mode (czz = 111):
+    size_bits = 0b111;
+  }
+
+  // Merge *size_flags* into *b_flags* and *c_flags*:
+  b_flags |= size_bits & 0b100;		// ---- -c--
+  c_flags |= (size_bits & 0b11) << 1;	// ---- -zz-
+
+  // Now set the flags for UCSRnA, UCSRnB, and UCSRnC:
+  *_ucsra = a_flags;
+  *_ucsrb = b_flags;
+  *_ucsrc = c_flags;
+
+  // Initialize some the private member values:
+  _interrupt = (Logical)0;
+  _get_head = 0;
+  _get_tail = 0;
+  _put_head = 0;
+  _put_tail = 0;
+}
+
+Logical AVR_UART::can_receive() {
+  Logical result = (Logical)0;
+  if (_interrupt) {
+    result = (Logical)(_get_tail != _get_head);
+  } else {
+    result = (Logical)((*_ucsra & _BV(RXC1)) != 0);
+  }
+  return result;
+}
+
+Logical AVR_UART::can_transmit() {
+  Logical result = (Logical)0;
+  if (_interrupt) {
+    result = (Logical)(((_put_head + 1) & _ring_mask) != _put_tail);
+  } else {
+    result = (Logical)((*_ucsra & _BV(UDRE1)) != 0);
+  }
+  return result;
+}
+
+UShort AVR_UART::frame_get() {
+  // Wait for a 9-bit frame to arrive and return it:
+
+  trace_char('g');
+  UShort frame = 0;
+
+  // Set to 1 to use interrupt buffers; 0 for direct UART access:
+  if (_interrupt) {
+    // When tail is equal to head, there are no frames in ring buffer:
+    while (_get_tail == _get_head) {
+      // Wait for a frame to show up.
+    }
+
+    // Read the {frame} and advance the tail by one:
+    frame = _get_ring[_get_tail++];
+    _get_tail &= _ring_mask;
+  } else {
+    while (!(*_ucsra & _BV(RXC1))) {
+      // Nothing yet, keep waiting:
+    }
+    if ((*_ucsrb & _BV(RXB81)) != 0) {
+      frame = 0x100;
+    }
+    frame |= (UShort)(*_udr);
+  }
+  trace_hex(frame);
+  return frame;
+}
+
+void AVR_UART::frame_put(UShort frame) {
+  // This routine will output the low order 9-bits of {frame} to {self}.
+  // The echo due to the fact the bus is half-duplex is automatically
+  // read and ignored.
+
+  trace_char('p');
+  trace_hex(frame);
+
+  // For *interrupt*'s, we fetch from the buffer; otherwise we directly
+  // read from the register:
+  if (_interrupt) {
+    trace_char('i');
+    while (((_put_head + 1) & _ring_mask) == _put_tail) {
+      // Wait for space to show up in put ring buffer:
+    }
+
+    _put_ring[_put_head++] = frame;
+    _put_head &= _ring_mask;
+
+    *_ucsrb |= _BV(UDRIE1);
+  } else {
+    // Wait until UART can take another character to output:
+    while ((*_ucsra & _BV(UDRE1)) == 0) {
+      // UART is still busy, keep waiting:
+    }
+  
+    // Set 9th bit:
+    *_ucsrb &= ~_BV(TXB81);
+    if ((frame & 0x100) != 0) {
+      *_ucsrb |= _BV(TXB81);
+    }
+
+    // Output the lower 8 bits:
+    *_udr = (UByte)frame;
+  }
+}
+
+void AVR_UART::interrupt_set(Logical interrupt) {
+  // do something here
+}
+
 // *Bus_Buffer* routines:
 
 Bus_Buffer::Bus_Buffer() {
@@ -187,7 +443,7 @@ void Bus_Buffer::ushort_put(UShort ushort) {
 
 // *Bus* routines:
 
-Bus::Bus() {
+Bus::Bus(UART *bus_uart, UART *debug_uart) {
   // We want to do the following to the USART:
   //  - Set transmit/receive rate to .5Mbps
   //  - Single rate transmission (Register A)
@@ -273,12 +529,13 @@ Bus::Bus() {
   UCSR1C = _BV(UCSZ11) | _BV(UCSZ10);	// = 6
 
   // Initialize some the private member values:
+  _bus_uart = bus_uart;
+  _debug_uart = debug_uart;
   _desired_address = (UShort)0;
   _current_address = (UShort)0xffff;
-
-  _interrupt_mode = (Logical)0;
   _get_head = 0;
   _get_tail = 0;
+  _interrupt_mode = (Logical)0;
   _put_head = 0;
   _put_tail = 0;
   _auto_flush = (Logical)1;

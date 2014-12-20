@@ -2,12 +2,13 @@
 
 // The following tests are implemented by this code:
 #define TEST_BUS_INPUT 1
-#define TEST_BUS_ECHO 2
-#define TEST_BUS_INTERRUPT_INPUT 3
-#define TEST_BUS_COMMAND 4
+#define TEST_BUS_OUTPUT 2
+#define TEST_BUS_ECHO 3
+#define TEST_BUS_INTERRUPT_INPUT 4
+#define TEST_BUS_COMMAND 5
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_COMMAND
+#define TEST TEST_BUS_INPUT
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
@@ -22,8 +23,14 @@
 #include <Bus_Bridge_Encoders_Sonar.h>
 
 // Object variables:
-Bus bus;
+NULL_UART null_uart;
+AVR_UART1 avr_uart1(500000, (Character *)"9N1");
+Bus bus(&avr_uart1, &null_uart);
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
+
+//NULL_UART null_uart;
+//AVR_UART0 avr_uart0(115200L, (Character *)"8N1");
+//AVR_UART1 avr_uart1(500000L, (Character *)"9N1");
 
 Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
   _address = address;
@@ -111,6 +118,28 @@ void loop() {
       }
       break;
     }
+    case TEST_BUS_OUTPUT: {
+      static Character character;
+      if (character < '@' || character > '_') {
+	character = '@';
+      }
+
+      //avr_uart0.frame_put((UShort)character);
+      if (character == '_') {
+	//avr_uart0.frame_put((UShort)'\r');
+	//avr_uart0.frame_put((UShort)'\n');
+      }
+
+      if (character == '_') {
+	character = '@';
+      } else {
+	character += 1;
+      }
+
+      delay(100);
+
+      break;
+    }
     case TEST_BUS_INPUT: {
       //Serial.write("A:");
       //Serial.print(UCSR1A, HEX);
@@ -144,6 +173,8 @@ void loop() {
 
 void setup() {
   // Initalize the debugging port:
+  //AVR_UART0 avr_uart0(115200L, "8N1");
+  
   Serial.begin(115200);
   Serial.print("\r\nbbes:\r\n");
 
@@ -158,9 +189,11 @@ void setup() {
 
   // Enable/disable interrupts based on *TEST*:
   switch (TEST) {
-    case TEST_BUS_ECHO:
     case TEST_BUS_INPUT:
+    case TEST_BUS_ECHO:
       bus.interrupts_disable();
+      break;
+    case TEST_BUS_OUTPUT:
       break;
     case TEST_BUS_INTERRUPT_INPUT:
     case TEST_BUS_COMMAND:
