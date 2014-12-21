@@ -24,7 +24,7 @@
 
 // Object variables:
 NULL_UART null_uart;
-//AVR_UART0 avr_uart0(115200L, (Character *)"8N1");
+AVR_UART0 avr_uart0(115200L, (Character *)"8N1");
 AVR_UART1 avr_uart1(500000L, (Character *)"9N1");
 Bus bus(&avr_uart1, &null_uart);
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
@@ -77,9 +77,9 @@ void loop() {
       UShort frame = bus.frame_get();
 
       // Echo *frame* to the debugging port with an occasional CRLF:
-      Serial.write(frame);
+      //Serial.write(frame);
       if (frame == '_') {
-        Serial.write("\r\n");
+        //Serial.write("\r\n");
       }
 
       // Set *LED* to have the LSB of *frame*:
@@ -98,19 +98,19 @@ void loop() {
         UShort echo_frame = bus.frame_get();
     
         if (receive_frame == echo_frame) {
-          Serial.write(echo_frame);
+          //Serial.write(echo_frame);
           if ((echo_frame & 1) == 0) {
             digitalWrite(LED, LOW);
           } else {
             digitalWrite(LED, HIGH);
           }
         } else {
-          Serial.write('!');
+          //Serial.write('!');
         }
 
         if (echo_frame == '_') {
-          Serial.write('\r');
-          Serial.write('\n');
+          //Serial.write('\r');
+          //Serial.write('\n');
         }
       }
       break;
@@ -151,13 +151,15 @@ void loop() {
       // Get a *frame* from the bus:
       UShort frame = bus.frame_get();
 
+      UCSR0B |= _BV(RXEN0) | _BV(TXEN1);
+
       // Print it out for debugging:
-      Serial.write(frame);
-      //avr_uart0.frame_put(frame);
+      //Serial.write(frame);
+      avr_uart0.frame_put(frame);
       if (frame == '_') {
-	Serial.write("\r\n");
-	//avr_uart0.frame_put('\r');
-	//avr_uart0.frame_put('\n');
+	//Serial.write("\r\n");
+	avr_uart0.frame_put('\r');
+	avr_uart0.frame_put('\n');
       }
 
       // Light the *LED* using the LSB of *frame*:
@@ -175,8 +177,8 @@ void setup() {
   // Initalize the debugging port:
   //AVR_UART0 avr_uart0(115200L, "8N1");
   
-  Serial.begin(115200);
-  Serial.print("\r\nbbes:\r\n");
+  //Serial.begin(115200);
+  //Serial.print("\r\nbbes:\r\n");
 
   // Turn *LED* on:
   pinMode(LED, OUTPUT);
