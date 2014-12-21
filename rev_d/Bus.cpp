@@ -121,9 +121,9 @@ ISR(USART1_UDRE_vect)
 // *UART* routines:
 
 void UART::string_print(Character *string) {
-  for (Character character = *string;
-   *string != (Character)0; character = *string++) {
-    print(character);
+  Character character = '\0';
+  while ((character = *string++) != '\0') {
+    frame_put((UShort)character);
   }
 }
 
@@ -158,11 +158,11 @@ void UART::uinteger_print(UInteger uinteger) {
   }
 }
 
-// *AVR_UART* routines:
+// *AVRUART* routines:
 
 AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
  volatile UByte *ucsra, volatile UByte *ucsrb, volatile UByte *ucsrc,
- volatile UByte *udr, UInteger baud_rate, Character *configuration) {
+ volatile UByte *udr) {
   // First hang onto all of the register addresses:
   _ucsra = ucsra;
   _ucsrb = ucsrb;
@@ -171,6 +171,31 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   _ubrrl = ubrrl;
   _udr = udr;
 
+  reset();
+}
+
+void AVR_UART::reset() {
+  // Clear the UART configuration registers:
+  *_ubrrh = 0;
+  *_ubrrl = 0;
+  *_ucsra = 0;
+  *_ucsrb = 0;
+  *_ucsrc = 0;
+
+  // Intialize the UART data structures;
+  _get_head = 0;
+  _get_tail = 0;
+  _interrupt = (Logical)0;
+  _put_head = 0;
+  _put_tail = 0;
+}
+
+void AVR_UART::end() {
+  reset();
+}
+
+void AVR_UART::begin(UInteger frequency,
+  UInteger baud_rate, Character *configuration) {
   // We want to do the following to the USART:
   //  - Set transmit/receive rate to .5Mbps
   //  - Single rate transmission (Register A)
@@ -192,8 +217,7 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   // They will be initialized in the order above.
 
   // Initialize USART baud rate to .5Mbps:
-  //     f_cpu = 16000000L
-  UInteger ubrr = 16000000L / (baud_rate * 8) - 1;
+  UInteger ubrr = frequency / (baud_rate * 8) - 1;
   *_ubrrh = (UByte)(ubrr >> 8);
   *_ubrrl = (UByte)ubrr;
 
@@ -221,7 +245,10 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   //      c: (C) size bit 2 (see register C):
   //      d: Receive data bit 8
   //      e: Transmit data bit 8
-  // All bits except d can be set.  We want 0001 1000 = 0x18
+  // All bits except d can be set.  We want:
+  //  r=1   (i.e. receive enable)
+  //  t=1   (i.e. transmit enable)
+  // rtea bcde = 0001 1000 = 0x18:
   UByte b_flags = _BV(TXEN1) | _BV(RXEN1);
 
   // UCSR0C: USART Control and Status Register 0 C:
@@ -247,19 +274,22 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   //          111 9-bit
   //      p: Clock polarity (synchronous mode only)
   // All bits can set.  We want:
-  //    mm=00 (=Asynchronous USART)
-  //    pp=00 (=None)
-  //    s =0  (= 1 stop bit)
-  //    p = 0 (= don't care)
-  // zz is set from the *size_bits.  Thus we set *c_flag* to 0000 0000:
+  //    mm=00 (i.e. Asynchronous USART)
+  //    pp=00 (i.e.  None)
+  //    s = 0 (i.e. 1 stop bit)
+  //    p = 0 (i.e. don't care)
+  // The zz bits are set from the *size_bits* bits below.  Thus, for now,
+  //   mmpp szzp = 0000 0000 == 0:
   UByte c_flags = 0;
 
   // This is where we deal with *configuration*.  Right now we really
   // only support a *configuration* value of "8N1" or "9N1".  Other,
-  // possiblities could be supported, but for now those are the only two:
+  // possiblities could be supported, but for now we only bother with
+  // "8N1" and "9N1":
 
-  // Use the 2nd character of *configuration* to get the size:
-  UByte size_bits = 0;	// = 0000 0czz
+  // Use the 1st character of *configuration* to get the either 8-bit
+  // or 9-bit mode:
+  UByte size_bits = 0b000;	// = 0000 0czz
   if (configuration[0] == '8') {
     // 8 bit mode (czz = 011):
     size_bits = 0b011;
@@ -272,20 +302,10 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   b_flags |= size_bits & 0b100;		// ---- -c--
   c_flags |= (size_bits & 0b11) << 1;	// ---- -zz-
 
-  b_flags |= _BV(TXEN1) | _BV(RXEN1);
   // Now set the flags for UCSRnA, UCSRnB, and UCSRnC:
   *_ucsra = a_flags;
-  *_ucsrb = 0x1c;//b_flags;
+  *_ucsrb = b_flags;
   *_ucsrc = c_flags;
-
-  // Initialize some the private member values:
-  _interrupt = (Logical)0;
-  _get_head = 0;
-  _get_tail = 0;
-  _put_head = 0;
-  _put_tail = 0;
-
-  UCSR0B = 0x1c;
 }
 
 Logical AVR_UART::can_receive() {
@@ -804,96 +824,96 @@ Logical Bus::flush() {
   return error;
 }
 
-Logical Bus::can_receive() {
-  Logical result = (Logical)0;
-  if (_interrupt_mode) {
-    result = (Logical)(bus._get_tail != bus._get_head);
-  } else {
-    result = (Logical)((UCSR1A & _BV(RXC1)) != 0);
-  }
-  return result;
-}
-
-
-Logical Bus::can_transmit() {
-  Logical result = (Logical)0;
-  if (_interrupt_mode) {
-    UByte next_put_head = (_put_head + 1) & _put_ring_mask;
-    result = (Logical)(next_put_head != _put_tail);
-  } else {
-    result = (Logical)((UCSR1A & _BV(UDRE1)) != 0);
-  }
-  return result;
-}
-
-UShort Bus::frame_get() {
-  // Wait for a 9-bit frame to arrive and return it:
-
-  trace_char('g');
-  UCSR1B |= _BV(RXEN1);
-  UShort frame = 0;
-
-  // Set to 1 to use interrupt buffers; 0 for direct UART access:
-  if (_interrupt_mode) {
-    // When tail is equal to head, there are no frames in ring buffer:
-    UByte get_tail = bus._get_tail;
-    while (bus._get_tail == bus._get_head) {
-      // Wait for a frame to show up.
-    }
-
-    // Read the {frame} and advance the tail by one:
-    frame = bus._get_ring[get_tail];
-    bus._get_tail = (get_tail + 1) & _get_ring_mask;
-  } else {
-    while (!(UCSR1A & _BV(RXC1))) {
-      // Nothing yet, keep waiting:
-    }
-    if ((UCSR1B & _BV(RXB81)) != 0) {
-      frame |= 0x100;
-    }
-    frame |= (UShort)UDR1;
-  }
-  trace_hex(frame);
-  return frame;
-}
-
-void Bus::frame_put(UShort frame) {
-  // This routine will output the low order 9-bits of {frame} to {self}.
-  // The echo due to the fact the bus is half-duplex is automatically
-  // read and ignored.
-
-  trace_char('p');
-  trace_hex(frame);
-
-  // Set to 1 to use interrupt buffers; 0 for direct UART access:
-  if (_interrupt_mode) {
-    UByte put_head = bus._put_head;
-    UByte new_put_head = (put_head + 1) & _put_ring_mask;
-    while (new_put_head == bus._put_tail) {
-      // Wait for space to show up in put ring buffer:
-    }
-
-    bus._put_ring[put_head] = frame;
-    bus._put_head = new_put_head;
-
-    UCSR1B |= _BV(UDRIE1);
-  } else {
-    // Wait until UART can take another character to output:
-    while (!(UCSR1A & _BV(UDRE1))) {
-      // UART is still busy, keep waiting:
-    }
-  
-    // Set 9th bit:
-    if ((frame & 0x100) != 0) {
-      UCSR1B |= _BV(TXB81);
-    } else {
-      UCSR1B &= ~_BV(TXB81);
-    }
-
-    // UART is ready, output the character:
-    UDR1 = (UByte)frame;
-  }
-}
+//Logical Bus::can_receive() {
+//  Logical result = (Logical)0;
+//  if (_interrupt_mode) {
+//    result = (Logical)(bus._get_tail != bus._get_head);
+//  } else {
+//    result = (Logical)((UCSR1A & _BV(RXC1)) != 0);
+//  }
+//  return result;
+//}
+//
+//
+//Logical Bus::can_transmit() {
+//  Logical result = (Logical)0;
+//  if (_interrupt_mode) {
+//    UByte next_put_head = (_put_head + 1) & _put_ring_mask;
+//    result = (Logical)(next_put_head != _put_tail);
+//  } else {
+//    result = (Logical)((UCSR1A & _BV(UDRE1)) != 0);
+//  }
+//  return result;
+//}
+//
+//UShort Bus::frame_get() {
+//  // Wait for a 9-bit frame to arrive and return it:
+//
+//  trace_char('g');
+//  UCSR1B |= _BV(RXEN1);
+//  UShort frame = 0;
+//
+//  // Set to 1 to use interrupt buffers; 0 for direct UART access:
+//  if (_interrupt_mode) {
+//    // When tail is equal to head, there are no frames in ring buffer:
+//    UByte get_tail = bus._get_tail;
+//    while (bus._get_tail == bus._get_head) {
+//      // Wait for a frame to show up.
+//    }
+//
+//    // Read the {frame} and advance the tail by one:
+//    frame = bus._get_ring[get_tail];
+//    bus._get_tail = (get_tail + 1) & _get_ring_mask;
+//  } else {
+//    while (!(UCSR1A & _BV(RXC1))) {
+//      // Nothing yet, keep waiting:
+//    }
+//    if ((UCSR1B & _BV(RXB81)) != 0) {
+//      frame |= 0x100;
+//    }
+//    frame |= (UShort)UDR1;
+//  }
+//  trace_hex(frame);
+//  return frame;
+//}
+//
+//void Bus::frame_put(UShort frame) {
+//  // This routine will output the low order 9-bits of {frame} to {self}.
+//  // The echo due to the fact the bus is half-duplex is automatically
+//  // read and ignored.
+//
+//  trace_char('p');
+//  trace_hex(frame);
+//
+//  // Set to 1 to use interrupt buffers; 0 for direct UART access:
+//  if (_interrupt_mode) {
+//    UByte put_head = bus._put_head;
+//    UByte new_put_head = (put_head + 1) & _put_ring_mask;
+//    while (new_put_head == bus._put_tail) {
+//      // Wait for space to show up in put ring buffer:
+//    }
+//
+//    bus._put_ring[put_head] = frame;
+//    bus._put_head = new_put_head;
+//
+//    UCSR1B |= _BV(UDRIE1);
+//  } else {
+//    // Wait until UART can take another character to output:
+//    while (!(UCSR1A & _BV(UDRE1))) {
+//      // UART is still busy, keep waiting:
+//    }
+//  
+//    // Set 9th bit:
+//    if ((frame & 0x100) != 0) {
+//      UCSR1B |= _BV(TXB81);
+//    } else {
+//      UCSR1B &= ~_BV(TXB81);
+//    }
+//
+//    // UART is ready, output the character:
+//    UDR1 = (UByte)frame;
+//  }
+//}
 
 // This routine will perform all the operations to respond to
 // commands sent to *address*.  *command_process* is a routine that

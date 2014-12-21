@@ -24,9 +24,9 @@
 
 // Object variables:
 NULL_UART null_uart;
-AVR_UART0 avr_uart0(115200L, (Character *)"8N1");
-AVR_UART1 avr_uart1(500000L, (Character *)"9N1");
-Bus bus(&avr_uart1, &null_uart);
+AVR_UART0 debug_uart;
+AVR_UART1 bus_uart;
+Bus bus(&bus_uart, &debug_uart);
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
 
 Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
@@ -116,53 +116,49 @@ void loop() {
       break;
     }
     case TEST_BUS_OUTPUT: {
-      static Character character;
+      // This test will just output characters to the debugging port
+      // with no interraction with the bus:
+
+      // Start with with *character* being static:
+      static Character character = '@';
+
+      // Just in case, make sure *character* is between '@' and '_':
       if (character < '@' || character > '_') {
 	character = '@';
       }
 
-      //avr_uart0.frame_put((UShort)character);
-      if (character == '_') {
-	//avr_uart0.frame_put((UShort)'\r');
-	//avr_uart0.frame_put((UShort)'\n');
-      }
+      // Output *character* to the *avr_uart0*:
+      debug_uart.frame_put((UShort)character);
 
+      // Output any needed CRLF, and increment *character*:
       if (character == '_') {
+	debug_uart.string_print((Character *)"\r\n");
 	character = '@';
       } else {
 	character += 1;
       }
 
+      // Slow things down a little:
       delay(100);
 
       break;
     }
     case TEST_BUS_INPUT: {
-      //Serial.write("A:");
-      //Serial.print(UCSR1A, HEX);
-      //Serial.write(' ');
-      //Serial.write("B:");
-      //Serial.print(UCSR1B, HEX);
-      //Serial.write(' ');
-      //Serial.write("C:");
-      //Serial.print(UCSR1C, HEX);
-      //Serial.write("\r\n");
+      // This test will input *frame*'s from the *bus* and echo them
+      // to *debug_uart*:
 
       // Get a *frame* from the bus:
       UShort frame = bus.frame_get();
 
-      UCSR0B |= _BV(RXEN0) | _BV(TXEN1);
-
       // Print it out for debugging:
-      //Serial.write(frame);
-      avr_uart0.frame_put(frame);
-      if (frame == '_') {
-	//Serial.write("\r\n");
-	avr_uart0.frame_put('\r');
-	avr_uart0.frame_put('\n');
+      debug_uart.frame_put(frame & 0x7f);
+
+      // Tack on a CRLF when we get an '_':    
+      if (frame == (UShort)'_') {
+	debug_uart.string_print((Character *)"\r\n");
       }
 
-      // Light the *LED* using the LSB of *frame*:
+      // Light the *LED* using the least significant bit of *frame*:
       if ((frame & 1) == 0) {
 	digitalWrite(LED, LOW);
       } else {
@@ -174,15 +170,21 @@ void loop() {
 }
 
 void setup() {
-  // Initalize the debugging port:
-  //AVR_UART0 avr_uart0(115200L, "8N1");
-  
-  //Serial.begin(115200);
-  //Serial.print("\r\nbbes:\r\n");
+  // The standard frequency for an AVR Arduino is 16MHz:
+  static const UInteger frequency = (UInteger)16000000L;
+
+  // Initalize the *debug_uart*:
+  debug_uart.begin(frequency, 115200L, (Character *)"8N1");
+
+  // Announce that we have got *debug_uart* working:
+  debug_uart.string_print((Character *)"\r\nbes:\r\n");
 
   // Turn *LED* on:
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
+
+  // Get *bus_uart* talking to the bus:
+  bus_uart.begin(frequency, 500000L, (Character *)"9N1");
 
   // Force the standby pin on the CAN transeciever to low to force it
   // into active mode:

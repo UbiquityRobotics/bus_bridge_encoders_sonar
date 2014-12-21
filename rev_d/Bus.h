@@ -55,13 +55,17 @@ class AVR_UART : public UART {
   public:
     AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
      volatile UByte *ucsra, volatile UByte *ucsrb, volatile UByte *ucsrc,
-     volatile UByte *udr, UInteger baud_rate, Character *configuration);
+     volatile UByte *udr);
+    void begin(UInteger frequency,
+     UInteger baud_rate, Character *configuration);
     virtual Logical can_receive();
     virtual Logical can_transmit();
+    void end();
     virtual UShort frame_get();
     virtual void frame_put(UShort frame);
     virtual void interrupt_set(Logical interrupt);
     void receive_interrupt();
+    void reset();
     void transmit_interrupt();
   private:
     UByte static const _ring_power = 4;
@@ -86,7 +90,7 @@ class NULL_UART : public UART {
   public:
     Logical can_receive() { return (Logical)1; };
     Logical can_transmit() { return (Logical)1; };
-    UShort frame_get() { return 0; };
+    UShort frame_get() { return 0xffff; };
     void frame_put(UShort frame) { };
     void interrupt_set(Logical interrupt) { };
 };
@@ -94,18 +98,16 @@ class NULL_UART : public UART {
 #if defined(UDR0)
   class AVR_UART0 : public AVR_UART {
     public:
-      AVR_UART0(UInteger baud_rate, Character *configuration) :
-       AVR_UART(&UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UCSR0C, &UDR0,
-       baud_rate, configuration) { } ;
+      AVR_UART0() :
+       AVR_UART(&UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UCSR0C, &UDR0) { } ;
   };
 #endif // defined(UDR0)
 
 #if defined(UDR1)
   class AVR_UART1 : public AVR_UART {
     public:
-      AVR_UART1(UInteger baud_rate, Character *configuration) :
-       AVR_UART(&UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UCSR1C, &UDR1,
-       baud_rate, configuration) { } ;
+      AVR_UART1() :
+       AVR_UART(&UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UCSR1C, &UDR1) { } ;
   };
 #endif // defined(UDR1)
 
@@ -231,12 +233,12 @@ class Bus
       ubyte_put((UByte)logical);
     }
 
-    Logical can_receive();
-    Logical can_transmit();
+    Logical can_receive() { return _bus_uart->can_receive(); };
+    Logical can_transmit() { return _bus_uart->can_transmit(); };
     UByte command_ubyte_get(UByte address, UByte command);
     void command_ubyte_put(UByte address, UByte command, UByte ubyte);
-    UShort frame_get();
-    void frame_put(UShort);
+    UShort frame_get() { return _bus_uart->frame_get(); };
+    void frame_put(UShort frame) { _bus_uart->frame_put(frame); };
     Logical flush();
     Logical flush_mode(Logical auto_flush);
     void interrupts_disable();
