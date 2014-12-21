@@ -8,7 +8,7 @@
 #define TEST_BUS_COMMAND 5
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_INPUT
+#define TEST TEST_BUS_ECHO
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
@@ -91,28 +91,33 @@ void loop() {
       break;
     }
     case TEST_BUS_ECHO: {
-      if (bus.can_receive()) {
-        UShort receive_frame = bus.frame_get();
-        UShort send_frame = receive_frame;
-        bus.frame_put(send_frame);
-        UShort echo_frame = bus.frame_get();
-    
-        if (receive_frame == echo_frame) {
-          //Serial.write(echo_frame);
-          if ((echo_frame & 1) == 0) {
-            digitalWrite(LED, LOW);
-          } else {
-            digitalWrite(LED, HIGH);
-          }
-        } else {
-          //Serial.write('!');
-        }
+      // Wait for a *frame* to show up on *bus*:
+      UShort frame = bus.frame_get();
 
-        if (echo_frame == '_') {
-          //Serial.write('\r');
-          //Serial.write('\n');
-        }
+      // Set the *LED* to the least significant bit of *frame*:
+      if ((frame & 1) == 0) {
+        digitalWrite(LED, LOW);
+      } else {
+        digitalWrite(LED, HIGH);
       }
+
+      // Print *frame* out to *debug_uart*:
+      debug_uart.frame_put(frame & 0x7f);
+
+      // Send out a CRLF when we get a '_':
+      if (frame == (UShort)'_') {
+        debug_uart.string_print((Character *)"\r\n");
+      }
+
+      // Now send *frame* back to the *bus*:
+      bus.frame_put(frame);
+
+      // Get the *echo_frame* and check for a mismatch;
+      UShort echo_frame = bus.frame_get();
+      if (frame != echo_frame) {
+        debug_uart.string_print((Character *)"!");
+      }
+
       break;
     }
     case TEST_BUS_OUTPUT: {
