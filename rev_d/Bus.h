@@ -117,8 +117,8 @@ class NULL_UART : public UART {
 
 // These defines are empty when *BUS_TRACE* is 0:
 #if BUS_TRACE
-  #define trace_char(ch) Serial.write(ch)
-  #define trace_hex(hex) Serial.print(hex, HEX);
+  #define trace_char(ch) //Serial.write(ch)
+  #define trace_hex(hex) //Serial.print(hex, HEX);
 #else // BUS_TRACE
   #define trace_char(ch)
   #define trace_hex(hex)

@@ -24,13 +24,10 @@
 
 // Object variables:
 NULL_UART null_uart;
-AVR_UART1 avr_uart1(500000, (Character *)"9N1");
+//AVR_UART0 avr_uart0(115200L, (Character *)"8N1");
+AVR_UART1 avr_uart1(500000L, (Character *)"9N1");
 Bus bus(&avr_uart1, &null_uart);
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
-
-//NULL_UART null_uart;
-//AVR_UART0 avr_uart0(115200L, (Character *)"8N1");
-//AVR_UART1 avr_uart1(500000L, (Character *)"9N1");
 
 Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
   _address = address;
@@ -156,15 +153,18 @@ void loop() {
 
       // Print it out for debugging:
       Serial.write(frame);
+      //avr_uart0.frame_put(frame);
       if (frame == '_') {
-        Serial.write("\r\n");
+	Serial.write("\r\n");
+	//avr_uart0.frame_put('\r');
+	//avr_uart0.frame_put('\n');
       }
 
       // Light the *LED* using the LSB of *frame*:
       if ((frame & 1) == 0) {
-        digitalWrite(LED, LOW);
+	digitalWrite(LED, LOW);
       } else {
-        digitalWrite(LED, HIGH);
+	digitalWrite(LED, HIGH);
       }
       break;
     }

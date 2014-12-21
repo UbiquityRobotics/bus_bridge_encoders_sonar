@@ -121,7 +121,8 @@ ISR(USART1_UDRE_vect)
 // *UART* routines:
 
 void UART::string_print(Character *string) {
-  for (Character character = *string; *string != (Character)0; string++) {
+  for (Character character = *string;
+   *string != (Character)0; character = *string++) {
     print(character);
   }
 }
@@ -130,7 +131,7 @@ void UART::uinteger_print(UInteger uinteger) {
   // If *uinteger* is 0, just output "0":
   if (uinteger == 0) {
     // *uinteger* is 0:
-    print('0');
+    frame_put((UShort)'0');
   } else {
     // *uinteger* is non-zero; use *non_zero_output* to suppress leading zeros:
     Logical non_zero_output = (Logical)0;
@@ -147,10 +148,10 @@ void UART::uinteger_print(UInteger uinteger) {
       // Check zero nibbles for leading zero suppression:
       if (nibble == 0) {
 	if (non_zero_output) {
-	  print('0');
+	  frame_put((UShort)'0');
 	}
       } else {
-	print("0123456789abcdef"[nibble]);
+	frame_put((UShort)"0123456789abcdef"[nibble]);
 	non_zero_output = (Logical)1;
       }
     } while (shift != 0);
@@ -192,7 +193,7 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
 
   // Initialize USART baud rate to .5Mbps:
   //     f_cpu = 16000000L
-  UInteger ubrr = 16000000L / (baud_rate * 16) - 1;
+  UInteger ubrr = 16000000L / (baud_rate * 8) - 1;
   *_ubrrh = (UByte)(ubrr >> 8);
   *_ubrrl = (UByte)ubrr;
 
@@ -206,9 +207,9 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   //      p: Parity error
   //      d: Double transmission speed
   //      m: Multi-processor communication mode
-  // Only d and m can be set:  We want d=0 and m=0:
+  // Only d and m can be set:  We want d=1 and m=0:
   //   rtef opdm = 0000 0000 = 0
-  UByte a_flags = 0;
+  UByte a_flags = _BV(U2X1);
 
   // UCSR0B: USART Control and Status Register 0 B:
   //   rtea bcde: (0000 0000: Default):
@@ -271,9 +272,10 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   b_flags |= size_bits & 0b100;		// ---- -c--
   c_flags |= (size_bits & 0b11) << 1;	// ---- -zz-
 
+  b_flags |= _BV(TXEN1) | _BV(RXEN1);
   // Now set the flags for UCSRnA, UCSRnB, and UCSRnC:
   *_ucsra = a_flags;
-  *_ucsrb = b_flags;
+  *_ucsrb = 0x1c;//b_flags;
   *_ucsrc = c_flags;
 
   // Initialize some the private member values:
@@ -282,6 +284,8 @@ AVR_UART::AVR_UART(volatile UByte *ubrrh, volatile UByte *ubrrl,
   _get_tail = 0;
   _put_head = 0;
   _put_tail = 0;
+
+  UCSR0B = 0x1c;
 }
 
 Logical AVR_UART::can_receive() {
@@ -371,7 +375,12 @@ void AVR_UART::frame_put(UShort frame) {
 }
 
 void AVR_UART::interrupt_set(Logical interrupt) {
-  // do something here
+  _interrupt = interrupt;
+  if (interrupt) {
+    *_ucsrb |= _BV(UDRIE1) | _BV(RXCIE1);
+  } else {
+    *_ucsrb &= ~(_BV(UDRIE1) | _BV(RXCIE1));
+  }
 }
 
 // *Bus_Buffer* routines:
@@ -467,11 +476,11 @@ Bus::Bus(UART *bus_uart, UART *debug_uart) {
   // Initialize USART1 baud rate to .5Mbps:
   //     f_cpu = 16000000L
   //     baud_rate = 500000L
-  //     uubrr1 = f_cpu / (baud_rate * 16L) - 1
-  //            = 16000000 / (500000 * 16) - 1
-  //            = 16000000 / 8000000 - 1
-  //            = 2 - 1
-  //            = 1
+  //     uubrr1 = f_cpu / (baud_rate * 8L) - 1
+  //            = 16000000 / (500000 * 8) - 1
+  //            = 16000000 / 4000000 - 1
+  //            = 4 - 1
+  //            = 3
   //FIXME: Should be 1 for .5Mbps rather 0 for 1Mbps
   UBRR1L = 1;
   UBRR1H = 0;
@@ -485,10 +494,10 @@ Bus::Bus(UART *bus_uart, UART *debug_uart) {
   //      o: data Overrun
   //      p: Parity error
   //      d: Double transmission speed
-  //	   m: Multi-processor communication mode
-  // Only d and m can be set:  We want d=0 and m=0:
-  //   rtef opdm = 0000 0000 = 0
-  UCSR1A = 0;
+  //	  m: Multi-processor communication mode
+  // Only d and m can be set:  We want d=1 and m=0:
+  //   rtef opdm = 0000 0010 = 0
+  UCSR1A = _BV(U2X1);
 
   // UCSR0B: USART Control and Status Register 0 B:
   //   rtea bcde: (0000 0000: Default):
@@ -499,7 +508,7 @@ Bus::Bus(UART *bus_uart, UART *debug_uart) {
   //      b: (B) Receiver enable
   //      c: (C) size bit 2 (see register C):
   //      d: Receive data bit 8
-  //	    e: Transmit data bit 8
+  //	  e: Transmit data bit 8
   // All bits except d can be set.  We want 0001 1100 = 0x1c
   UCSR1B = _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x1c
 
@@ -540,6 +549,8 @@ Bus::Bus(UART *bus_uart, UART *debug_uart) {
   _put_tail = 0;
   _auto_flush = (Logical)1;
 
+  UCSR0B = 0x1c;
+
   UCSR1A &= ~_BV(MPCM1);
   //UCSR1B |= _BV(RXEN1);
 
@@ -577,9 +588,9 @@ void Bus::log_dump() {
   // log buffer.
 
   // Enclose dump values in square brackets:
-  Serial.write('\r');
-  Serial.write('\n');
-  Serial.write('[');
+  //Serial.write('\r');
+  //Serial.write('\n');
+  //Serial.write('[');
 
   // Iterate from {_log_dumped} to {_log_total}:
   UByte log_total = _log_total;
@@ -591,25 +602,25 @@ void Bus::log_dump() {
 
     // Prefix {frame} with 'g' for get and 'p' for put:
     if ((frame & 0x1000) != 0) {
-      Serial.print('g');
+      //Serial.print('g');
     } else {
-      Serial.print('p');
+      //Serial.print('p');
     }
 
     // Output the 9-bit frame value:
-    Serial.print(frame & 0x1ff, HEX); 
+    //Serial.print(frame & 0x1ff, HEX); 
 
     // Output the frame flags:
-    Serial.write(':');
-    Serial.print((frame >> 8) & 0xe, HEX);
+    //Serial.write(':');
+    //Serial.print((frame >> 8) & 0xe, HEX);
 
     // Separate the value with a space:
-    Serial.write(' ');
+    //Serial.write(' ');
 
     // To prevent line wrapping, insert a new-line every 8th value:
     if ((count & 7) == 7) {
-      Serial.write('\r');
-      Serial.write('\n');
+      //Serial.write('\r');
+      //Serial.write('\n');
      }
      count += 1;
   }
@@ -618,9 +629,9 @@ void Bus::log_dump() {
   _log_dumped = log_total;
 
   // Close off the square brackets:
-  Serial.write(']');
-  Serial.write('\r');
-  Serial.write('\n');
+  //Serial.write(']');
+  //Serial.write('\r');
+  //Serial.write('\n');
 }
 #endif // BUS_DEBUG != 0
 
@@ -1062,8 +1073,8 @@ Logical Bus::put_buffer_send() {
 
   UByte header = (size << 4) | check_sum;
 
-  Serial.write("P");
-  Serial.print(header, HEX);
+  //Serial.write("P");
+  //Serial.print(header, HEX);
 
   bus.frame_put((UShort)header);
   UShort header_echo = bus.frame_get();
@@ -1072,13 +1083,13 @@ Logical Bus::put_buffer_send() {
     for (Byte index = 0; index < size; index++) {
       UShort put_frame = (UShort)_put_buffer._ubytes[index];
 
-      Serial.write("P");
-      Serial.print(put_frame, HEX);
+      //Serial.write("P");
+      //Serial.print(put_frame, HEX);
 
       bus.frame_put(put_frame);
       UShort put_frame_echo = bus.frame_get();
       if (put_frame != put_frame_echo) {
-        Serial.write('&');
+        //Serial.write('&');
         error = (Logical)1;
         break;
       }
