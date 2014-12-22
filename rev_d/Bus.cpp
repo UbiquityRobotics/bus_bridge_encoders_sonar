@@ -3,6 +3,14 @@
 #include "Arduino.h"
 #include "Bus.h"
 
+#if defined(UDR0)
+AVR_UART0 avr_uart0;
+#endif // defined(UDR0)
+
+#if defined(UDR1)
+AVR_UART1 avr_uart1;
+#endif // define(UDR1)
+
 ISR(USART1_RX_vect)
 {
   // This is the interrupt service routine that is called to when there
@@ -564,7 +572,6 @@ Bus::Bus(UART *bus_uart, UART *debug_uart) {
   _current_address = (UShort)0xffff;
   _get_head = 0;
   _get_tail = 0;
-  _interrupt_mode = (Logical)0;
   _put_head = 0;
   _put_tail = 0;
   _auto_flush = (Logical)1;
@@ -589,16 +596,6 @@ void Bus::command_ubyte_put(UByte address, UByte command, UByte ubyte) {
   command_begin(address, command, sizeof(UByte));
   ubyte_put(ubyte);
   command_end();
-}
-
-void Bus::interrupts_enable() {
-  _interrupt_mode = (Logical)1;
-  UCSR1B |= _BV(RXCIE1) | _BV(UDRIE1);
-}
-
-void Bus::interrupts_disable() {
-  _interrupt_mode = (Logical)0;
-  UCSR1B &= ~(_BV(RXCIE1) | _BV(UDRIE1));
 }
 
 // The log_dump method is only provided if {BUS_DEBUG} is set to 1:

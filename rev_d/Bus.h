@@ -78,6 +78,7 @@ class AVR_UART : public UART {
     volatile UByte _put_head;
     UByte _put_ring[_ring_size];
     volatile UByte _put_tail;
+    Character *_configuration;
     UByte volatile *_ubrrh;
     UByte volatile *_ubrrl;
     UByte volatile *_ucsra;
@@ -101,6 +102,8 @@ class NULL_UART : public UART {
       AVR_UART0() :
        AVR_UART(&UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UCSR0C, &UDR0) { } ;
   };
+
+  extern AVR_UART0 avr_uart0;
 #endif // defined(UDR0)
 
 #if defined(UDR1)
@@ -109,6 +112,8 @@ class NULL_UART : public UART {
       AVR_UART1() :
        AVR_UART(&UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UCSR1C, &UDR1) { } ;
   };
+
+  extern AVR_UART1 avr_uart1;
 #endif // defined(UDR1)
 
 // These two defines are only used when *BUS_DEBUG* is set to 1:
@@ -233,16 +238,22 @@ class Bus
       ubyte_put((UByte)logical);
     }
 
-    Logical can_receive() { return _bus_uart->can_receive(); };
-    Logical can_transmit() { return _bus_uart->can_transmit(); };
+    void auto_flush_set(Logical auto_flush)
+     { _auto_flush = auto_flush; };
+    Logical can_receive()
+     { return _bus_uart->can_receive(); };
+    Logical can_transmit()
+     { return _bus_uart->can_transmit(); };
     UByte command_ubyte_get(UByte address, UByte command);
     void command_ubyte_put(UByte address, UByte command, UByte ubyte);
-    UShort frame_get() { return _bus_uart->frame_get(); };
-    void frame_put(UShort frame) { _bus_uart->frame_put(frame); };
+    UShort frame_get()
+     { return _bus_uart->frame_get(); };
+    void frame_put(UShort frame)
+     { _bus_uart->frame_put(frame); };
     Logical flush();
-    Logical flush_mode(Logical auto_flush);
-    void interrupts_disable();
-    void interrupts_enable();
+    void interrupt_set(Logical interrupt)
+     { _bus_uart->interrupt_set(interrupt); };
+
     Logical logical_get();
 
     //! @brief Return next byte from currently selected module.
@@ -290,8 +301,6 @@ class Bus
     // service routine needs to be able to access them.  Trying to figure
     // out how to do this with a friend fuction to a function with C linkage
     // was too hard:
-
-    Logical _interrupt_mode;	// 1=>interrupt mode; 0=>poll mode
 
     static const UByte _get_ring_power = 4;
     static const UByte _get_ring_size = 1 << _get_ring_power;
@@ -394,14 +403,14 @@ class Bus_Module
       _bus->flush();
     }
 
-    Logical flush_mode_set(Logical auto_flush) {
+    void auto_flush_set(Logical auto_flush) {
       // This routine will Set the automatic flush mode for {this}
       // to {auto_flush}.  If {auto_flush} is 1, each command as
       // flushed as soon as possible.  If {auto_flush} is 0,
       // commands are queued until an explicit flush occurs.
       // The previous value of flush mode is returned.
 
-      return _bus->flush_mode(auto_flush);
+      _bus->auto_flush_set(auto_flush);
     }
 
     Logical logical_get() {
