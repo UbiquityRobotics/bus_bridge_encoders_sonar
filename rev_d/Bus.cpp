@@ -23,15 +23,15 @@ AVR_UART1 avr_uart1;
 
 
   ISR(USART1_RX_vect) {
-    avr_uart0.frame_put((UShort)'[');
+    //avr_uart0.frame_put((UShort)'[');
     avr_uart1.receive_interrupt();
-    avr_uart0.frame_put((UShort)']');
+    //avr_uart0.frame_put((UShort)']');
   }
 
   ISR(USART1_UDRE_vect) {
-    avr_uart0.frame_put((UShort)'<');
+    //avr_uart0.frame_put((UShort)'<');
     avr_uart1.transmit_interrupt();
-    avr_uart0.frame_put((UShort)'>');
+    //avr_uart0.frame_put((UShort)'>');
   }
 
 #endif // define(UDR1)
@@ -249,6 +249,9 @@ void AVR_UART::begin(UInteger frequency,
   //   UCSRnC = USART Control status register C
   // They will be initialized in the order above.
 
+  // Hang onto *configuration* for debugging purposes:
+  _configuration = configuration;
+
   // Initialize USART baud rate to .5Mbps:
   UInteger ubrr = frequency / (baud_rate * 8) - 1;
   *_ubrrh = (UByte)(ubrr >> 8);
@@ -395,19 +398,16 @@ void AVR_UART::frame_put(UShort frame) {
   // The echo due to the fact the bus is half-duplex is automatically
   // read and ignored.
 
-  trace_char('p');
-  trace_hex(frame);
-
   // For *interrupt*'s, we fetch from the buffer; otherwise we directly
   // read from the register:
   if (_interrupt) {
-    trace_char('i');
     while (((_put_head + 1) & _ring_mask) == _put_tail) {
       // Wait for space to show up in put ring buffer:
     }
 
-    _put_ring[_put_head++] = frame;
-    _put_head &= _ring_mask;
+    UByte put_head = _put_head;
+    _put_ring[put_head] = frame;
+    _put_head = (put_head + 1) & _ring_mask;
 
     *_ucsrb |= _BV(UDRIE1);
   } else {
@@ -473,38 +473,40 @@ void AVR_UART::transmit_interrupt() {
   // frame is removed from {_put_buffer}.  If there are no frames
   // ready for transmission, the interrupt is disabled.
 
-  avr_uart0.frame_put((UShort)'m');
+  //avr_uart0.frame_put((UShort)'m');
+  //avr_uart0.string_print(_configuration);
+  //avr_uart0.uinteger_print((UInteger)_put_head);
 
   // The transmit buffer is ready for a new frame.  Now check to
   // see if we have a frame to feed it:
   UByte put_tail = _put_tail;
-  if (bus._put_head == put_tail) {
+  if (_put_head == put_tail) {
     // *put_buffer* is empty, so disable transmit interrupts:
-    avr_uart0.frame_put((UShort)'n');
+    //avr_uart0.frame_put((UShort)'n');
     *_ucsrb &= ~_BV(UDRIE1);
   } else {
     // *put_buffer* is not empty; grab *frame* from *put_buffer* and
     // update *put_tail*:
-    avr_uart0.frame_put((UShort)'o');
-    UShort frame = bus._put_ring[put_tail];
+    //avr_uart0.frame_put((UShort)'o');
+    UShort frame = _put_ring[put_tail];
     _put_tail = (put_tail + 1) & _ring_mask;
 
     // Deal with 9th bit of *frame*.  Most of the time the 9th bit
     // is not set.  So we clear the 9th bit by default and then set
     // it if necssary:
-    avr_uart0.frame_put((UShort)'p');
+    //avr_uart0.frame_put((UShort)'p');
     *_ucsrb &= ~_BV(TXB81);
     if ((frame & 0x100) != 0) {
       // Set 9th bit:
       *_ucsrb |= _BV(TXB81);
     }
 
-    avr_uart0.frame_put((UShort)'q');
+    //avr_uart0.frame_put((UShort)'q');
     // Stuff the low order 8-bits into *udr* to send the 9-bit frame
     // on its way.
     *_udr = (UByte)frame;
   }
-    avr_uart0.frame_put((UShort)'r');
+  //avr_uart0.frame_put((UShort)'r');
 }
 
 // *Bus_Buffer* routines:
@@ -576,7 +578,7 @@ void Bus_Buffer::ushort_put(UShort ushort) {
 
 // *Bus* routines:
 
-Bus::Bus(UART *bus_uart, UART *debug_uart) {
+Bus::Bus(AVR_UART *bus_uart, AVR_UART *debug_uart) {
   // We want to do the following to the USART:
   //  - Set transmit/receive rate to .5Mbps
   //  - Single rate transmission (Register A)
@@ -666,10 +668,6 @@ Bus::Bus(UART *bus_uart, UART *debug_uart) {
   _debug_uart = debug_uart;
   _desired_address = (UShort)0;
   _current_address = (UShort)0xffff;
-  _get_head = 0;
-  _get_tail = 0;
-  _put_head = 0;
-  _put_tail = 0;
   _auto_flush = (Logical)1;
 
   UCSR0B = 0x1c;

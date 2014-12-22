@@ -67,7 +67,8 @@ class AVR_UART : public UART {
     void receive_interrupt();
     void reset();
     void transmit_interrupt();
-  private:
+  //private:
+  //protected:
     UByte static const _ring_power = 4;
     UByte static const _ring_size = 1 << _ring_power;
     UByte static const _ring_mask = _ring_size - 1;
@@ -169,7 +170,7 @@ class Bus
 {
   public:
     //! @brief Constructor for Bus object.
-    Bus(UART *bus_uart, UART *debug_uart);
+    Bus(AVR_UART *bus_uart, AVR_UART *debug_uart);
 
     //! @brief Return the a signed byte from currently selected module.
     //!   @return the next signed byte from the command.
@@ -248,8 +249,9 @@ class Bus
     void command_ubyte_put(UByte address, UByte command, UByte ubyte);
     UShort frame_get()
      { return _bus_uart->frame_get(); };
-    void frame_put(UShort frame)
-     { _bus_uart->frame_put(frame); };
+    void frame_put(UShort frame) {
+      _bus_uart->frame_put(frame);
+    };
     Logical flush();
     void interrupt_set(Logical interrupt)
      { _bus_uart->interrupt_set(interrupt); };
@@ -302,19 +304,19 @@ class Bus
     // out how to do this with a friend fuction to a function with C linkage
     // was too hard:
 
-    static const UByte _get_ring_power = 4;
-    static const UByte _get_ring_size = 1 << _get_ring_power;
-    static const UByte _get_ring_mask = _get_ring_size - 1;
-    UShort _get_ring[_get_ring_size];	// Ring buffer for received frames
-    volatile UByte _get_head;
-    volatile UByte _get_tail;
+    //static const UByte _get_ring_power = 4;
+    //static const UByte _get_ring_size = 1 << _get_ring_power;
+    //static const UByte _get_ring_mask = _get_ring_size - 1;
+    //UShort _get_ring[_get_ring_size];	// Ring buffer for received frames
+    //volatile UByte _get_head;
+    //volatile UByte _get_tail;
 
-    static const UByte _put_ring_power = 4;
-    static const UByte _put_ring_size = 1 << _put_ring_power;
-    static const UByte _put_ring_mask = _put_ring_size - 1;
-    UShort _put_ring[_put_ring_size];	// Ring buffer for received frames
-    volatile UByte _put_head;
-    volatile UByte _put_tail;
+    //static const UByte _put_ring_power = 4;
+    //static const UByte _put_ring_size = 1 << _put_ring_power;
+    //static const UByte _put_ring_mask = _put_ring_size - 1;
+    //UShort _put_ring[_put_ring_size];	// Ring buffer for received frames
+    //volatile UByte _put_head;
+    //volatile UByte _put_tail;
 
     UShort _echo_suppress;	// Frame to suppress; (OR in 0x8000 to suppress)
 
@@ -323,8 +325,8 @@ class Bus
   private:
     static const UByte _maximum_request_size = 15;
 
-    UART *_bus_uart;		// UART connected to bus
-    UART *_debug_uart;		// UART used for debugging messages
+    AVR_UART *_bus_uart;	// UART connected to bus
+    AVR_UART *_debug_uart;	// UART used for debugging messages
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
 
