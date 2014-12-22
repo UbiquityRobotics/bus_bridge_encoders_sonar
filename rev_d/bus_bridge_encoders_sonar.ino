@@ -8,7 +8,7 @@
 #define TEST_BUS_COMMAND 5
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_INPUT
+#define TEST TEST_BUS_ECHO
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
@@ -184,7 +184,7 @@ void setup() {
   debug_uart->begin(frequency, 115200L, (Character *)"8N1");
 
   // Announce that we have got *debug_uart* working:
-  debug_uart->string_print((Character *)"\r\nbes:\r\n");
+  debug_uart->string_print((Character *)"\r\nbbes:\r\n");
 
   // Turn *LED* on:
   pinMode(LED, OUTPUT);
@@ -200,14 +200,14 @@ void setup() {
 
   // Enable/disable interrupts based on *TEST*:
   switch (TEST) {
-    case TEST_BUS_OUTPUT:
-      debug_uart->interrupt_set((Logical)0);
+    case TEST_BUS_OUTPUT: 
+     debug_uart->interrupt_set((Logical)1);
       bus_uart->interrupt_set((Logical)0);
       break;
     case TEST_BUS_INPUT:
     case TEST_BUS_ECHO:
-      debug_uart->interrupt_set((Logical)0);
-      bus_uart->interrupt_set((Logical)0);
+      debug_uart->interrupt_set((Logical)1);
+      bus_uart->interrupt_set((Logical)1);
       break;
     case TEST_BUS_INTERRUPT_INPUT:
     case TEST_BUS_COMMAND:

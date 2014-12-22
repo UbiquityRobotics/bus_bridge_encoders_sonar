@@ -54,6 +54,7 @@ typedef float Float;			// 32-bit single precision float number
 typedef signed int Integer;		// 32-bit signed integer
 typedef signed long int Long;		// 64-bit signed integer
 typedef signed short Short;		// 16-bit signed integer
+typedef Character *Text;		// Null terminated *Character* string
 
 // Unsigned types start with 'U' character:
 typedef unsigned char UByte;		// 8-bits unsigned
