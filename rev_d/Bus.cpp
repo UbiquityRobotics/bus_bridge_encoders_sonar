@@ -1,155 +1,9 @@
 // Copyright (c) 2014 by Wayne C. Gramlich.  All rights reserved.
 
+// See "Bus.h" for for an overview.
+
 #include "Arduino.h"
 #include "Bus.h"
-
-#if defined(UDR0)
-
-  AVR_UART0 avr_uart0;
-
-  ISR(USART0_RX_vect) {
-    avr_uart0.receive_interrupt();
-  }
-
-  ISR(USART0_UDRE_vect) {
-    avr_uart0.transmit_interrupt();
-  }
-
-#endif // defined(UDR0)
-
-#if defined(UDR1)
-
-AVR_UART1 avr_uart1;
-
-
-  ISR(USART1_RX_vect) {
-    //avr_uart0.frame_put((UShort)'[');
-    avr_uart1.receive_interrupt();
-    //avr_uart0.frame_put((UShort)']');
-  }
-
-  ISR(USART1_UDRE_vect) {
-    //avr_uart0.frame_put((UShort)'<');
-    avr_uart1.transmit_interrupt();
-    //avr_uart0.frame_put((UShort)'>');
-  }
-
-#endif // define(UDR1)
-
-//ISR(USART1_RX_vect)
-//{
-//  // This is the interrupt service routine that is called to when there
-//  // is a new frame (i.e. 9-bit value) from the Maker Bus USART.  This
-//  // Routine read the 9-bit value and either ignores for echo suppression,
-//  // or takes it and stuffs into the {_get_ring} buffer.
-//
-//  // Read the data out; 9th bit is in UCSR1B, remaining 8-bits are in UDR1:
-//  UShort frame = 0;
-//  if ((UCSR1B & _BV(RXB81)) != 0) {
-//    frame = 0x100;
-//  }
-//  frame |= (UShort)UDR1;
-//
-//  // If BUS_DEBUG is set to 1, set {log_frame} to {frame} OR'ed
-//  // with 0x1000 to indicate that this is a "get" frame:
-//  #if BUS_DEBUG != 0
-//    UShort log_frame = frame | 0x1000;
-//  #endif //BUS_DEBUG != 0
-//
-//  UShort echo_suppress = 0;
-//  if ((echo_suppress & 0x8000) != 0) {
-//    // Mark that an echo suppress has occured with 0x200:
-//    #if BUS_DEBUG != 0
-//      log_frame |= 0x200;
-//    #endif // BUS_DEBUG != 0
-//
-//    // Ignore frames until it matches {echo_suppress};
-//    if ((echo_suppress & 0x1ff) == frame) {
-//      // We have an echo match:
-//      bus._echo_suppress = 0;
-//    } // else keep on suppressing...
-//  } else {
-//    // Mark that we have a non-echo suppressed frame with 0x400:
-//    #if BUS_DEBUG != 0
-//      log_frame |= 0x400;
-//    #endif // BUS_DEBUG != 0
-//
-//    // We need to insert {frame} into {_get_ring}.  If the {ring}
-//    // is full we drop {frame} on the floor:
-//    UByte get_head = bus._get_head;
-//    UByte new_get_head = (get_head + 1) & Bus::_get_ring_mask;
-//
-//    // Is {_get_ring} full?
-//    if (new_get_head != bus._get_tail) {
-//      // No, {_get_ring} has some space for at least one more frame:
-//
-//      // Stuff {frame} into {_get_ring}, and bump {_get_head} forward:
-//      bus._get_ring[get_head] = frame;
-//      bus._get_head = new_get_head;
-//
-//      // If BUS_DEBUG is 1, mark the log frame with 0x800
-//      // to indicate that it mad it into {_get_ring}:
-//      #if BUS_DEBUG != 0
-//	log_frame |= 0x800;
-//      #endif // BUS_DEBUG != 0
-//    } // else {_get_ring} is full; drop {frame} on the floor:
-//
-//    // For now we stay out of Multi-Processor Mode:
-//    UCSR1A &= ~_BV(MPCM1);
-//  }
-//
-//  // We only stuff {log_frame} into {_log_buffer} is MAKE_BUS_DEBUG is 1:
-//  #if BUS_DEBUG != 0
-//    UByte log_total = bus._log_total;
-//    bus._log_buffer[log_total & BUS_LOG_MASK] = log_frame;
-//    bus._log_total = log_total + 1;
-//  #endif // BUS_DEBUG != 0
-//}
-//
-//ISR(USART1_UDRE_vect)
-//{
-//  // This is the interrupt service routine that is invoked when the
-//  // transmit frame buffer is ready for another 9-bit frame.  The
-//  // frame is removed from {_put_buffer}.  If there are no frames
-//  // ready for transmission, the interrupt is disabled.
-//
-//  // The transmit buffer is ready for a new frame.  Now check to
-//  // see if we have a frame to feed it:
-//  UByte put_tail = bus._put_tail;
-//  if (bus._put_head == put_tail) {
-//    // {_put_buffer} is empty, so disable interrupts:
-//    UCSR1B &= ~_BV(UDRIE1);
-//  } else {
-//    // {_put_buffer} is not empty; grab {frame} from {_put_buffer} and
-//    // update {_put_tail}:
-//    UShort frame = bus._put_ring[put_tail];
-//    bus._put_tail = (put_tail + 1) & Bus::_put_ring_mask;
-//
-//    // Deal with 9th bit of {frame}.  Most of the time the 9th bit
-//    // is not set.  So we clear the 9th bit by default and then set
-//    // it if necssary:
-//    UCSR1B &= ~_BV(TXB81);
-//    if ((frame & 0x100) != 0) {
-//      // Set 9th bit:
-//      UCSR1B |= _BV(TXB81);
-//    }
-//
-//    // Stuff the low order 8-bits into {UDR1} to send the 9-bit frame
-//    // on its way.
-//    UDR1 = (UByte)frame;
-//
-//    // Only stuff {frame} into {_log_buffer} if {BUS_DEBUG} is 1:
-//    #if BUS_DEBUG != 0
-//      UByte log_total = bus._log_total;
-//      // Mark that the fame is a "put" by OR'ing in 0x2000:
-//      bus._log_buffer[log_total & BUS_LOG_MASK] = frame | 0x2000;
-//      bus._log_total = log_total + 1;
-//    #endif // BUS_DEBUG != 0
-//
-//    // Supress echo:
-//    //bus._echo_suppress = frame | 0x8000;
-//  }
-//}
 
 // *UART* routines:
 
@@ -508,6 +362,67 @@ void AVR_UART::transmit_interrupt() {
   }
   //avr_uart0.frame_put((UShort)'r');
 }
+
+
+// We define the one only only *avr_uart0* object here along with the
+// its two associated interrupt routines only if the *UDR0* symbol exists:
+// This code only compiles and works if the associated code from
+// SerialHardware.cpp is disabled; otherwise, there will be a conflict
+// defining two interrupt service routines:
+
+#if defined(UDR0)
+  // *UDR0* is defined so we create the *avr_uart0* object and
+  // the two interrupt service routines:
+
+  // This is the only instance of an *AVR_UART0* object:
+  AVR_UART0 avr_uart0;
+
+  // The receive interrupt is sent off to the shared
+  // *AVR_UART::receive_interrupt*() routine:
+  ISR(USART0_RX_vect) {
+    avr_uart0.receive_interrupt();
+  }
+
+  // The transmit interrupt is sent off to the shared
+  // *AVR_UART::transmit_interrupt*() routine:
+  ISR(USART0_UDRE_vect) {
+    avr_uart0.transmit_interrupt();
+  }
+
+#endif // defined(UDR0)
+
+// *AVR_UART1* routines:
+
+// We define the one only only *avr_uart1* object here along with the
+// its two associated interrupt routines only if the *UDR1* symbol exists:
+// This code only compiles and works if the associated code from
+// SerialHardware.cpp is disabled; otherwise, there will be a conflict
+// defining two interrupt service routines:
+
+#if defined(UDR1)
+  // *UDR0* is defined so we create the *avr_uart0* object and
+  // the two interrupt service routines:
+
+  // This is the only instance of an *AVR_UART1* object:
+  AVR_UART1 avr_uart1;
+
+  // The receive interrupt is sent off to the shared
+  // *AVR_UART::receive_interrupt*() routine:
+  ISR(USART1_RX_vect) {
+    //avr_uart0.frame_put((UShort)'[');
+    avr_uart1.receive_interrupt();
+    //avr_uart0.frame_put((UShort)']');
+  }
+
+  // The transmit interrupt is sent off to the shared
+  // *AVR_UART::transmit_interrupt*() routine:
+  ISR(USART1_UDRE_vect) {
+    //avr_uart0.frame_put((UShort)'<');
+    avr_uart1.transmit_interrupt();
+    //avr_uart0.frame_put((UShort)'>');
+  }
+
+#endif // define(UDR1)
 
 // *Bus_Buffer* routines:
 

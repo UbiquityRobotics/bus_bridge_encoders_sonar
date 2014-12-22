@@ -2,6 +2,36 @@
 //! @brief Header file for Bus classes
 //!
 //! This file defines the classes used for Bus communication
+//!
+//! Bus communication takes place using UART's (sometimes called USART's.)
+//!
+//! We start with an abstract called *UART*.  This class is sub-classed
+//! into *Null_UART* and *AVR_UART*.  The *Null_UART* sub-class is a
+//! place holder object that does nothing.  The *Null_UART* is used
+//! as a debugging UART when there is no debugging UART available.
+//! The *AVR_UART* sub-class is used to talk to an AVR UART.  There
+//! will typically be an *AVR_UART* object for each available UART
+//! on givent hardware.  The *AVR_UART* is sub-classed into *AVR_UART0*,
+//! ..., *AVR_UART*n, depending upon how many UART's are available.
+//!
+//! The *AVR_UART* object support both polled and non-polled operation.
+//! The non-polled operation is primarily used when bring software up
+//! on a new piece of hardware.  Once it is basically working, interrupts
+//! are enabled.
+//!
+//! There will be at most a single instance of each *AVR_UART*n object
+//! for each available UART.  The reason for this is because the two
+//! transmit and receive interrupts must linked to specific interrupt
+//! vectors.  These UART's have the characteristic that they conflict
+//! with the UART code defined in the Arduino SerialHardware.cpp file.
+//!
+//! Once you have UART's, the *Bus* object is used to communicate
+//! with the UART's.  The *Bus* object needs both a *bus_uart* and
+//! a *debug_uart*.  The *debug_uart* can be a *Null_UART*.  The
+//! *bus_uart* must be a real UART.
+//!
+//! The *Bus_Buffer* class is a helper class that buffers up data packets
+//! for sending and receiving.
 
 #ifndef BUS_H
 #define BUS_H
