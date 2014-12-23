@@ -7,9 +7,9 @@
 
 // *UART* routines:
 
-void UART::string_print(Character *string) {
+void UART::string_print(Text text) {
   Character character = '\0';
-  while ((character = *string++) != '\0') {
+  while ((character = *text++) != '\0') {
     frame_put((UShort)character);
   }
 }
@@ -221,7 +221,6 @@ Logical AVR_UART::can_transmit() {
 UShort AVR_UART::frame_get() {
   // Wait for a 9-bit frame to arrive and return it:
 
-  trace_char('g');
   UShort frame = 0;
 
   // Set to 1 to use interrupt buffers; 0 for direct UART access:
@@ -243,7 +242,6 @@ UShort AVR_UART::frame_get() {
     }
     frame |= (UShort)(*_udr);
   }
-  trace_hex(frame);
   return frame;
 }
 
@@ -446,21 +444,21 @@ UByte Bus_Buffer::check_sum() {
   UByte check_sum = 0;
   for (UByte index = 0; index < _put_index; index++) {
     check_sum += _ubytes[index];
-    //trace_char('S');
-    //trace_hex(ubyte);
+    //debug_character('S');
+    //debug_hex(ubyte);
   }
   return (check_sum + (check_sum >> 4)) & 0xf;
 }
 
 void Bus_Buffer::show(UByte tag) {
-  trace_char('<');
-  trace_char(tag);
-  trace_char(':');
-  trace_char('p');
-  trace_hex(_put_index);
-  trace_char('g');
-  trace_hex(_get_index);
-  trace_char('>');
+  //debug_character('<');
+  //debug_character(tag);
+  //debug_character(':');
+  //debug_character('p');
+  //debug_hex(_put_index);
+  //debug_character('g');
+  //debug_hex(_get_index);
+  //debug_character('>');
 }
 
 UByte Bus_Buffer::ubyte_get() {
@@ -669,7 +667,7 @@ void Bus::log_dump() {
 
 void Bus::command_begin(UByte address, UByte command, UByte put_bytes) {
     // For debugging, commands get enclosed in '{' ... '}':
-    trace_char('{');
+    debug_character('{');
 
     // Force a flush if the address is
     UShort full_address = (UShort)address | 0x100;
@@ -698,9 +696,9 @@ void Bus::command_end() {
   }
 
   // Close off '}' for debugging:
-  trace_char('}');
-  trace_char('\r');
-  trace_char('\n');
+  debug_character('}');
+  debug_character('\r');
+  debug_character('\n');
 }
 
 UShort Bus::ushort_get() {
@@ -733,7 +731,7 @@ void Bus::ubyte_put(UByte ubyte) {
 
 // Flush current buffer and get any response back:
 Logical Bus::flush() {
-  trace_char('!');
+  debug_character('!');
   Logical error = (Logical)0;
 
   // See if there is anything to flush:
@@ -767,14 +765,14 @@ Logical Bus::flush() {
 	    // Success: we have set the *current_address*:
 	    _current_address = _desired_address;
 	  } else {
-	    trace_char('?');
+	    debug_character('?');
 	  }
 	} else {
 	  // Success: we have set the *current_address*:
 	  _current_address = _desired_address;
 	}
       } else {
-	trace_char('@');
+	debug_character('@');
       }
     }
     // assert (_current_address == _desired_address);
@@ -787,7 +785,7 @@ Logical Bus::flush() {
     frame_put(request_frame);
     UByte request_echo = frame_get();
     if (request_frame != request_echo) {
-      trace_char('#');
+      debug_character('#');
     }
 
     // Send the request data followed by reseting the buffer:
@@ -797,7 +795,7 @@ Logical Bus::flush() {
       frame_put(ubyte_frame);
       UShort ubyte_echo = frame_get();
       if (ubyte_frame != ubyte_echo) {
-	trace_char('$');
+	debug_character('$');
       }
     }
     _put_buffer.reset();
@@ -826,7 +824,7 @@ Logical Bus::flush() {
     }
 
   }
-  trace_char('!');
+  debug_character('!');
   return error;
 }
 
@@ -855,7 +853,7 @@ Logical Bus::flush() {
 //UShort Bus::frame_get() {
 //  // Wait for a 9-bit frame to arrive and return it:
 //
-//  trace_char('g');
+//  debug_character('g');
 //  UCSR1B |= _BV(RXEN1);
 //  UShort frame = 0;
 //
@@ -879,7 +877,7 @@ Logical Bus::flush() {
 //    }
 //    frame |= (UShort)UDR1;
 //  }
-//  trace_hex(frame);
+//  debug_hex(frame);
 //  return frame;
 //}
 //
@@ -888,8 +886,8 @@ Logical Bus::flush() {
 //  // The echo due to the fact the bus is half-duplex is automatically
 //  // read and ignored.
 //
-//  trace_char('p');
-//  trace_hex(frame);
+//  debug_character('p');
+//  debug_hex(frame);
 //
 //  // Set to 1 to use interrupt buffers; 0 for direct UART access:
 //  if (_interrupt_mode) {
@@ -935,7 +933,7 @@ void Bus::slave_mode(UByte address,
   UByte request_size = 0;
   UByte request_check_sum = 0;
   UByte selected_address = 0xff;
-  trace_char('[');
+  debug_character('[');
   while (1) {
     // Fetch the next frame from the UART:
     UShort frame = frame_get();
@@ -943,27 +941,27 @@ void Bus::slave_mode(UByte address,
     // Dispatch on 9th bit:
     if ((frame & 0x100) != 0) {
       // We have an address frame:
-      //trace_char('J');
+      //debug_character('J');
       selected_address = (UByte)frame;
       selected = (Logical)(selected_address == address);
       if (selected) {
 	// We have been selected:
-	//trace_char('K');
+	//debug_character('K');
 	selected = (Logical)1;
 	if ((address & 0x80) == 0) {
 	  // We need to send an acknowledge
-	  //trace_char('L');
+	  //debug_character('L');
 	  frame_put(0x0);
-	  //trace_char('M');
+	  //debug_character('M');
 	  UShort acknowledge_echo = frame_get();
 	  if (acknowledge_echo != 0) {
-	    trace_char('!');
+	    debug_character('!');
 	  }
 	}
 	_get_buffer.reset();
 	_put_buffer.reset();
       }
-      trace_char('N');
+      debug_character('N');
 
       // We are starting over:
       request_size = 0;
@@ -973,7 +971,7 @@ void Bus::slave_mode(UByte address,
 
       if (request_size == 0) {
 	// Process header request:
-	//trace_char('m');
+	//debug_character('m');
 	request_size = (data >> 4) & 0xf;
 	request_check_sum = data & 0xf;
 
@@ -988,8 +986,8 @@ void Bus::slave_mode(UByte address,
 
 	  // Check that *request_check_sum* matches *check_sum*:
 	  UByte check_sum = _get_buffer.check_sum();
-	  //trace_char('o');
-	  //trace_hex(check_sum);
+	  //debug_character('o');
+	  //debug_hex(check_sum);
 	  if (check_sum == request_check_sum) {
 	    // The check sums match; now iterate over all the
 	    // commands and make sure that they parse correctly.
@@ -1011,7 +1009,7 @@ void Bus::slave_mode(UByte address,
 		UByte command = ubyte_get();
 		flags |= command_process(this, command, (Logical)pass);
 	      }
-	      //trace_char('r');
+	      //debug_character('r');
 
 	      // Make sure we detect errors from trying to
 	      // read too many bytes from request:
@@ -1021,14 +1019,14 @@ void Bus::slave_mode(UByte address,
 	      // response and do not perform the second pass:
 	      _get_buffer._error_flags = 0;
 	      if (flags != 0) {
-		trace_char('q');
+		debug_character('q');
 		// We have a parse error:
 		break;
 	      }
-	      //trace_char('s');
+	      //debug_character('s');
 	    }
 
-	    //trace_char('v');
+	    //debug_character('v');
 	    // Did we have any errors:
 	    if (flags == 0) {
 	      // Time to pump out a response packet:
@@ -1041,39 +1039,39 @@ void Bus::slave_mode(UByte address,
 	      frame_put(header_frame);
 	      UShort header_echo = frame_get();
 	      if (header_frame != header_echo) {
-		trace_char('/');
+		debug_character('/');
 	      }
-	      //trace_char('y');
+	      //debug_character('y');
 
 	      for (UByte index = 0; index < response_size; index++) {
 		UShort ubyte_frame = (UShort)_put_buffer.ubyte_get();
 		frame_put(ubyte_frame);
 		UShort ubyte_echo = frame_get();
 		if (ubyte_frame != ubyte_echo) {
-		  trace_char(';');
+		  debug_character(';');
 		}
 	      }
 	      _put_buffer.reset();
 	    } else {
 	      // We had at least one error; kick out an error:
-	      //trace_char('z');
-	      trace_hex(flags);
+	      //debug_character('z');
+	      debug_hex(flags);
 	      frame_put((UShort)0x03);
 	    }
 	  } else {
 	    // The checksums do match; respond with an error byte:
-	    //trace_char('w');
-	    //trace_hex(request_checksum);
-	    //trace_char('x');
-	    //trace_hex(checksum);
+	    //debug_character('w');
+	    //debug_hex(request_checksum);
+	    //debug_character('x');
+	    //debug_hex(checksum);
 	    frame_put((UShort)0x01);
 	  }
 
 	  request_size = 0;
-	  trace_char(']');
-	  trace_char('\r');
-	  trace_char('\n');
-	  trace_char('[');
+	  debug_character(']');
+	  debug_character('\r');
+	  debug_character('\n');
+	  debug_character('[');
 	}
       }
     }

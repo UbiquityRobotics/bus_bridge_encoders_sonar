@@ -8,7 +8,7 @@
 #define TEST_BUS_COMMAND 5
 
 // Set TEST to one of the possible tests:
-#define TEST TEST_BUS_ECHO
+#define TEST TEST_BUS_COMMAND
 
 // Watch-out the code for SerialHardwared.cpp has been modified to
 // notice this #define.  It causes the 8-ibt interrupt driver for
@@ -212,8 +212,8 @@ void setup() {
     case TEST_BUS_INTERRUPT_INPUT:
     case TEST_BUS_COMMAND:
       // Force into interrupt mode:
-      debug_uart->interrupt_set((Logical)0);
-      bus_uart->interrupt_set((Logical)0);
+      debug_uart->interrupt_set((Logical)1);
+      bus_uart->interrupt_set((Logical)1);
       break;
   }
 }

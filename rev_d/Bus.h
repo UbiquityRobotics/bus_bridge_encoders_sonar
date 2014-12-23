@@ -3,6 +3,31 @@
 //!
 //! This file defines the classes used for Bus communication
 //!
+//! First and formost, the file defines a bunch of typedef's for
+//! common types.  Yeah, we could use the more standard *uint8_t* crud,
+//! but let's admit it, *uint8_t* is really ugly.  Instead we go
+//! with simple types that start with one or two capital letters
+//!
+//!  The integer types are:
+//!
+//!      Signed      Unsigned       Size
+//!  ========================================
+//!      Byte        UByte          8-bit
+//!      Short       UShort         16-bit
+//!      Integer     UInteger       32-bit
+//!      Long        ULong          64-bit
+//!
+//! The remaining types are:
+//!
+//!      Type        Description
+//!  ========================================
+//!    Character     8-bit ANSI-C character
+//!    Double        64-bit IEEE floating point number
+//!    Float         32-bit IEEE floating point number
+//!    Text          ANSI-C style null terminated string
+//!
+//! Now that types have been covered, we can move on...
+//!
 //! Bus communication takes place using UART's (sometimes called USART's.)
 //!
 //! We start with an abstract called *UART*.  This class is sub-classed
@@ -34,8 +59,7 @@
 //! for sending and receiving.
 
 #ifndef BUS_H
-#define BUS_H
-
+#define BUS_H 1
 
 // All typedef's go up here before the #includes':
 
@@ -43,8 +67,8 @@
 // set it to 0 to disable debugging:
 #define BUS_LOG 0
 
-// Set *BUS_TRACE* to 1 to enable tracing:
-#define BUS_TRACE 0
+// Set *BUS_DEBUG* to 1 to enable debug tracing:
+#define BUS_DEBUG 0
 
 // Signed types:
 typedef signed char Byte;		// 8-bit signed byte (-128 ... 128):
@@ -75,10 +99,10 @@ class UART {
     virtual void frame_put(UShort frame) = 0;
     virtual void interrupt_set(Logical interrupt) = 0;
     void print(UByte ubyte) { uinteger_print((UInteger)ubyte); }
-    void print(Character character) { frame_put(character); }
+    void print(Character character) { frame_put((UShort)character); }
     void print(UShort ushort) { uinteger_print((UInteger)ushort); }
-    void print(Character *string) { string_print(string); }
-    void string_print(Character *string);
+    void print(Text text) { string_print(text); }
+    void string_print(Text text);
     void uinteger_print(UInteger uinteger);
 };
 
@@ -104,11 +128,11 @@ class AVR_UART : public UART {
     UByte static const _ring_size = 1 << _ring_power;
     UByte static const _ring_mask = _ring_size - 1;
     volatile UByte _get_head;
-    UByte _get_ring[_ring_size];
+    UShort _get_ring[_ring_size];
     volatile UByte _get_tail;
     Logical _interrupt;
     volatile UByte _put_head;
-    UByte _put_ring[_ring_size];
+    UShort _put_ring[_ring_size];
     volatile UByte _put_tail;
     Character *_configuration;
     UByte volatile *_ubrrh;
@@ -155,14 +179,6 @@ class NULL_UART : public UART {
 #endif // BUS_DEBUG
 
 // These defines are empty when *BUS_TRACE* is 0:
-#if BUS_TRACE
-  #define trace_char(ch) //Serial.write(ch)
-  #define trace_hex(hex) //Serial.print(hex, HEX);
-#else // BUS_TRACE
-  #define trace_char(ch)
-  #define trace_hex(hex)
-#endif // BUS_TRACE
-
 //! @class Bus_Buffer
 //! @brief Send/Receive packet buffer.
 //!
@@ -260,6 +276,24 @@ class Bus
     //! call to *flush*() occurs.
     void command_end();
 
+    void debug_character(Character character) {
+      #if BUS_DEBUG
+	_debug_uart->frame_put((UShort)character);
+      #endif //BUS_DEBUG
+    };
+
+    void debug_hex(UInteger hex) {
+      #if BUS_DEBUG
+	_debug_uart->uinteger_print((UInteger)hex);
+      #endif //BUS_DEBUG
+    };
+
+    void debug_text(Text text) {
+      #if BUS_DEBUG
+	_debug_uart->string_print(text);
+      #endif //BUS_DEBUG
+    }
+
     //! @brief Send *byte* to currently selected module.
     //!   @param byte byte value to send to command.
     //!
@@ -270,22 +304,32 @@ class Bus
       ubyte_put((UByte)logical);
     }
 
-    void auto_flush_set(Logical auto_flush)
-     { _auto_flush = auto_flush; };
-    Logical can_receive()
-     { return _bus_uart->can_receive(); };
-    Logical can_transmit()
-     { return _bus_uart->can_transmit(); };
+    void auto_flush_set(Logical auto_flush) {
+      _auto_flush = auto_flush;
+    };
+    Logical can_receive(){
+      return _bus_uart->can_receive();
+     };
+    Logical can_transmit() {
+      return _bus_uart->can_transmit();
+    };
     UByte command_ubyte_get(UByte address, UByte command);
     void command_ubyte_put(UByte address, UByte command, UByte ubyte);
-    UShort frame_get()
-     { return _bus_uart->frame_get(); };
+    UShort frame_get() { 
+      UShort frame = _bus_uart->frame_get();
+      debug_character('g');
+      debug_hex((UInteger)frame);
+      return frame;
+    };
     void frame_put(UShort frame) {
+      debug_character('p');
+      debug_hex((UInteger)frame);
       _bus_uart->frame_put(frame);
     };
     Logical flush();
-    void interrupt_set(Logical interrupt)
-     { _bus_uart->interrupt_set(interrupt); };
+    void interrupt_set(Logical interrupt) {
+      _bus_uart->interrupt_set(interrupt);
+    };
 
     Logical logical_get();
 
