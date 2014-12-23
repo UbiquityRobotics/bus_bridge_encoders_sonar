@@ -63,9 +63,8 @@
 
 // All typedef's go up here before the #includes':
 
-// To enable bus logging code, get *BUS_DEBUG* define to 1; otherewise 
-// set it to 0 to disable debugging:
-#define BUS_LOG 0
+// *BUS_LOG* is pretty stale:
+//#define BUS_LOG 0
 
 // Set *BUS_DEBUG* to 1 to enable debug tracing:
 #define BUS_DEBUG 0
@@ -93,6 +92,8 @@ typedef unsigned short Unicode;		// 16-bit Unicode character
 
 class UART {
   public:
+    virtual void begin(UInteger frequency,
+      UInteger baud_rate, Text configuration) = 0;
     virtual Logical can_transmit() = 0;
     virtual Logical can_receive() = 0;
     virtual UShort frame_get() = 0;
@@ -112,7 +113,7 @@ class AVR_UART : public UART {
      volatile UByte *ucsra, volatile UByte *ucsrb, volatile UByte *ucsrc,
      volatile UByte *udr);
     void begin(UInteger frequency,
-     UInteger baud_rate, Character *configuration);
+     UInteger baud_rate, Text configuration);
     virtual Logical can_receive();
     virtual Logical can_transmit();
     void end();
@@ -122,8 +123,7 @@ class AVR_UART : public UART {
     void receive_interrupt();
     void reset();
     void transmit_interrupt();
-  //private:
-  //protected:
+  private:
     UByte static const _ring_power = 4;
     UByte static const _ring_size = 1 << _ring_power;
     UByte static const _ring_mask = _ring_size - 1;
@@ -145,11 +145,13 @@ class AVR_UART : public UART {
 
 class NULL_UART : public UART {
   public:
-    Logical can_receive() { return (Logical)1; };
-    Logical can_transmit() { return (Logical)1; };
-    UShort frame_get() { return 0xffff; };
-    void frame_put(UShort frame) { };
-    void interrupt_set(Logical interrupt) { };
+    virtual void begin(UInteger frequency,
+     UInteger baud_rate, Text configuration) { };
+    virtual Logical can_receive() { return (Logical)1; };
+    virtual Logical can_transmit() { return (Logical)1; };
+    virtual UShort frame_get() { return 0xffff; };
+    virtual void frame_put(UShort frame) { };
+    virtual void interrupt_set(Logical interrupt) { };
 };
 
 #if defined(UDR0)
@@ -173,10 +175,10 @@ class NULL_UART : public UART {
 #endif // defined(UDR1)
 
 // These two defines are only used when *BUS_DEBUG* is set to 1:
-#if BUS_DEBUG
-    #define BUS_LOG_SIZE 128
-    #define BUS_LOG_MASK (BUS_LOG_SIZE - 1)
-#endif // BUS_DEBUG
+//#if BUS_DEBUG
+//   #define BUS_LOG_SIZE 128
+//   #define BUS_LOG_MASK (BUS_LOG_SIZE - 1)
+//#endif // BUS_DEBUG
 
 // These defines are empty when *BUS_TRACE* is 0:
 //! @class Bus_Buffer
@@ -207,8 +209,8 @@ class Bus_Buffer
     UByte _ubytes[_ubytes_size];	// The actual buffer bytes
 };
 
-//! \class Bus
-//! \brief managing the Bus UART
+//! @class Bus
+//! @brief managing the Bus UART
 //!
 //! This a helper class that takes care of the UART that talks to the
 //! Bus.
@@ -217,7 +219,7 @@ class Bus
 {
   public:
     //! @brief Constructor for Bus object.
-    Bus(AVR_UART *bus_uart, AVR_UART *debug_uart);
+    Bus(UART *bus_uart, UART *debug_uart);
 
     //! @brief Return the a signed byte from currently selected module.
     //!   @return the next signed byte from the command.
@@ -400,8 +402,8 @@ class Bus
   private:
     static const UByte _maximum_request_size = 15;
 
-    AVR_UART *_bus_uart;	// UART connected to bus
-    AVR_UART *_debug_uart;	// UART used for debugging messages
+    UART *_bus_uart;		// *UART* connected to bus
+    UART *_debug_uart;		// *UART* used for debugging messages
     Bus_Buffer _get_buffer;	// FIFO for received bytes
     Bus_Buffer _put_buffer;	// FIFO queue for bytes to send
 
@@ -410,12 +412,13 @@ class Bus
     UShort _desired_address;	// Desired address
     UShort _current_address;	// Current address
 
+    // This stuff is pretty stale:
     // The frame log is only enabled when *BUS_DEBUG* is set to 1:
-    #if BUS_DEBUG
-      UShort _log_buffer[BUS_LOG_SIZE];	// Buffer of read/written frames
-      UByte _log_total;			// Total number read/written
-      UByte _log_dumped;		// Total number dumped out
-    #endif // BUS_DEBUG
+    //#if BUS_DEBUG
+    //  UShort _log_buffer[BUS_LOG_SIZE];	// Buffer of read/written frames
+    //  UByte _log_total;			// Total number read/written
+    //  UByte _log_dumped;		// Total number dumped out
+    //#endif // BUS_DEBUG
 };
 
 class Bus_Module

@@ -4,8 +4,7 @@
 #define TEST_BUS_INPUT 1
 #define TEST_BUS_OUTPUT 2
 #define TEST_BUS_ECHO 3
-#define TEST_BUS_INTERRUPT_INPUT 4
-#define TEST_BUS_COMMAND 5
+#define TEST_BUS_COMMAND 4
 
 // Set TEST to one of the possible tests:
 #define TEST TEST_BUS_COMMAND
@@ -22,12 +21,18 @@
 #include "Bus.h"
 #include <Bus_Bridge_Encoders_Sonar.h>
 
-// Object variables:
+// The null object can be used for *debug_uart*:
 NULL_UART null_uart;
-extern AVR_UART0 avr_uart0;
-extern AVR_UART1 avr_uart1;
-AVR_UART0 *debug_uart = &avr_uart0;
-AVR_UART1 *bus_uart = &avr_uart1;
+
+// Debug *debug_uart* and *bus_uart* pointers:
+#if defined(UDR1)
+  UART *debug_uart = (UART *)&avr_uart0;
+  UART *bus_uart = (UART *)&avr_uart1;
+#else // defined(UDR1)
+  UART *debug_uart = (UART *)&null_uart;
+  UART *bus_uart = (UART *)&avr_uart0;
+#endif // defined(UDR1)
+
 Bus bus(bus_uart, debug_uart);
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
 
@@ -74,24 +79,6 @@ void loop() {
       bus.slave_mode(0x21, command_process);
       break;
     }
-    case TEST_BUS_INTERRUPT_INPUT: {
-      // Read the next *frame* from the bus:
-      UShort frame = bus.frame_get();
-
-      // Echo *frame* to the debugging port with an occasional CRLF:
-      //Serial.write(frame);
-      if (frame == '_') {
-        //Serial.write("\r\n");
-      }
-
-      // Set *LED* to have the LSB of *frame*:
-      if ((frame & 1) == 0) {
-        digitalWrite(LED, LOW);
-      } else {
-        digitalWrite(LED, HIGH);
-      }
-      break;
-    }
     case TEST_BUS_ECHO: {
       // Wait for a *frame* to show up on *bus*:
       UShort frame = bus.frame_get();
@@ -134,8 +121,9 @@ void loop() {
 	character = '@';
       }
 
-      // Output *character* to the *avr_uart0*:
-      debug_uart->frame_put((UShort)character);
+      // Output *character* to the *debug_uart*:
+      //debug_uart->frame_put((UShort)character);
+      UDR0 = character;
 
       // Output any needed CRLF, and increment *character*:
       if (character == '_') {
@@ -143,6 +131,12 @@ void loop() {
 	character = '@';
       } else {
 	character += 1;
+      }
+
+      if ((character & 1) == 0) {
+	digitalWrite(LED, LOW);
+      } else {
+	digitalWrite(LED, HIGH);
       }
 
       // Slow things down a little:
@@ -183,9 +177,6 @@ void setup() {
   // Initalize the *debug_uart*:
   debug_uart->begin(frequency, 115200L, (Character *)"8N1");
 
-  // Announce that we have got *debug_uart* working:
-  debug_uart->string_print((Character *)"\r\nbbes:\r\n");
-
   // Turn *LED* on:
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
@@ -201,17 +192,24 @@ void setup() {
   // Enable/disable interrupts based on *TEST*:
   switch (TEST) {
     case TEST_BUS_OUTPUT: 
-     debug_uart->interrupt_set((Logical)1);
+      debug_uart = &avr_uart0;
+      debug_uart->begin(frequency, 115200L, (Text)"8N1");
+      debug_uart->string_print((Character *)"\r\nbbes_output:\r\n");
+      debug_uart->interrupt_set((Logical)0);
       bus_uart->interrupt_set((Logical)0);
       break;
     case TEST_BUS_INPUT:
-    case TEST_BUS_ECHO:
+      debug_uart->string_print((Character *)"\r\nbbes_input:\r\n");
       debug_uart->interrupt_set((Logical)1);
       bus_uart->interrupt_set((Logical)1);
       break;
-    case TEST_BUS_INTERRUPT_INPUT:
+    case TEST_BUS_ECHO:
+      debug_uart->string_print((Character *)"\r\nbbes_echo:\r\n");
+      debug_uart->interrupt_set((Logical)0);
+      bus_uart->interrupt_set((Logical)0);
+      break;
     case TEST_BUS_COMMAND:
-      // Force into interrupt mode:
+      debug_uart->string_print((Character *)"\r\nbbes_command:\r\n");
       debug_uart->interrupt_set((Logical)1);
       bus_uart->interrupt_set((Logical)1);
       break;

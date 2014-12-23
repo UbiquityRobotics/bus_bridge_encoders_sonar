@@ -123,7 +123,7 @@ void AVR_UART::begin(UInteger frequency,
   //      m: Multi-processor communication mode
   // Only d and m can be set:  We want d=1 and m=0:
   //   rtef opdm = 0000 0000 = 0
-  UByte a_flags = _BV(U2X1);
+  UByte a_flags = _BV(U2X0);
 
   // UCSR0B: USART Control and Status Register 0 B:
   //   rtea bcde: (0000 0000: Default):
@@ -139,7 +139,7 @@ void AVR_UART::begin(UInteger frequency,
   //  r=1   (i.e. receive enable)
   //  t=1   (i.e. transmit enable)
   // rtea bcde = 0001 1000 = 0x18:
-  UByte b_flags = _BV(TXEN1) | _BV(RXEN1);
+  UByte b_flags = _BV(TXEN0) | _BV(RXEN0);
 
   // UCSR0C: USART Control and Status Register 0 C:
   //   mmpp szzp: (0000 0110):
@@ -203,7 +203,7 @@ Logical AVR_UART::can_receive() {
   if (_interrupt) {
     result = (Logical)(_get_tail != _get_head);
   } else {
-    result = (Logical)((*_ucsra & _BV(RXC1)) != 0);
+    result = (Logical)((*_ucsra & _BV(RXC0)) != 0);
   }
   return result;
 }
@@ -213,7 +213,7 @@ Logical AVR_UART::can_transmit() {
   if (_interrupt) {
     result = (Logical)(((_put_head + 1) & _ring_mask) != _put_tail);
   } else {
-    result = (Logical)((*_ucsra & _BV(UDRE1)) != 0);
+    result = (Logical)((*_ucsra & _BV(UDRE0)) != 0);
   }
   return result;
 }
@@ -234,10 +234,10 @@ UShort AVR_UART::frame_get() {
     frame = _get_ring[_get_tail++];
     _get_tail &= _ring_mask;
   } else {
-    while (!(*_ucsra & _BV(RXC1))) {
+    while (!(*_ucsra & _BV(RXC0))) {
       // Nothing yet, keep waiting:
     }
-    if ((*_ucsrb & _BV(RXB81)) != 0) {
+    if ((*_ucsrb & _BV(RXB80)) != 0) {
       frame = 0x100;
     }
     frame |= (UShort)(*_udr);
@@ -261,17 +261,17 @@ void AVR_UART::frame_put(UShort frame) {
     _put_ring[put_head] = frame;
     _put_head = (put_head + 1) & _ring_mask;
 
-    *_ucsrb |= _BV(UDRIE1);
+    *_ucsrb |= _BV(UDRIE0);
   } else {
     // Wait until UART can take another character to output:
-    while ((*_ucsra & _BV(UDRE1)) == 0) {
+    while ((*_ucsra & _BV(UDRE0)) == 0) {
       // UART is still busy, keep waiting:
     }
   
     // Set 9th bit:
-    *_ucsrb &= ~_BV(TXB81);
+    *_ucsrb &= ~_BV(TXB80);
     if ((frame & 0x100) != 0) {
-      *_ucsrb |= _BV(TXB81);
+      *_ucsrb |= _BV(TXB80);
     }
 
     // Output the lower 8 bits:
@@ -282,9 +282,9 @@ void AVR_UART::frame_put(UShort frame) {
 void AVR_UART::interrupt_set(Logical interrupt) {
   _interrupt = interrupt;
   if (interrupt) {
-    *_ucsrb |= _BV(UDRIE1) | _BV(RXCIE1);
+    *_ucsrb |= _BV(UDRIE0) | _BV(RXCIE0);
   } else {
-    *_ucsrb &= ~(_BV(UDRIE1) | _BV(RXCIE1));
+    *_ucsrb &= ~(_BV(UDRIE0) | _BV(RXCIE0));
   }
 }
 
@@ -296,7 +296,7 @@ void AVR_UART::receive_interrupt()
 
   // Read the data out; 9th bit is in *ucsrb,* remaining 8-bits are in *udr*:
   UShort frame = 0;
-  if ((*_ucsrb & _BV(RXB81)) != 0) {
+  if ((*_ucsrb & _BV(RXB80)) != 0) {
     frame = 0x100;
   }
   frame |= (UShort)(*_udr);
@@ -335,7 +335,7 @@ void AVR_UART::transmit_interrupt() {
   if (_put_head == put_tail) {
     // *put_buffer* is empty, so disable transmit interrupts:
     //avr_uart0.frame_put((UShort)'n');
-    *_ucsrb &= ~_BV(UDRIE1);
+    *_ucsrb &= ~_BV(UDRIE0);
   } else {
     // *put_buffer* is not empty; grab *frame* from *put_buffer* and
     // update *put_tail*:
@@ -347,10 +347,10 @@ void AVR_UART::transmit_interrupt() {
     // is not set.  So we clear the 9th bit by default and then set
     // it if necssary:
     //avr_uart0.frame_put((UShort)'p');
-    *_ucsrb &= ~_BV(TXB81);
+    *_ucsrb &= ~_BV(TXB80);
     if ((frame & 0x100) != 0) {
       // Set 9th bit:
-      *_ucsrb |= _BV(TXB81);
+      *_ucsrb |= _BV(TXB80);
     }
 
     //avr_uart0.frame_put((UShort)'q');
@@ -377,15 +377,34 @@ void AVR_UART::transmit_interrupt() {
 
   // The receive interrupt is sent off to the shared
   // *AVR_UART::receive_interrupt*() routine:
-  ISR(USART0_RX_vect) {
-    avr_uart0.receive_interrupt();
-  }
+  #if defined(USART_RX_vect)
+    ISR(USART_RX_vect) {
+  #elif defined(USART0_RX_vect)
+    ISR(USART0_RX_vect) {
+  #elif defined(USART0_RXC_vect)
+    ISR(USART0_RXC_vect) {
+  #else
+    #error "None of {USART_RX,USART0_RX,USART0_RXC}_vect is defined."
+  #endif
+      avr_uart0.receive_interrupt();
+    }
 
   // The transmit interrupt is sent off to the shared
   // *AVR_UART::transmit_interrupt*() routine:
-  ISR(USART0_UDRE_vect) {
-    avr_uart0.transmit_interrupt();
-  }
+
+  #if defined(UART_UDRE_vect)
+    ISR(UART_UDRE_vect) {
+  #elif defined(USART_UDRE_vect)
+    ISR(USART_UDRE_vect) {
+  #elif defined(UART0_UDRE_vect)
+    ISR(UART0_UDRE_vect) {
+  #elif defined(USART0_UDRE_vect)
+    ISR(USART0_UDRE_vect) {
+  #else
+    #error "None of {UART,USART,UART0,USART0}_URDE_vect is defined."
+  #endif
+      avr_uart0.transmit_interrupt();
+    }
 
 #endif // defined(UDR0)
 
@@ -491,7 +510,7 @@ void Bus_Buffer::ushort_put(UShort ushort) {
 
 // *Bus* routines:
 
-Bus::Bus(AVR_UART *bus_uart, AVR_UART *debug_uart) {
+Bus::Bus(UART *bus_uart, UART *debug_uart) {
   // We want to do the following to the USART:
   //  - Set transmit/receive rate to .5Mbps
   //  - Single rate transmission (Register A)
@@ -512,69 +531,69 @@ Bus::Bus(AVR_UART *bus_uart, AVR_UART *debug_uart) {
   //   UCSRnC = USART Control status register C
   // They will be initialized in the order above.
 
-  // Initialize USART1 baud rate to .5Mbps:
-  //     f_cpu = 16000000L
-  //     baud_rate = 500000L
-  //     uubrr1 = f_cpu / (baud_rate * 8L) - 1
-  //            = 16000000 / (500000 * 8) - 1
-  //            = 16000000 / 4000000 - 1
-  //            = 4 - 1
-  //            = 3
-  //FIXME: Should be 1 for .5Mbps rather 0 for 1Mbps
-  UBRR1L = 1;
-  UBRR1H = 0;
-
-  // UCSR0A: USART Control and Status Register 0 A:
-  //   rtef opdm: (0010 0000: Default):
-  //      r: Receive complete
-  //      t: Transmit complete
-  //      e: data register Empty
-  //      f: Frame error
-  //      o: data Overrun
-  //      p: Parity error
-  //      d: Double transmission speed
-  //	  m: Multi-processor communication mode
-  // Only d and m can be set:  We want d=1 and m=0:
-  //   rtef opdm = 0000 0010 = 0
-  UCSR1A = _BV(U2X1);
-
-  // UCSR0B: USART Control and Status Register 0 B:
-  //   rtea bcde: (0000 0000: Default):
-  //      r: Receive complete interrupt enable
-  //      t: Transmit complete interrupt enable
-  //      e: data register Empty complete interrupt enable
-  //      a: (A) Transmitter enable
-  //      b: (B) Receiver enable
-  //      c: (C) size bit 2 (see register C):
-  //      d: Receive data bit 8
-  //	  e: Transmit data bit 8
-  // All bits except d can be set.  We want 0001 1100 = 0x1c
-  UCSR1B = _BV(TXEN1) | _BV(RXEN1) | _BV(UCSZ12); // = 0x1c
-
-  // UCSR0C: USART Control and Status Register 0 C:
-  //   mmpp szzp: (0000 0110):
-  //      mm: USART Mode
-  //          00 Asynchronous USART
-  //          01 Synchronous USART
-  //          10 reserved
-  //          11 Master SPI
-  //      pp: Parity mode
-  //          00 Disabled
-  //          01 reserved
-  //          10 enabled, even parity
-  //          11 enabled, odd parity
-  //      s: Stop bit (0=1 stop bit, 1=2 stop bits)
-  //      czz: Character size (include C bit from register B):
-  //          000 5-bit
-  //          001 6-bit
-  //          010 7-bit
-  //          011 8-bit
-  //          10x reserved
-  //          110 reserved
-  //          111 9-bit
-  //      p: Clock polarity (synchronous mode only)
-  // All bits can set.  We want 0000 0110 = 6.
-  UCSR1C = _BV(UCSZ11) | _BV(UCSZ10);	// = 6
+//  // Initialize USART1 baud rate to .5Mbps:
+//  //     f_cpu = 16000000L
+//  //     baud_rate = 500000L
+//  //     uubrr1 = f_cpu / (baud_rate * 8L) - 1
+//  //            = 16000000 / (500000 * 8) - 1
+//  //            = 16000000 / 4000000 - 1
+//  //            = 4 - 1
+//  //            = 3
+//  //FIXME: Should be 1 for .5Mbps rather 0 for 1Mbps
+//  UBRR0L = 1;
+//  UBRR0H = 0;
+//
+//  // UCSR0A: USART Control and Status Register 0 A:
+//  //   rtef opdm: (0010 0000: Default):
+//  //      r: Receive complete
+//  //      t: Transmit complete
+//  //      e: data register Empty
+//  //      f: Frame error
+//  //      o: data Overrun
+//  //      p: Parity error
+//  //      d: Double transmission speed
+//  //	  m: Multi-processor communication mode
+//  // Only d and m can be set:  We want d=1 and m=0:
+//  //   rtef opdm = 0000 0010 = 0
+//  UCSR0A = _BV(U2X0);
+//
+//  // UCSR0B: USART Control and Status Register 0 B:
+//  //   rtea bcde: (0000 0000: Default):
+//  //      r: Receive complete interrupt enable
+//  //      t: Transmit complete interrupt enable
+//  //      e: data register Empty complete interrupt enable
+//  //      a: (A) Transmitter enable
+//  //      b: (B) Receiver enable
+//  //      c: (C) size bit 2 (see register C):
+//  //      d: Receive data bit 8
+//  //	  e: Transmit data bit 8
+//  // All bits except d can be set.  We want 0001 1100 = 0x1c
+//  UCSR1B = _BV(TXEN0) | _BV(RXEN0) | _BV(UCSZ12); // = 0x1c
+//
+//  // UCSR0C: USART Control and Status Register 0 C:
+//  //   mmpp szzp: (0000 0110):
+//  //      mm: USART Mode
+//  //          00 Asynchronous USART
+//  //          01 Synchronous USART
+//  //          10 reserved
+//  //          11 Master SPI
+//  //      pp: Parity mode
+//  //          00 Disabled
+//  //          01 reserved
+//  //          10 enabled, even parity
+//  //          11 enabled, odd parity
+//  //      s: Stop bit (0=1 stop bit, 1=2 stop bits)
+//  //      czz: Character size (include C bit from register B):
+//  //          000 5-bit
+//  //          001 6-bit
+//  //          010 7-bit
+//  //          011 8-bit
+//  //          10x reserved
+//  //          110 reserved
+//  //          111 9-bit
+//  //      p: Clock polarity (synchronous mode only)
+//  // All bits can set.  We want 0000 0110 = 6.
+//  UCSR1C = _BV(UCSZ11) | _BV(UCSZ10);	// = 6
 
   // Initialize some the private member values:
   _bus_uart = bus_uart;
@@ -583,13 +602,13 @@ Bus::Bus(AVR_UART *bus_uart, AVR_UART *debug_uart) {
   _current_address = (UShort)0xffff;
   _auto_flush = (Logical)1;
 
-  UCSR0B = 0x1c;
-
-  UCSR1A &= ~_BV(MPCM1);
-  //UCSR1B |= _BV(RXEN1);
-
-  //UByte zilch = UDR1;
-  //zilch += UDR1;
+//  UCSR0B = 0x1c;
+//
+//  UCSR1A &= ~_BV(MPCM1);
+//  //UCSR1B |= _BV(RXEN1);
+//
+//  //UByte zilch = UDR1;
+//  //zilch += UDR1;
 }
 
 UByte Bus::command_ubyte_get(UByte address, UByte command) {
