@@ -225,7 +225,6 @@ class Bus_Buffer
     UByte _put_index;			// Next byte to put index
     static const UByte _ubytes_power = 4; // Bufere size must be power of 2
     static const UByte _ubytes_size = 1 << _ubytes_power; // Actual buffer size
-    static const UByte _ubytes_mask = _ubytes_size - 1; // Index mask
     UByte _ubytes[_ubytes_size];	// The actual buffer bytes
 };
 

@@ -483,13 +483,26 @@ void Bus_Buffer::show(UByte tag) {
 UByte Bus_Buffer::ubyte_get() {
   // This routine will return the next byte from the buffer.
 
-  return _ubytes[_get_index++ & _ubytes_mask];
+  UByte ubyte = 0;
+  if (_get_index >= _put_index) {
+    // We are attempting to read past the end of the buffer:
+    _error_flags += 1;
+  } else {
+    ubyte = _ubytes[_get_index++];
+  }
+  return ubyte;
 }
 
 void Bus_Buffer::ubyte_put(UByte ubyte) {
   // This routine will return the next byte from the buffer.
 
-  _ubytes[_put_index++ & _ubytes_mask] = ubyte & 0xff;
+  UByte put_index = _put_index;
+  if (put_index >= _ubytes_size) {
+    // Attempting to write past end of buffer:    
+    _error_flags += 1;
+  } else {
+    _ubytes[_put_index++] = ubyte;
+  }
 }
 
 UInteger Bus_Buffer::uinteger_get() {
@@ -691,7 +704,6 @@ Logical Bus::flush() {
 	error = (Logical)1;
       }
     }
-
   }
   debug_character('!');
   return error;
@@ -705,14 +717,15 @@ Logical Bus::flush() {
 // from *command_process* is zero for success and non-zero for
 // for failure.
 
+static Logical selected = (Logical)0;
+static UByte request_size = 0;
+static UByte request_check_sum = 0;
+static UByte selected_address = 0xff;
+
 void Bus::slave_mode(UByte address,
  UByte (*command_process)(Bus *bus, UByte command, Logical execute_mode)) {
-  Logical selected = (Logical)0;
-  UByte request_size = 0;
-  UByte request_check_sum = 0;
-  UByte selected_address = 0xff;
   debug_character('[');
-  while (1) {
+  if (can_receive()) {
     // Fetch the next frame from the UART:
     UShort frame = frame_get();
 
@@ -783,6 +796,7 @@ void Bus::slave_mode(UByte address,
 	      // in {_get_buffer}:
 	      flags = 0;
 	      _get_buffer._get_index = 0;
+	      _get_buffer._error_flags = 0;
 	      while (_get_buffer._get_index < request_size) {
 		UByte command = ubyte_get();
 		flags |= command_process(this, command, (Logical)pass);
