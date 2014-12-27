@@ -489,7 +489,31 @@ UByte Bus_Buffer::ubyte_get() {
 void Bus_Buffer::ubyte_put(UByte ubyte) {
   // This routine will return the next byte from the buffer.
 
-  _ubytes[_put_index++ & _ubytes_mask] = ubyte;
+  _ubytes[_put_index++ & _ubytes_mask] = ubyte & 0xff;
+}
+
+UInteger Bus_Buffer::uinteger_get() {
+  //...
+
+  UByte byte3 = ubyte_get();
+  UByte byte2 = ubyte_get();
+  UByte byte1 = ubyte_get();
+  UByte byte0 = ubyte_get();
+  UInteger uinteger =
+    (((UInteger)byte3) << 24) |
+    (((UInteger)byte2) << 16) |
+    (((UInteger)byte1) <<  8) |
+     ((UInteger)byte0);
+  return uinteger;
+}
+
+void Bus_Buffer::uinteger_put(UInteger uinteger) {
+  // ...
+
+  ubyte_put((UByte)(uinteger >> 24));
+  ubyte_put((UByte)(uinteger >> 16));
+  ubyte_put((UByte)(uinteger >> 8));
+  ubyte_put((UByte)(uinteger));
 }
 
 UShort Bus_Buffer::ushort_get() {
@@ -511,172 +535,13 @@ void Bus_Buffer::ushort_put(UShort ushort) {
 // *Bus* routines:
 
 Bus::Bus(UART *bus_uart, UART *debug_uart) {
-  // We want to do the following to the USART:
-  //  - Set transmit/receive rate to .5Mbps
-  //  - Single rate transmission (Register A)
-  //  - All interrupts disabled for now (Register B)
-  //  - Transmit enable (Register B)
-  //  - Receive enable (Register B)
-  //  - Turn on Receiver interrupt enable flag (Register B)
-  //  - 9-bits of data (Registers B and C)
-  //  - Asynchronous mode (Register C)
-  //  - No parity (Register C)
-  //  - 1 Stop bit (Register C)
-  //
-  // There are a total of 5 registers to deal with.
-  //   UBRRnL = USART Baud Rate Register (low byte)
-  //   UBBRnH = USART Baud Rate Register (High byte)
-  //   UCSRnA = USART Control status register A
-  //   UCSRnB = USART Control status register B
-  //   UCSRnC = USART Control status register C
-  // They will be initialized in the order above.
-
-//  // Initialize USART1 baud rate to .5Mbps:
-//  //     f_cpu = 16000000L
-//  //     baud_rate = 500000L
-//  //     uubrr1 = f_cpu / (baud_rate * 8L) - 1
-//  //            = 16000000 / (500000 * 8) - 1
-//  //            = 16000000 / 4000000 - 1
-//  //            = 4 - 1
-//  //            = 3
-//  //FIXME: Should be 1 for .5Mbps rather 0 for 1Mbps
-//  UBRR0L = 1;
-//  UBRR0H = 0;
-//
-//  // UCSR0A: USART Control and Status Register 0 A:
-//  //   rtef opdm: (0010 0000: Default):
-//  //      r: Receive complete
-//  //      t: Transmit complete
-//  //      e: data register Empty
-//  //      f: Frame error
-//  //      o: data Overrun
-//  //      p: Parity error
-//  //      d: Double transmission speed
-//  //	  m: Multi-processor communication mode
-//  // Only d and m can be set:  We want d=1 and m=0:
-//  //   rtef opdm = 0000 0010 = 0
-//  UCSR0A = _BV(U2X0);
-//
-//  // UCSR0B: USART Control and Status Register 0 B:
-//  //   rtea bcde: (0000 0000: Default):
-//  //      r: Receive complete interrupt enable
-//  //      t: Transmit complete interrupt enable
-//  //      e: data register Empty complete interrupt enable
-//  //      a: (A) Transmitter enable
-//  //      b: (B) Receiver enable
-//  //      c: (C) size bit 2 (see register C):
-//  //      d: Receive data bit 8
-//  //	  e: Transmit data bit 8
-//  // All bits except d can be set.  We want 0001 1100 = 0x1c
-//  UCSR1B = _BV(TXEN0) | _BV(RXEN0) | _BV(UCSZ12); // = 0x1c
-//
-//  // UCSR0C: USART Control and Status Register 0 C:
-//  //   mmpp szzp: (0000 0110):
-//  //      mm: USART Mode
-//  //          00 Asynchronous USART
-//  //          01 Synchronous USART
-//  //          10 reserved
-//  //          11 Master SPI
-//  //      pp: Parity mode
-//  //          00 Disabled
-//  //          01 reserved
-//  //          10 enabled, even parity
-//  //          11 enabled, odd parity
-//  //      s: Stop bit (0=1 stop bit, 1=2 stop bits)
-//  //      czz: Character size (include C bit from register B):
-//  //          000 5-bit
-//  //          001 6-bit
-//  //          010 7-bit
-//  //          011 8-bit
-//  //          10x reserved
-//  //          110 reserved
-//  //          111 9-bit
-//  //      p: Clock polarity (synchronous mode only)
-//  // All bits can set.  We want 0000 0110 = 6.
-//  UCSR1C = _BV(UCSZ11) | _BV(UCSZ10);	// = 6
-
   // Initialize some the private member values:
   _bus_uart = bus_uart;
   _debug_uart = debug_uart;
   _desired_address = (UShort)0;
   _current_address = (UShort)0xffff;
   _auto_flush = (Logical)1;
-
-//  UCSR0B = 0x1c;
-//
-//  UCSR1A &= ~_BV(MPCM1);
-//  //UCSR1B |= _BV(RXEN1);
-//
-//  //UByte zilch = UDR1;
-//  //zilch += UDR1;
 }
-
-UByte Bus::command_ubyte_get(UByte address, UByte command) {
-  command_begin(address, command, 0);
-  UByte ubyte = ubyte_get();
-  command_end();
-  return ubyte;
-}
-
-void Bus::command_ubyte_put(UByte address, UByte command, UByte ubyte) {
-  command_begin(address, command, sizeof(UByte));
-  ubyte_put(ubyte);
-  command_end();
-}
-
-// The log_dump method is only provided if {BUS_DEBUG} is set to 1:
-#if BUS_DEBUG != 0
-void Bus::log_dump() {
-  // This method will dump out the next batch of values from the
-  // log buffer.
-
-  // Enclose dump values in square brackets:
-  //Serial.write('\r');
-  //Serial.write('\n');
-  //Serial.write('[');
-
-  // Iterate from {_log_dumped} to {_log_total}:
-  UByte log_total = _log_total;
-  UByte count = 0;
-  UByte index;
-  for (index = _log_dumped; index < log_total; index++) {
-    // Fetch the next {frame}
-    UShort frame =_log_buffer[index & BUS_LOG_MASK];
-
-    // Prefix {frame} with 'g' for get and 'p' for put:
-    if ((frame & 0x1000) != 0) {
-      //Serial.print('g');
-    } else {
-      //Serial.print('p');
-    }
-
-    // Output the 9-bit frame value:
-    //Serial.print(frame & 0x1ff, HEX); 
-
-    // Output the frame flags:
-    //Serial.write(':');
-    //Serial.print((frame >> 8) & 0xe, HEX);
-
-    // Separate the value with a space:
-    //Serial.write(' ');
-
-    // To prevent line wrapping, insert a new-line every 8th value:
-    if ((count & 7) == 7) {
-      //Serial.write('\r');
-      //Serial.write('\n');
-     }
-     count += 1;
-  }
-
-  // Remember that we have dumped up to {log_total}:
-  _log_dumped = log_total;
-
-  // Close off the square brackets:
-  //Serial.write(']');
-  //Serial.write('\r');
-  //Serial.write('\n');
-}
-#endif // BUS_DEBUG != 0
 
 // *Bus::command_begin*() will queue up *command* to be sent to the
 // module at *address*.  The number of bytes to be sent after *command*
@@ -720,32 +585,17 @@ void Bus::command_end() {
   debug_character('\n');
 }
 
-UShort Bus::ushort_get() {
-  //...
-
-  UByte high_byte = ubyte_get();
-  UByte low_byte = ubyte_get();
-  UShort ushort = (((UShort)high_byte) << 8) | ((UShort)low_byte);
-  return ushort;
+UByte Bus::command_ubyte_get(UByte address, UByte command) {
+  command_begin(address, command, 0);
+  UByte ubyte = ubyte_get();
+  command_end();
+  return ubyte;
 }
 
-void Bus::ushort_put(UShort ushort) {
-  // ...
-
-  ubyte_put((UByte)(ushort >> 8));
-  ubyte_put((UByte)ushort);
-}
-
-UByte Bus::ubyte_get() {
-  // ...
-
-  return (UByte)_get_buffer.ubyte_get();
-}
-
-void Bus::ubyte_put(UByte ubyte) {
-  // ...
-
-  _put_buffer.ubyte_put(ubyte);
+void Bus::command_ubyte_put(UByte address, UByte command, UByte ubyte) {
+  command_begin(address, command, sizeof(UByte));
+  ubyte_put(ubyte);
+  command_end();
 }
 
 // Flush current buffer and get any response back:
@@ -846,97 +696,6 @@ Logical Bus::flush() {
   debug_character('!');
   return error;
 }
-
-//Logical Bus::can_receive() {
-//  Logical result = (Logical)0;
-//  if (_interrupt_mode) {
-//    result = (Logical)(bus._get_tail != bus._get_head);
-//  } else {
-//    result = (Logical)((UCSR1A & _BV(RXC1)) != 0);
-//  }
-//  return result;
-//}
-//
-//
-//Logical Bus::can_transmit() {
-//  Logical result = (Logical)0;
-//  if (_interrupt_mode) {
-//    UByte next_put_head = (_put_head + 1) & _put_ring_mask;
-//    result = (Logical)(next_put_head != _put_tail);
-//  } else {
-//    result = (Logical)((UCSR1A & _BV(UDRE1)) != 0);
-//  }
-//  return result;
-//}
-//
-//UShort Bus::frame_get() {
-//  // Wait for a 9-bit frame to arrive and return it:
-//
-//  debug_character('g');
-//  UCSR1B |= _BV(RXEN1);
-//  UShort frame = 0;
-//
-//  // Set to 1 to use interrupt buffers; 0 for direct UART access:
-//  if (_interrupt_mode) {
-//    // When tail is equal to head, there are no frames in ring buffer:
-//    UByte get_tail = bus._get_tail;
-//    while (bus._get_tail == bus._get_head) {
-//      // Wait for a frame to show up.
-//    }
-//
-//    // Read the {frame} and advance the tail by one:
-//    frame = bus._get_ring[get_tail];
-//    bus._get_tail = (get_tail + 1) & _get_ring_mask;
-//  } else {
-//    while (!(UCSR1A & _BV(RXC1))) {
-//      // Nothing yet, keep waiting:
-//    }
-//    if ((UCSR1B & _BV(RXB81)) != 0) {
-//      frame |= 0x100;
-//    }
-//    frame |= (UShort)UDR1;
-//  }
-//  debug_hex(frame);
-//  return frame;
-//}
-//
-//void Bus::frame_put(UShort frame) {
-//  // This routine will output the low order 9-bits of {frame} to {self}.
-//  // The echo due to the fact the bus is half-duplex is automatically
-//  // read and ignored.
-//
-//  debug_character('p');
-//  debug_hex(frame);
-//
-//  // Set to 1 to use interrupt buffers; 0 for direct UART access:
-//  if (_interrupt_mode) {
-//    UByte put_head = bus._put_head;
-//    UByte new_put_head = (put_head + 1) & _put_ring_mask;
-//    while (new_put_head == bus._put_tail) {
-//      // Wait for space to show up in put ring buffer:
-//    }
-//
-//    bus._put_ring[put_head] = frame;
-//    bus._put_head = new_put_head;
-//
-//    UCSR1B |= _BV(UDRIE1);
-//  } else {
-//    // Wait until UART can take another character to output:
-//    while (!(UCSR1A & _BV(UDRE1))) {
-//      // UART is still busy, keep waiting:
-//    }
-//  
-//    // Set 9th bit:
-//    if ((frame & 0x100) != 0) {
-//      UCSR1B |= _BV(TXB81);
-//    } else {
-//      UCSR1B &= ~_BV(TXB81);
-//    }
-//
-//    // UART is ready, output the character:
-//    UDR1 = (UByte)frame;
-//  }
-//}
 
 // This routine will perform all the operations to respond to
 // commands sent to *address*.  *command_process* is a routine that
@@ -1101,49 +860,5 @@ void Bus_Module::bind(Bus *bus, UByte address)
 {
   _bus = bus;
   _address = address;
-}
-
-
-// Send the contents of *Bus_Serial__put_buffer* to the bus:
-Logical Bus::put_buffer_send() {
-  Logical error = (Logical)0;
-
-  // Compute the 4-bit *check_sum*:
-  UByte check_sum = _put_buffer.check_sum();
-
-  // Send *count_check_sum*:
-  UByte size = _put_buffer._put_index & 0xf;
-
-  UByte header = (size << 4) | check_sum;
-
-  //Serial.write("P");
-  //Serial.print(header, HEX);
-
-  bus.frame_put((UShort)header);
-  UShort header_echo = bus.frame_get();
-  if (header == header_echo) {
-    // Send the buffer:
-    for (Byte index = 0; index < size; index++) {
-      UShort put_frame = (UShort)_put_buffer._ubytes[index];
-
-      //Serial.write("P");
-      //Serial.print(put_frame, HEX);
-
-      bus.frame_put(put_frame);
-      UShort put_frame_echo = bus.frame_get();
-      if (put_frame != put_frame_echo) {
-        //Serial.write('&');
-        error = (Logical)1;
-        break;
-      }
-    }
-  } else {
-    // *count_check_sum_echo* did not match *count_check_sum*:
-    error = (Logical)1;
-  }
-
-  // We mark *Bus_Serial__put_buffer* as sent:
-  _put_buffer.reset();
-  return error;
 }
 

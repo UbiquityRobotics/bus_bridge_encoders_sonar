@@ -74,8 +74,8 @@ typedef signed char Byte;		// 8-bit signed byte (-128 ... 128):
 typedef char Character;			// 8-bit character (sign whatever)
 typedef double Double;			// 64-bit double precision float number
 typedef float Float;			// 32-bit single precision float number
-typedef signed int Integer;		// 32-bit signed integer
-typedef signed long int Long;		// 64-bit signed integer
+typedef signed long Integer;		// 32-bit signed integer
+typedef signed long long int Long;	// 64-bit signed integer
 typedef signed short Short;		// 16-bit signed integer
 typedef Character *Text;		// Null terminated *Character* string
 
@@ -174,12 +174,6 @@ class NULL_UART : public UART {
   extern AVR_UART1 avr_uart1;
 #endif // defined(UDR1)
 
-// These two defines are only used when *BUS_DEBUG* is set to 1:
-//#if BUS_DEBUG
-//   #define BUS_LOG_SIZE 128
-//   #define BUS_LOG_MASK (BUS_LOG_SIZE - 1)
-//#endif // BUS_DEBUG
-
 // These defines are empty when *BUS_TRACE* is 0:
 //! @class Bus_Buffer
 //! @brief Send/Receive packet buffer.
@@ -190,11 +184,37 @@ class Bus_Buffer
 {
   public:				// In alphabetical order:
     Bus_Buffer();			// Constructor
+    Byte byte_get() {
+      return (Byte)ubyte_get();
+    };
+    void byte_put(Byte byte) {
+      ubyte_put((UByte)byte); 
+    };
+    Character character_get() {
+      return (Character)ubyte_get();
+    };
+    void character_put(Character character) {
+      ubyte_put((UByte)character); 
+    };
     UByte check_sum();			// Compute 4-bit check sum
+    Integer integer_get() {
+      return (Integer)uinteger_get();
+    };
+    void integer_put(Integer integer) {
+      uinteger_put((UInteger)integer); 
+    };
+    Logical logical_get() {
+      return (Logical)ubyte_get();
+    };
+    void logical_put(Logical logical) {
+      ubyte_put((UByte)logical); 
+    };
     void reset();			// Reset/clear buffer
     void show(UByte Tag);		// Show buffer (for debgging)
     UByte ubyte_get();			// Get next *UByte* from buffer
     void ubyte_put(UByte ubyte);	// Put a *UByte* into buffer
+    UInteger uinteger_get();		// Get next *UInteger* from buffer
+    void uinteger_put(UInteger uinteger); // Put a *UInteger* into buffer
     UShort ushort_get();		// Get next *UShort* from buffer
     void ushort_put(UShort ushort);	// Put a *UShort* into buffer
 
@@ -220,6 +240,10 @@ class Bus
   public:
     //! @brief Constructor for Bus object.
     Bus(UART *bus_uart, UART *debug_uart);
+
+    void auto_flush_set(Logical auto_flush) {
+      _auto_flush = auto_flush;
+    };
 
     //! @brief Return the a signed byte from currently selected module.
     //!   @return the next signed byte from the command.
@@ -296,6 +320,59 @@ class Bus
       #endif //BUS_DEBUG
     }
 
+    Logical can_receive(){
+      return _bus_uart->can_receive();
+     };
+
+    Logical can_transmit() {
+      return _bus_uart->can_transmit();
+    };
+
+    UByte command_ubyte_get(UByte address, UByte command);
+
+    void command_ubyte_put(UByte address, UByte command, UByte ubyte);
+
+    UShort frame_get() { 
+      UShort frame = _bus_uart->frame_get();
+      debug_character('g');
+      debug_hex((UInteger)frame);
+      return frame;
+    };
+
+    void frame_put(UShort frame) {
+      debug_character('p');
+      debug_hex((UInteger)frame);
+      _bus_uart->frame_put(frame);
+    };
+
+    Logical flush();
+
+    //! @brief Return next *Integer* from currently selected module.
+    //! @return the next *Integer* from currently selected module.
+    //!
+    //! This method will return the next *Integer* from the currently
+    //! selected module.
+    Integer integer_get() {
+      return _get_buffer.integer_get();
+    }
+
+    //! @brief Send *integer* to currently selected module.
+    //! @param integer	*Integer* unsigned short to send.
+    //!
+    //! This method will send *integer* to the currently selected module.
+    void integer_put(Integer integer) {
+      // Queue {integer} to be sent off to bus:
+      _put_buffer.integer_put(integer);
+    }
+
+    void interrupt_set(Logical interrupt) {
+      _bus_uart->interrupt_set(interrupt);
+    };
+
+    Logical logical_get() {
+      return (Logical)ubyte_get();
+    };
+
     //! @brief Send *byte* to currently selected module.
     //!   @param byte byte value to send to command.
     //!
@@ -306,48 +383,49 @@ class Bus
       ubyte_put((UByte)logical);
     }
 
-    void auto_flush_set(Logical auto_flush) {
-      _auto_flush = auto_flush;
-    };
-    Logical can_receive(){
-      return _bus_uart->can_receive();
-     };
-    Logical can_transmit() {
-      return _bus_uart->can_transmit();
-    };
-    UByte command_ubyte_get(UByte address, UByte command);
-    void command_ubyte_put(UByte address, UByte command, UByte ubyte);
-    UShort frame_get() { 
-      UShort frame = _bus_uart->frame_get();
-      debug_character('g');
-      debug_hex((UInteger)frame);
-      return frame;
-    };
-    void frame_put(UShort frame) {
-      debug_character('p');
-      debug_hex((UInteger)frame);
-      _bus_uart->frame_put(frame);
-    };
-    Logical flush();
-    void interrupt_set(Logical interrupt) {
-      _bus_uart->interrupt_set(interrupt);
-    };
+    //! @brief Handle bus communication for a module in slave mode.
+    //!   @param address Module address to listen to
+    //!   @param command_process helper routine to process each
+    //!                          byte of received from master
+    void slave_mode(UByte address, UByte (*command_process)
+     (Bus *bus, UByte command, Logical mode));
 
-    Logical logical_get();
 
     //! @brief Return next byte from currently selected module.
     //!   @return the next byte from currently selected module.
     //!
     //! This method will return the next unsigned byte from the currently
     //! selected module.
-    UByte ubyte_get();
+    UByte ubyte_get() {
+      return (UByte)_get_buffer.ubyte_get();
+    };
 
     //! @brief Send *ubyte* to currently selected module.
     //!    @param ubyte	unsigned byte to send
     //!
     //! This method will send *ubyte* to the currently selected module.
-    void ubyte_put(UByte ubyte);
-	// Queue {ubyte} to be sent off to bus:
+    void ubyte_put(UByte ubyte) {
+      // Queue {ubyte} to be sent off to bus:
+      _put_buffer.ubyte_put(ubyte);
+    };
+
+    //! @brief Return next *UInteger* from currently selected module.
+    //! @return the next *UInteger* from currently selected module.
+    //!
+    //! This method will return the next *UInteger* from the currently
+    //! selected module.
+    UInteger uinteger_get() {
+      return _get_buffer.uinteger_get();
+    }
+
+    //! @brief Send *uinteger* to currently selected module.
+    //! @param uinteger	*UInteger* unsigned short to send.
+    //!
+    //! This method will send *uinteger* to the currently selected module.
+    void uinteger_put(UInteger uinteger) {
+      // Queue {uinteger} to be sent off to bus:
+      _put_buffer.uinteger_put(uinteger);
+    };
 
     //! @brief Return next short from currently selected module.
     //!   @return the next short from currently selected module.
@@ -362,42 +440,6 @@ class Bus
     //! This method will send *ushort* to the currently selected module.
     void ushort_put(UShort ushort);
 	// Queue {ushort} to be sent off to bus:
-
-    //! @brief Handle bus communication for a module in slave mode.
-    //!   @param address Module address to listen to
-    //!   @param command_process helper routine to process each
-    //!                          byte of received from master
-    void slave_mode(UByte address, UByte (*command_process)
-     (Bus *bus, UByte command, Logical mode));
-
-    // The {log_dump} method is only enabled when BUS_DEUBG is set to 1:
-    #if BUS_DEBUG != 0
-      // Dump frame buffer:
-      void log_dump();
-    #endif // BUS_DEBUG != 0
-
-    // The following fields should be private, but the interrupt
-    // service routine needs to be able to access them.  Trying to figure
-    // out how to do this with a friend fuction to a function with C linkage
-    // was too hard:
-
-    //static const UByte _get_ring_power = 4;
-    //static const UByte _get_ring_size = 1 << _get_ring_power;
-    //static const UByte _get_ring_mask = _get_ring_size - 1;
-    //UShort _get_ring[_get_ring_size];	// Ring buffer for received frames
-    //volatile UByte _get_head;
-    //volatile UByte _get_tail;
-
-    //static const UByte _put_ring_power = 4;
-    //static const UByte _put_ring_size = 1 << _put_ring_power;
-    //static const UByte _put_ring_mask = _put_ring_size - 1;
-    //UShort _put_ring[_put_ring_size];	// Ring buffer for received frames
-    //volatile UByte _put_head;
-    //volatile UByte _put_tail;
-
-    UShort _echo_suppress;	// Frame to suppress; (OR in 0x8000 to suppress)
-
-    Logical put_buffer_send();
 
   private:
     static const UByte _maximum_request_size = 15;
@@ -428,6 +470,16 @@ class Bus_Module
       // Construct an empty module:
       _bus = (Bus *)0;
       _address = 0xff;
+    }
+
+    void auto_flush_set(Logical auto_flush) {
+      // This routine will Set the automatic flush mode for {this}
+      // to {auto_flush}.  If {auto_flush} is 1, each command as
+      // flushed as soon as possible.  If {auto_flush} is 0,
+      // commands are queued until an explicit flush occurs.
+      // The previous value of flush mode is returned.
+
+      _bus->auto_flush_set(auto_flush);
     }
 
     void bind(Bus *bus, UByte address);
@@ -483,21 +535,20 @@ class Bus_Module
       _bus->flush();
     }
 
-    void auto_flush_set(Logical auto_flush) {
-      // This routine will Set the automatic flush mode for {this}
-      // to {auto_flush}.  If {auto_flush} is 1, each command as
-      // flushed as soon as possible.  If {auto_flush} is 0,
-      // commands are queued until an explicit flush occurs.
-      // The previous value of flush mode is returned.
-
-      _bus->auto_flush_set(auto_flush);
-    }
-
     Logical logical_get() {
       // This routine will return next next byte from current
       // module selected by {this}.
 
       return (Logical)_bus->ubyte_get();
+    }
+
+    Integer integer_get() {
+      return _bus->integer_get();
+    }
+
+    void integer_put(Integer integer) {
+      //_bus->integer_put(integer);
+      _bus->integer_put(-123);
     }
 
     void logical_put(Logical logical) {
