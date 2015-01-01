@@ -121,12 +121,13 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
     // Bus_Bridge_Encoders_Sonar
     case 0: {
       // led_get: LED to control
-      Logical led = bus_bridge_encoders_sonar.led_get();
-      maker_bus->logical_put(led);
+      if (execute_mode) {
+        Logical led = bus_bridge_encoders_sonar.led_get();
+        maker_bus->logical_put(led);
+      }
       break;
     }
     case 1: {
-      // led_set: LED to control
       Logical led = maker_bus->logical_get();
       if (execute_mode) {
         bus_bridge_encoders_sonar.led_set(led);
@@ -135,8 +136,10 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
     }
     case 2: {
       // encoder1_get: Encoder 1
-      Integer encoder1 = bus_bridge_encoders_sonar.encoder1_get();
-      maker_bus->integer_put(encoder1);
+      if (execute_mode) {
+        Integer encoder1 = bus_bridge_encoders_sonar.encoder1_get();
+        maker_bus->integer_put(encoder1);
+      }
       break;
     }
     case 3: {
@@ -149,8 +152,10 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
     }
     case 4: {
       // encoder2_get: Encoder 2
-      Integer encoder2 = bus_bridge_encoders_sonar.encoder2_get();
-      maker_bus->integer_put(encoder2);
+      if (execute_mode) {
+        Integer encoder2 = bus_bridge_encoders_sonar.encoder2_get();
+        maker_bus->integer_put(encoder2);
+      }
       break;
     }
     case 5: {
@@ -163,8 +168,10 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
     }
     case 8: {
       // motor1_get: Motor 1
-      Byte motor1 = bus_bridge_encoders_sonar.motor1_get();
-      maker_bus->byte_put(motor1);
+      if (execute_mode) {
+        Byte motor1 = bus_bridge_encoders_sonar.motor1_get();
+        maker_bus->byte_put(motor1);
+      }
       break;
     }
     case 9: {
@@ -176,13 +183,15 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
       break;
     }
     case 10: {
-      // motor2_get: Motor 1
-      Byte motor2 = bus_bridge_encoders_sonar.motor2_get();
-      maker_bus->byte_put(motor2);
+      // motor2_get: Motor 2
+      if (execute_mode) {
+        Byte motor2 = bus_bridge_encoders_sonar.motor2_get();
+        maker_bus->byte_put(motor2);
+      }
       break;
     }
     case 11: {
-      // motor2_set: Motor 1
+      // motor2_set: Motor 2
       Byte motor2 = maker_bus->byte_get();
       if (execute_mode) {
         bus_bridge_encoders_sonar.motor2_set(motor2);
@@ -191,8 +200,10 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
     }
     case 12: {
       // motor1_reverse_get: Toggle motor direction.
-      Logical motor1_reverse = bus_bridge_encoders_sonar.motor1_reverse_get();
-      maker_bus->logical_put(motor1_reverse);
+      if (execute_mode) {
+        Logical motor1_reverse = bus_bridge_encoders_sonar.motor1_reverse_get();
+        maker_bus->logical_put(motor1_reverse);
+      }
       break;
     }
     case 13: {
@@ -205,8 +216,10 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
     }
     case 14: {
       // motor2_reverse_get: Toggle motor direction.
-      Logical motor2_reverse = bus_bridge_encoders_sonar.motor2_reverse_get();
-      maker_bus->logical_put(motor2_reverse);
+      if (execute_mode) {
+        Logical motor2_reverse = bus_bridge_encoders_sonar.motor2_reverse_get();
+        maker_bus->logical_put(motor2_reverse);
+      }
       break;
     }
     case 15: {
@@ -214,6 +227,54 @@ UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
       Logical motor2_reverse = maker_bus->logical_get();
       if (execute_mode) {
         bus_bridge_encoders_sonar.motor2_reverse_set(motor2_reverse);
+      }
+      break;
+    }
+    case 16: {
+      // encoder1_reverse_get: Toggle encoder direction.
+      if (execute_mode) {
+        Logical encoder1_reverse = bus_bridge_encoders_sonar.encoder1_reverse_get();
+        maker_bus->logical_put(encoder1_reverse);
+      }
+      break;
+    }
+    case 17: {
+      // encoder1_reverse_set: Toggle encoder direction.
+      Logical encoder1_reverse = maker_bus->logical_get();
+      if (execute_mode) {
+        bus_bridge_encoders_sonar.encoder1_reverse_set(encoder1_reverse);
+      }
+      break;
+    }
+    case 18: {
+      // encoder2_reverse_get: Toggle encoder direction.
+      if (execute_mode) {
+        Logical encoder2_reverse = bus_bridge_encoders_sonar.encoder2_reverse_get();
+        maker_bus->logical_put(encoder2_reverse);
+      }
+      break;
+    }
+    case 19: {
+      // encoder2_reverse_set: Toggle encoder direction.
+      Logical encoder2_reverse = maker_bus->logical_get();
+      if (execute_mode) {
+        bus_bridge_encoders_sonar.encoder2_reverse_set(encoder2_reverse);
+      }
+      break;
+    }
+    case 20: {
+      // motors_encoders_swap_get: Toggle encoder direction.
+      if (execute_mode) {
+        Logical motors_encoders_swap = bus_bridge_encoders_sonar.motors_encoders_swap_get();
+        maker_bus->logical_put(motors_encoders_swap);
+      }
+      break;
+    }
+    case 21: {
+      // motors_encoders_swap_set: Toggle encoder direction.
+      Logical motors_encoders_swap = maker_bus->logical_get();
+      if (execute_mode) {
+        bus_bridge_encoders_sonar.motors_encoders_swap_set(motors_encoders_swap);
       }
       break;
     }

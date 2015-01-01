@@ -7,6 +7,40 @@
 
 // *UART* routines:
 
+void UART::integer_print(Integer integer) {
+  UByte digits[10];
+  UByte index = 0;
+
+  // Deal with *negative* numbers:
+  Logical is_negative = (Logical)0;
+  if (integer < 0) {
+    integer = -integer;
+    is_negative = (Logical)1;
+  }
+
+  // Repeatibly eivide *integer* by 10 until it reaches 0; stuff each digit
+  // into *digits*:
+  while (integer != 0) {
+    digits[index++] = integer % 10;
+    integer = integer / 10;
+  }
+
+  // Make sure we have at least one digit in *digits*:
+  if (index == 0) {
+    digits[index++] = 0;
+  }
+
+  // Output any negative sign:
+  if (is_negative) {
+    frame_put((UShort)'-');
+  }
+
+  // Output *digits* in reverse order:
+  while (index-- > 0) {
+    frame_put((UShort)(digits[index] + '0'));
+  }
+}
+
 void UART::string_print(Text text) {
   Character character = '\0';
   while ((character = *text++) != '\0') {
@@ -599,9 +633,23 @@ void Bus::command_end() {
 }
 
 UByte Bus::command_ubyte_get(UByte address, UByte command) {
+  // For debugging:
+  //debug_text((Text)"cmd_ubyte_get(");
+  //debug_hex((UInteger)address);
+  //debug_text((Text)",");
+  //debug_hex((UInteger)command);
+  //debug_text((Text)")");
+
   command_begin(address, command, 0);
-  UByte ubyte = ubyte_get();
   command_end();
+  flush();
+  UByte ubyte = ubyte_get();
+
+  // For debugging:
+  //debug_text((Text)"=>");
+  //debug_hex((UInteger)ubyte);
+  //debug_text((Text)"\r\n");
+
   return ubyte;
 }
 
@@ -619,11 +667,6 @@ Logical Bus::flush() {
   // See if there is anything to flush:
   UByte request_size = _put_buffer._put_index;
   if (request_size > 0) {
-
-    // If {BUS_DEBUG} is set 1, dump out the frame log:
-    #if BUS_DEBUG != 0
-	log_dump();
-    #endif // BUS_DEBUG != 0
 
     // For now force the *desired_address* out:
    _current_address = (UShort)0xffff;
@@ -694,13 +737,23 @@ Logical Bus::flush() {
       // Now slurp in the rest of response packet:
       _get_buffer.reset();
       for (index = 0; index < response_length; index++) {
-      UByte ubyte = (UByte)frame_get();
+        UByte ubyte = (UByte)frame_get();
 	_get_buffer.ubyte_put(ubyte);
       }
+
+      // For debugging:
+      //debug_text((Text)" GB.gi=");
+      //debug_hex((UInteger)_get_buffer._get_index);
+      //debug_text((Text)" GB.pi=");
+      //debug_hex((UInteger)_get_buffer._put_index);
+      //debug_text((Text)" GB.buf[0]=");
+      //debug_hex((UInteger)_get_buffer._ubytes[0]);
+      //debug_text((Text)" ");
 
       // Check for a check sum error:
       UByte response_check_sum = response_header & 0xf;
       if (_get_buffer.check_sum() != response_check_sum) {
+	debug_character('#');
 	error = (Logical)1;
       }
     }
@@ -708,6 +761,21 @@ Logical Bus::flush() {
   debug_character('!');
   return error;
 }
+
+UInteger Bus::command_integer_get(UByte address, UByte command) {
+  command_begin(address, command, 0);
+  command_end();
+  flush();
+  Integer integer = (Integer)uinteger_get();
+  return integer;
+}
+
+void Bus::command_integer_put(UByte address, UByte command, Integer integer) {
+  command_begin(address, command, sizeof(Integer));
+  uinteger_put((UInteger)integer);
+  command_end();
+}
+
 
 // This routine will perform all the operations to respond to
 // commands sent to *address*.  *command_process* is a routine that

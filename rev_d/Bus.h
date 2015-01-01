@@ -98,6 +98,7 @@ class UART {
     virtual Logical can_receive() = 0;
     virtual UShort frame_get() = 0;
     virtual void frame_put(UShort frame) = 0;
+    void integer_print(Integer integer);
     virtual void interrupt_set(Logical interrupt) = 0;
     void print(UByte ubyte) { uinteger_print((UInteger)ubyte); }
     void print(Character character) { frame_put((UShort)character); }
@@ -326,6 +327,18 @@ class Bus
     Logical can_transmit() {
       return _bus_uart->can_transmit();
     };
+
+    UByte command_byte_get(UByte address, UByte command) {
+      return (Byte)command_ubyte_get(address, command);
+    };
+
+    void command_byte_put(UByte address, UByte command, Byte byte) {
+      command_ubyte_put(address, command, (UByte)byte);
+    }
+
+    UInteger command_integer_get(UByte address, UByte command);
+
+    void command_integer_put(UByte address, UByte command, Integer integer);
 
     UByte command_ubyte_get(UByte address, UByte command);
 
