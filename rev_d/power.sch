@@ -63,12 +63,12 @@ $EndComp
 $Comp
 L C_VERT C1
 U 1 1 543A2450
-P 1800 7100
-F 0 "C1" H 1820 7190 50  0000 L CNN
-F 1 "22uF" H 1820 7010 50  0000 L CNN
-F 2 "Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5" H 1838 6950 30  0001 C CNN
-F 3 "" H 1800 7100 60  0000 C CNN
-	1    1800 7100
+P 1700 7100
+F 0 "C1" H 1720 7190 50  0000 L CNN
+F 1 "22uF_35V_ALUM" H 1720 7010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5" H 1738 6950 30  0001 C CNN
+F 3 "" H 1700 7100 60  0000 C CNN
+	1    1700 7100
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -88,7 +88,7 @@ U 1 1 543A245E
 P 2650 7400
 F 0 "R1" H 2650 7500 50  0000 C CNN
 F 1 ".47" H 2650 7300 50  0000 C CNN
-F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 2675 7400 60  0001 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100" H 2675 7400 60  0001 C CNN
 F 3 "" H 2675 7400 60  0000 C CNN
 	1    2650 7400
 	1    0    0    -1  
@@ -98,7 +98,7 @@ L C_VERT C3
 U 1 1 543A2465
 P 3300 7100
 F 0 "C3" H 3320 7190 50  0000 L CNN
-F 1 "22uF" H 3320 7010 50  0000 L CNN
+F 1 "22uF_6.3V_TANT" H 3320 7010 50  0000 L CNN
 F 2 "Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5" H 3338 6950 30  0001 C CNN
 F 3 "" H 3300 7100 60  0000 C CNN
 	1    3300 7100
@@ -131,12 +131,12 @@ MOTOR_POWER
 $Comp
 L C_VERT C4
 U 1 1 543A249A
-P 3700 7100
-F 0 "C4" H 3720 7190 50  0000 L CNN
-F 1 ".1uF" H 3720 7010 50  0000 L CNN
-F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 3738 6950 30  0001 C CNN
-F 3 "" H 3700 7100 60  0000 C CNN
-	1    3700 7100
+P 4200 7100
+F 0 "C4" H 4220 7190 50  0000 L CNN
+F 1 ".1uF" H 4220 7010 50  0000 L CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Capacitor4x3RM2-5_RevB" H 4238 6950 30  0001 C CNN
+F 3 "" H 4200 7100 60  0000 C CNN
+	1    4200 7100
 	1    0    0    -1  
 $EndComp
 Text Label 6600 900  0    50   ~ 0
@@ -147,7 +147,7 @@ Text Label 6600 1700 0    50   ~ 0
 M2+
 Text Label 6600 2100 0    50   ~ 0
 M2-
-Text Notes 1725 7050 0    50   ~ 0
+Text Notes 1600 7050 0    50   ~ 0
 +
 Text Notes 3200 7050 0    50   ~ 0
 +
@@ -240,7 +240,7 @@ U 2 1 543ABB21
 P 2300 1600
 F 0 "U1" H 2050 1900 50  0000 C CNN
 F 1 "LTV-826" H 2450 1300 50  0000 C CNN
-F 2 "" H 2300 1600 60  0000 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:DIP-8__300" H 2300 1600 60  0001 C CNN
 F 3 "" H 2300 1600 60  0000 C CNN
 	2    2300 1600
 	1    0    0    -1  
@@ -346,7 +346,7 @@ U 1 1 543B0C2C
 P 3100 5900
 F 0 "R2" H 3170 5950 50  0000 L CNN
 F 1 "220" H 3170 5850 50  0000 L CNN
-F 2 "Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x02" H 3100 5950 60  0001 C CNN
+F 2 "Bus_Bridge_Encoders_Sonar:Resistor_Vertical__100" H 3100 5950 60  0001 C CNN
 F 3 "" H 3100 5950 60  0000 C CNN
 	1    3100 5900
 	1    0    0    -1  
@@ -381,13 +381,13 @@ Text Label 6600 6100 0    50   ~ 0
 LED_EN
 Text HLabel 7200 6300 2    50   Input ~ 0
 LED_5V
-Connection ~ 1800 7600
+Connection ~ 1700 7600
 Connection ~ 2900 700 
 Wire Wire Line
 	2900 2100 2800 2100
 Connection ~ 1700 4600
 Wire Wire Line
-	1800 7600 1800 7300
+	1700 7600 1700 7300
 Connection ~ 1700 1800
 Wire Wire Line
 	1800 1800 1700 1800
@@ -469,7 +469,7 @@ Wire Wire Line
 Wire Wire Line
 	2850 7400 2900 7400
 Connection ~ 2350 7400
-Connection ~ 1800 6800
+Connection ~ 1700 6800
 Wire Wire Line
 	1100 6800 1900 6800
 Wire Wire Line
@@ -530,12 +530,14 @@ Wire Wire Line
 Wire Wire Line
 	5500 1300 4100 1300
 Wire Wire Line
-	5700 7600 5700 2600
+	5700 2600 5700 7600
 Connection ~ 5700 2600
 Wire Wire Line
 	5400 2600 6600 2600
 Wire Wire Line
-	1100 7600 5700 7600
+	1100 7600 4200 7600
+Wire Wire Line
+	5700 7600 4000 7600
 Wire Wire Line
 	2350 7150 2350 7600
 Connection ~ 2350 7600
@@ -544,20 +546,17 @@ Wire Wire Line
 Wire Wire Line
 	3300 6800 3300 6900
 Wire Wire Line
-	1800 6600 1800 6900
+	1700 6600 1700 6900
 Connection ~ 3300 7600
 Connection ~ 2900 4900
 Wire Wire Line
-	3700 6800 3700 6900
-Wire Wire Line
-	3700 7300 3700 7600
-Connection ~ 3700 7600
+	4200 7600 4200 7300
+Connection ~ 4200 7600
 Wire Wire Line
 	3300 5700 5700 5700
 Connection ~ 5700 5700
-Connection ~ 3700 6800
 Wire Wire Line
-	4600 6600 1800 6600
+	4600 6600 1700 6600
 Wire Wire Line
 	4600 6700 4500 6700
 Wire Wire Line
@@ -592,7 +591,7 @@ Wire Wire Line
 Wire Wire Line
 	7200 6300 4200 6300
 Wire Wire Line
-	4200 6300 4200 6800
+	4200 6300 4200 6900
 Connection ~ 4200 6800
 Wire Wire Line
 	7200 2100 6500 2100

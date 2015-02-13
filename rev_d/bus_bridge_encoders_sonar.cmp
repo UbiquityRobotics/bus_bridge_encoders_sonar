@@ -1,9 +1,9 @@
-Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Thu 30 Oct 2014 08:28:51 AM PDT
+Cmp-Mod V01 Created by Cvpcb (2014-jul-16 BZR unknown)-product   date = Thu 12 Feb 2015 10:10:25 PM PST
 
 BeginCmp
 TimeStamp = /543A0165/543A2450;
 Reference = C1;
-ValeurCmp = 22uF;
+ValeurCmp = 22uF_35V_ALUM;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
@@ -17,7 +17,7 @@ EndCmp
 BeginCmp
 TimeStamp = /543A0165/543A2465;
 Reference = C3;
-ValeurCmp = 22uF;
+ValeurCmp = 22uF_6.3V_TANT;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
@@ -31,7 +31,7 @@ EndCmp
 BeginCmp
 TimeStamp = /543A0162/543A13A9;
 Reference = C5;
-ValeurCmp = 22uF;
+ValeurCmp = 22uF_35V_ALUM;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
@@ -52,7 +52,7 @@ EndCmp
 BeginCmp
 TimeStamp = /543A0162/543A13BE;
 Reference = C8;
-ValeurCmp = 22uF;
+ValeurCmp = 22uF_6.3V_TANT;
 IdModule  = Bus_Bridge_Encoders_Sonar:Capacitor3MMDiscRM2.5;
 EndCmp
 
@@ -325,7 +325,7 @@ EndCmp
 BeginCmp
 TimeStamp = /543A0162/543C5E11;
 Reference = R12;
-ValeurCmp = 4K7x4;
+ValeurCmp = 4K7_SIP5;
 IdModule  = Bus_Bridge_Encoders_Sonar:Pin_Header_Straight_1x05;
 EndCmp
 
