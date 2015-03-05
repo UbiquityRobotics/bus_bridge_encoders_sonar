@@ -14,8 +14,8 @@
 // UART1 to be disabled:
 #define UART1_DISABLED
 
-#include "Bus.h"
-#include <Bus_Bridge_Encoders_Sonar_Local.h>
+#include <Bus_Slave.h>
+#include "Bus_Bridge_Encoders_Sonar_Local.h"
 
 // The null object can be used for *debug_uart*:
 NULL_UART null_uart;
@@ -111,190 +111,16 @@ ISR(PCINT1_vect) {
   encoder_buffer[encoder_buffer_in] = PINC;
   encoder_buffer_in = (encoder_buffer_in + 1) & BUFFER_MASK;
   //Serial.print('.');
+  //UDR0 = '.';
 }
 
-Bus bus(bus_uart, debug_uart);
+Bus_Slave bus_slave(bus_uart, debug_uart);
 Bus_Bridge_Encoders_Sonar bus_bridge_encoders_sonar(33);
 
-UByte command_process(Bus *maker_bus, UByte command, Logical execute_mode) {
-  switch (command) {
-    // Bus_Bridge_Encoders_Sonar
-    case 0: {
-      // led_get: LED to control
-      if (execute_mode) {
-        Logical led = bus_bridge_encoders_sonar.led_get();
-        maker_bus->logical_put(led);
-      }
-      break;
-    }
-    case 1: {
-      Logical led = maker_bus->logical_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.led_set(led);
-      }
-      break;
-    }
-    case 2: {
-      // encoder1_get: Encoder 1
-      if (execute_mode) {
-        Integer encoder1 = bus_bridge_encoders_sonar.encoder1_get();
-        maker_bus->integer_put(encoder1);
-      }
-      break;
-    }
-    case 3: {
-      // encoder1_set: Encoder 1
-      Integer encoder1 = maker_bus->integer_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.encoder1_set(encoder1);
-      }
-      break;
-    }
-    case 4: {
-      // encoder2_get: Encoder 2
-      if (execute_mode) {
-        Integer encoder2 = bus_bridge_encoders_sonar.encoder2_get();
-        maker_bus->integer_put(encoder2);
-      }
-      break;
-    }
-    case 5: {
-      // encoder2_set: Encoder 2
-      Integer encoder2 = maker_bus->integer_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.encoder2_set(encoder2);
-      }
-      break;
-    }
-    case 8: {
-      // motor1_get: Motor 1
-      if (execute_mode) {
-        Byte motor1 = bus_bridge_encoders_sonar.motor1_get();
-        maker_bus->byte_put(motor1);
-      }
-      break;
-    }
-    case 9: {
-      // motor1_set: Motor 1
-      Byte motor1 = maker_bus->byte_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.motor1_set(motor1);
-      }
-      break;
-    }
-    case 10: {
-      // motor2_get: Motor 2
-      if (execute_mode) {
-        Byte motor2 = bus_bridge_encoders_sonar.motor2_get();
-        maker_bus->byte_put(motor2);
-      }
-      break;
-    }
-    case 11: {
-      // motor2_set: Motor 2
-      Byte motor2 = maker_bus->byte_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.motor2_set(motor2);
-      }
-      break;
-    }
-    case 12: {
-      // motor1_reverse_get: Toggle motor direction.
-      if (execute_mode) {
-        Logical motor1_reverse = bus_bridge_encoders_sonar.motor1_reverse_get();
-        maker_bus->logical_put(motor1_reverse);
-      }
-      break;
-    }
-    case 13: {
-      // motor1_reverse_set: Toggle motor direction.
-      Logical motor1_reverse = maker_bus->logical_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.motor1_reverse_set(motor1_reverse);
-      }
-      break;
-    }
-    case 14: {
-      // motor2_reverse_get: Toggle motor direction.
-      if (execute_mode) {
-        Logical motor2_reverse = bus_bridge_encoders_sonar.motor2_reverse_get();
-        maker_bus->logical_put(motor2_reverse);
-      }
-      break;
-    }
-    case 15: {
-      // motor2_reverse_set: Toggle motor direction.
-      Logical motor2_reverse = maker_bus->logical_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.motor2_reverse_set(motor2_reverse);
-      }
-      break;
-    }
-    case 16: {
-      // encoder1_reverse_get: Toggle encoder direction.
-      if (execute_mode) {
-        Logical encoder1_reverse = bus_bridge_encoders_sonar.encoder1_reverse_get();
-        maker_bus->logical_put(encoder1_reverse);
-      }
-      break;
-    }
-    case 17: {
-      // encoder1_reverse_set: Toggle encoder direction.
-      Logical encoder1_reverse = maker_bus->logical_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.encoder1_reverse_set(encoder1_reverse);
-      }
-      break;
-    }
-    case 18: {
-      // encoder2_reverse_get: Toggle encoder direction.
-      if (execute_mode) {
-        Logical encoder2_reverse = bus_bridge_encoders_sonar.encoder2_reverse_get();
-        maker_bus->logical_put(encoder2_reverse);
-      }
-      break;
-    }
-    case 19: {
-      // encoder2_reverse_set: Toggle encoder direction.
-      Logical encoder2_reverse = maker_bus->logical_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.encoder2_reverse_set(encoder2_reverse);
-      }
-      break;
-    }
-    case 20: {
-      // motors_encoders_swap_get: Toggle encoder direction.
-      if (execute_mode) {
-        Logical motors_encoders_swap = bus_bridge_encoders_sonar.motors_encoders_swap_get();
-        maker_bus->logical_put(motors_encoders_swap);
-      }
-      break;
-    }
-    case 21: {
-      // motors_encoders_swap_set: Toggle encoder direction.
-      Logical motors_encoders_swap = maker_bus->logical_get();
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.motors_encoders_swap_set(motors_encoders_swap);
-      }
-      break;
-    }
-    case 6: {
-      // encoders_reset: Reset both encoders to zero.
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.encoders_reset();
-      }
-      break;
-    }
-    case 7: {
-      // encoders_latch: Cause both encoder values to be latched.
-      if (execute_mode) {
-        bus_bridge_encoders_sonar.encoders_latch();
-      }
-      break;
-    }
-
-  }
-  return 0;
+UByte command_process(Bus_Slave *bus_slave, 
+ UByte command, Logical execute_mode) {
+  return bus_bridge_encoders_sonar.command_process(bus_slave,
+   command, execute_mode);
 }
 
 void loop() {
@@ -305,7 +131,7 @@ void loop() {
       static UByte encoder2_state = 0;
 
       // Deal with any *bus* related activities:
-      bus.slave_mode(0x21, command_process);
+      bus_slave.slave_mode(0x21, command_process);
 
       // Deal with encoder issues:
       if (encoder_buffer_in != encoder_buffer_out) {
@@ -348,7 +174,7 @@ void loop() {
     }
     case TEST_BUS_ECHO: {
       // Wait for a *frame* to show up on *bus*:
-      UShort frame = bus.frame_get();
+      UShort frame = bus_slave.frame_get();
 
       // Set the *LED* to the least significant bit of *frame*:
       if ((frame & 1) == 0) {
@@ -366,10 +192,10 @@ void loop() {
       }
 
       // Now send *frame* back to the *bus*:
-      bus.frame_put(frame);
+      bus_slave.frame_put(frame);
 
       // Get the *echo_frame* and check for a mismatch;
-      UShort echo_frame = bus.frame_get();
+      UShort echo_frame = bus_slave.frame_get();
       if (frame != echo_frame) {
         debug_uart->string_print((Character *)"!");
       }
@@ -416,7 +242,7 @@ void loop() {
       // to *debug_uart*:
 
       // Get a *frame* from the bus:
-      UShort frame = bus.frame_get();
+      UShort frame = bus_slave.frame_get();
 
       // Print it out for debugging:
       debug_uart->frame_put(frame & 0x7f);
@@ -464,19 +290,6 @@ void setup() {
   pinMode(direction_enable_34_pin, OUTPUT);
   pinMode(direction_enable_4a_pin, OUTPUT);  
 
-  // Set up the encoder pins:
-  pinMode(encoder1_phase_a_pin, INPUT);
-  pinMode(encoder1_phase_b_pin, INPUT);
-  pinMode(encoder2_phase_a_pin, INPUT);
-  pinMode(encoder2_phase_b_pin, INPUT);
-  pinMode(encoders_enable_pin, OUTPUT);
-
-  // Set up the LED output pins:
-  pinMode(led_pin, OUTPUT);
-  
-  // Turn on encoder LED's:
-  digitalWrite(encoders_enable_pin, HIGH);
-
   // Disable the motors:
   digitalWrite(direction_1a_pin, LOW);
   digitalWrite(direction_enable_12_pin, LOW);
@@ -484,12 +297,16 @@ void setup() {
   digitalWrite(direction_3a_pin, LOW);
   digitalWrite(direction_enable_34_pin, LOW);
   digitalWrite(direction_enable_4a_pin, LOW);
-  
-  // For now, turn on the both motors:
-  //digitalWrite(direction_1a_pin, HIGH);
-  //digitalWrite(direction_3a_pin, HIGH);
-  //analogWrite(direction_enable_12_pin, 255);
-  //analogWrite(direction_enable_34_pin, 255);
+
+  // Set up the encoder pins:
+  pinMode(encoder1_phase_a_pin, INPUT);
+  pinMode(encoder1_phase_b_pin, INPUT);
+  pinMode(encoder2_phase_a_pin, INPUT);
+  pinMode(encoder2_phase_b_pin, INPUT);
+  pinMode(encoders_enable_pin, OUTPUT);
+
+  // Turn on encoder LED's:
+  digitalWrite(encoders_enable_pin, HIGH);
 
   // Set up Interrupt on Pin Change interrupt vector.  The encoder
   // pins are attached to PCINT8/9/10/11, so we only need to set
@@ -504,10 +321,9 @@ void setup() {
   // status register:
   //SREG |= _BV(7);
 
-
   // Enable/disable interrupts based on *TEST*:
   switch (TEST) {
-    case TEST_BUS_OUTPUT: 
+    case TEST_BUS_OUTPUT:
       debug_uart = &avr_uart0;
       debug_uart->begin(frequency, 115200L, (Text)"8N1");
       debug_uart->string_print((Character *)"\r\nbbes_output:\r\n");
