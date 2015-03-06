@@ -1,9 +1,9 @@
 #ARDUINO_DIR = /usr/share/arduino
 ARDUINO_DIR = ../Arduino
 ARDMK_DIR = ../Arduino-Makefile
-ALTERNATE_CORE = arduino/avr
+ALTERNATE_CORE = ubiquity/avr
 ALTERNATE_CORE_PATH = $(ARDUINO_DIR)/hardware/$(ALTERNATE_CORE)
-BOARD_TAG = uno
+BOARD_TAG = bus_bridge_encoders_sonar
 ARDUINO_PORT = /dev/ttyUSB0
 ARDUINO_LIBS := . ../bus_slave
 USER_LIB_PATH = $(realpath .)
