@@ -35,23 +35,23 @@ class Bus_Bridge_Encoders_Sonar : public Bus_Module {
     Byte motor2_get();
     void motor2_set(Byte motor2);
 
-    // Toggle motor direction.
+    // Toggle motor1 direction.
     Logical motor1_reverse_get();
     void motor1_reverse_set(Logical motor1_reverse);
 
-    // Toggle motor direction.
+    // Toggle motor2 direction.
     Logical motor2_reverse_get();
     void motor2_reverse_set(Logical motor2_reverse);
 
-    // Toggle encoder direction.
+    // Toggle encoder1 direction.
     Logical encoder1_reverse_get();
     void encoder1_reverse_set(Logical encoder1_reverse);
 
-    // Toggle encoder direction.
+    // Toggle encoder2 direction.
     Logical encoder2_reverse_get();
     void encoder2_reverse_set(Logical encoder2_reverse);
 
-    // Toggle encoder direction.
+    // Swap motor/encoders.
     Logical motors_encoders_swap_get();
     void motors_encoders_swap_set(Logical motors_encoders_swap);
 

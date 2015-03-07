@@ -191,7 +191,7 @@ void Bus_Bridge_Encoders_Sonar::motor2_set(Byte motor2) {
   //////// Edit ends here: MOTOR2_SET
 }
 
-// motor1_reverse_get: Toggle motor direction.
+// motor1_reverse_get: Toggle motor1 direction.
 Logical Bus_Bridge_Encoders_Sonar::motor1_reverse_get() {
   Logical result = 0;
   //////// Edit begins here: MOTOR1_REVERSE_GET
@@ -200,14 +200,14 @@ Logical Bus_Bridge_Encoders_Sonar::motor1_reverse_get() {
   return result;
 }
 
-// motor1_reverse_set: Toggle motor direction.
+// motor1_reverse_set: Toggle motor1 direction.
 void Bus_Bridge_Encoders_Sonar::motor1_reverse_set(Logical motor1_reverse) {
   //////// Edit begins here: MOTOR1_REVERSE_SET
   _motor1_reverse = motor1_reverse;
   //////// Edit ends here: MOTOR1_REVERSE_SET
 }
 
-// motor2_reverse_get: Toggle motor direction.
+// motor2_reverse_get: Toggle motor2 direction.
 Logical Bus_Bridge_Encoders_Sonar::motor2_reverse_get() {
   Logical result = 0;
   //////// Edit begins here: MOTOR2_REVERSE_GET
@@ -216,14 +216,14 @@ Logical Bus_Bridge_Encoders_Sonar::motor2_reverse_get() {
   return result;
 }
 
-// motor2_reverse_set: Toggle motor direction.
+// motor2_reverse_set: Toggle motor2 direction.
 void Bus_Bridge_Encoders_Sonar::motor2_reverse_set(Logical motor2_reverse) {
   //////// Edit begins here: MOTOR2_REVERSE_SET
   _motor2_reverse = motor2_reverse;
   //////// Edit ends here: MOTOR2_REVERSE_SET
 }
 
-// encoder1_reverse_get: Toggle encoder direction.
+// encoder1_reverse_get: Toggle encoder1 direction.
 Logical Bus_Bridge_Encoders_Sonar::encoder1_reverse_get() {
   Logical result = 0;
   //////// Edit begins here: ENCODER1_REVERSE_GET
@@ -232,14 +232,14 @@ Logical Bus_Bridge_Encoders_Sonar::encoder1_reverse_get() {
   return result;
 }
 
-// encoder1_reverse_set: Toggle encoder direction.
+// encoder1_reverse_set: Toggle encoder1 direction.
 void Bus_Bridge_Encoders_Sonar::encoder1_reverse_set(Logical encoder1_reverse) {
   //////// Edit begins here: ENCODER1_REVERSE_SET
   _encoder1_reverse = encoder1_reverse;
   //////// Edit ends here: ENCODER1_REVERSE_SET
 }
 
-// encoder2_reverse_get: Toggle encoder direction.
+// encoder2_reverse_get: Toggle encoder2 direction.
 Logical Bus_Bridge_Encoders_Sonar::encoder2_reverse_get() {
   Logical result = 0;
   //////// Edit begins here: ENCODER2_REVERSE_GET
@@ -248,14 +248,14 @@ Logical Bus_Bridge_Encoders_Sonar::encoder2_reverse_get() {
   return result;
 }
 
-// encoder2_reverse_set: Toggle encoder direction.
+// encoder2_reverse_set: Toggle encoder2 direction.
 void Bus_Bridge_Encoders_Sonar::encoder2_reverse_set(Logical encoder2_reverse) {
   //////// Edit begins here: ENCODER2_REVERSE_SET
   _encoder2_reverse = encoder2_reverse;
   //////// Edit ends here: ENCODER2_REVERSE_SET
 }
 
-// motors_encoders_swap_get: Toggle encoder direction.
+// motors_encoders_swap_get: Swap motor/encoders.
 Logical Bus_Bridge_Encoders_Sonar::motors_encoders_swap_get() {
   Logical result = 0;
   //////// Edit begins here: MOTORS_ENCODERS_SWAP_GET
@@ -264,7 +264,7 @@ Logical Bus_Bridge_Encoders_Sonar::motors_encoders_swap_get() {
   return result;
 }
 
-// motors_encoders_swap_set: Toggle encoder direction.
+// motors_encoders_swap_set: Swap motor/encoders.
 void Bus_Bridge_Encoders_Sonar::motors_encoders_swap_set(Logical motors_encoders_swap) {
   //////// Edit begins here: MOTORS_ENCODERS_SWAP_SET
   _motors_encoders_swap = motors_encoders_swap;
@@ -369,7 +369,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 12: {
-      // motor1_reverse_get: Toggle motor direction.
+      // motor1_reverse_get: Toggle motor1 direction.
       if (execute_mode) {
         Logical motor1_reverse = motor1_reverse_get();
         bus_slave->logical_put(motor1_reverse);
@@ -377,7 +377,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 13: {
-      // motor1_reverse_set: Toggle motor direction.
+      // motor1_reverse_set: Toggle motor1 direction.
       Logical motor1_reverse = bus_slave->logical_get();
       if (execute_mode) {
         motor1_reverse_set(motor1_reverse);
@@ -385,7 +385,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 14: {
-      // motor2_reverse_get: Toggle motor direction.
+      // motor2_reverse_get: Toggle motor2 direction.
       if (execute_mode) {
         Logical motor2_reverse = motor2_reverse_get();
         bus_slave->logical_put(motor2_reverse);
@@ -393,7 +393,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 15: {
-      // motor2_reverse_set: Toggle motor direction.
+      // motor2_reverse_set: Toggle motor2 direction.
       Logical motor2_reverse = bus_slave->logical_get();
       if (execute_mode) {
         motor2_reverse_set(motor2_reverse);
@@ -401,7 +401,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 16: {
-      // encoder1_reverse_get: Toggle encoder direction.
+      // encoder1_reverse_get: Toggle encoder1 direction.
       if (execute_mode) {
         Logical encoder1_reverse = encoder1_reverse_get();
         bus_slave->logical_put(encoder1_reverse);
@@ -409,7 +409,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 17: {
-      // encoder1_reverse_set: Toggle encoder direction.
+      // encoder1_reverse_set: Toggle encoder1 direction.
       Logical encoder1_reverse = bus_slave->logical_get();
       if (execute_mode) {
         encoder1_reverse_set(encoder1_reverse);
@@ -417,7 +417,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 18: {
-      // encoder2_reverse_get: Toggle encoder direction.
+      // encoder2_reverse_get: Toggle encoder2 direction.
       if (execute_mode) {
         Logical encoder2_reverse = encoder2_reverse_get();
         bus_slave->logical_put(encoder2_reverse);
@@ -425,7 +425,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 19: {
-      // encoder2_reverse_set: Toggle encoder direction.
+      // encoder2_reverse_set: Toggle encoder2 direction.
       Logical encoder2_reverse = bus_slave->logical_get();
       if (execute_mode) {
         encoder2_reverse_set(encoder2_reverse);
@@ -433,7 +433,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 20: {
-      // motors_encoders_swap_get: Toggle encoder direction.
+      // motors_encoders_swap_get: Swap motor/encoders.
       if (execute_mode) {
         Logical motors_encoders_swap = motors_encoders_swap_get();
         bus_slave->logical_put(motors_encoders_swap);
@@ -441,7 +441,7 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       break;
     }
     case 21: {
-      // motors_encoders_swap_set: Toggle encoder direction.
+      // motors_encoders_swap_set: Swap motor/encoders.
       Logical motors_encoders_swap = bus_slave->logical_get();
       if (execute_mode) {
         motors_encoders_swap_set(motors_encoders_swap);

@@ -8,25 +8,25 @@
   <Classification Level1="Vendors" Level2="makerbus.com" Level3="Actuators" />
   <Classification Level1="Buses" Level2="MakerBus" />
   <Classification Level1="Catagories" Level2="Actuators" Level3="Motor" />
-  <Register Name="led" Type="Logical" Number="0"
+  <Register Name="LED" Type="Logical" Number="0"
    Brief="LED to control">
     <Description>
       This register controls the on-board LED.
     </Description>
   </Register>
-  <Register Name="encoder1" Type="Integer" Number="2"
+  <Register Name="Encoder1" Type="Integer" Number="2"
    Brief="Encoder 1">
     <Description>
       This register is associated with the first encoder.
     </Description>
   </Register>
-  <Register Name="encoder2" Type="Integer" Number="4"
+  <Register Name="Encoder2" Type="Integer" Number="4"
    Brief="Encoder 2">
     <Description>
       This register is associated with the second encoder.
     </Description>
   </Register>
-  <Function Name="encoders_reset" Number="6"
+  <Function Name="Encoders_Reset" Number="6"
    Brief="Reset both encoders to zero.">
     <Description>
       This function will reset both encoders to zero.
@@ -41,46 +41,46 @@
       latched values are returned.
     </Description>
   </Function>
-  <Register Name="motor1" Type="Byte" Number="8"
+  <Register Name="Motor1" Type="Byte" Number="8"
    Brief="Motor 1">
     <Description>
       This register is specifies the motor1  speed.
     </Description>
   </Register>
-  <Register Name="motor2" Type="Byte" Number="10"
+  <Register Name="Motor2" Type="Byte" Number="10"
    Brief="Motor 2">
     <Description>
       This register is specifis the motor2 speed.
     </Description>
   </Register>
-  <Register Name="motor1_reverse" Type="Logical" Number="12"
-   Brief="Toggle motor direction.">
+  <Register Name="Motor1_Reverse" Type="Logical" Number="12"
+   Brief="Toggle motor1 direction.">
     <Description>
       This register causes motor 1 to go in the opposite direct
       direction when given a positive value.
     </Description>
   </Register>
-  <Register Name="motor2_reverse" Type="Logical" Number="14"
-   Brief="Toggle motor direction.">
+  <Register Name="Motor2_Reverse" Type="Logical" Number="14"
+   Brief="Toggle motor2 direction.">
     <Description>
       This register causes motor 2 to go in the opposite direct
       direction when given a positive value.
     </Description>
   </Register>
-  <Register Name="encoder1_reverse" Type="Logical" Number="16"
-   Brief="Toggle encoder direction.">
+  <Register Name="Encoder1_Reverse" Type="Logical" Number="16"
+   Brief="Toggle encoder1 direction.">
     <Description>
       This register causes encoder 1 to go in the opposite direction.
     </Description>
   </Register>
-  <Register Name="encoder2_reverse" Type="Logical" Number="18"
-   Brief="Toggle encoder direction.">
+  <Register Name="Encoder2_Reverse" Type="Logical" Number="18"
+   Brief="Toggle encoder2 direction.">
     <Description>
       This register causes encoder 2 to go in the opposite direction.
     </Description>
   </Register>
-  <Register Name="motors_encoders_swap" Type="Logical" Number="20"
-   Brief="Toggle encoder direction.">
+  <Register Name="Motors_Encoders_Swap" Type="Logical" Number="20"
+   Brief="Swap motor/encoders.">
     <Description>
       This register causes the motors and encoders to be swapped.
     </Description>
