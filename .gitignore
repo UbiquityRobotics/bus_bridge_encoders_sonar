@@ -1,5 +1,8 @@
 *~
 *bak
 *bck
+*.srv
+bus_bridge_encoders_sonar_client.py
+bus_bridge_encoders_sonar_server.py
 build-*
 
