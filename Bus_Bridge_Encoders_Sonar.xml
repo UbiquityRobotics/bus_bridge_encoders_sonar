@@ -1,5 +1,5 @@
 <Module Name="Bus_Bridge_Encoders_Sonar" Vendor="makerbus.com" Generate="Ino_Slave"
- Address_RE="^[0-9]+$" Address_Type="MakerBus"
+ Address_RE="^[0-9]+$" Address_Type="MakerBus" Default_Address="33"
  Brief="Motor controller">
   <Overview>
     The Bus_Bridge_Encoders_Sonar can drive two motors, read two encoders,
