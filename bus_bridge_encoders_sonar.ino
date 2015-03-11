@@ -105,12 +105,6 @@ static Byte state_transition_table[32] = {
 };
 
 // PID constants:
-static Short Kp = 20;	// PID Proportional Constant
-static Short Kd = 12;	// PID Differential Constant
-static Short Ki = 0;	// PID Integal Constant
-static Short Ko = 50;	// PID common denOminator 
-static Byte const MAX_PWM = 127;
-static Logical is_moving = (Logical)0;
 
 // *PCINT1_vect*() is the interrupt service routine for the
 // pin change interrupts PCINT8/.../15.  The two encoders are
@@ -133,42 +127,6 @@ UByte command_process(Bus_Slave *bus_slave,
  UByte command, Logical execute_mode) {
   return bus_bridge_encoders_sonar.command_process(bus_slave,
    command, execute_mode);
-}
-
-void do_pid(Motor_Encoder *pid) {
-  Integer Perror;
-  Integer output;
-  Short input;
-
-  //Perror = pid->TargetTicksPerFrame - (pid->Encoder - pid->PrevEnc);
-  input = pid->Encoder - pid->PrevEnc;
-  Perror = pid->TargetTicksPerFrame - input;
-
-  // Avoid derivative kick and allow tuning changes, see:
-  //
-  //   http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
-  //   http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
-
-  //output =
-  // (Kp * Perror + Kd * (Perror - pid->PrevErr) + Ki * pid->Ierror) / Ko;
-  // p->PrevErr = Perror;
-  output = (Kp * Perror - Kd * (input - pid->PrevInput) + pid->ITerm) / Ko;
-  pid->PrevEnc = pid->Encoder;
-
-  output += pid->output;
-  // Accumulate Integral error *or* Limit output.
-  // Stop accumulating when output saturates
-  if (output >= MAX_PWM)
-    output = MAX_PWM;
-  else if (output <= -MAX_PWM)
-    output = -MAX_PWM;
-  else
-    // allow turning changes, see
-    // http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
-    pid->ITerm += Ki * Perror;
-
-  pid->output = output;
-  pid->PrevInput = input;
 }
 
 void pid_update() {

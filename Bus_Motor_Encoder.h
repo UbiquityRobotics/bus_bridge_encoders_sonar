@@ -7,7 +7,15 @@ class Motor_Encoder {
  public:
   Motor_Encoder();
   void reset();
+  void do_pid();
 
+  Short Kp;	// PID Proportional Constant
+  Short Kd;	// PID Differential Constant
+  Short Ki;	// PID Integal Constant
+  Short Ko;	// PID common denOminator 
+  static const Byte MAX_PWM = 127;
+
+  Logical is_moving;
   Double TargetTicksPerFrame;	// target speed in ticks per frame
   Integer Encoder;		// encoder count
   Integer PrevEnc;		// last encoder count
