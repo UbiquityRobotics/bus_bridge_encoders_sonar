@@ -17,24 +17,7 @@
 
 #include <Bus_Slave.h>
 #include "Bus_Bridge_Encoders_Sonar_Local.h"
-
-typedef struct {
-  Double TargetTicksPerFrame;	// target speed in ticks per frame
-  Integer Encoder;		// encoder count
-  Integer PrevEnc;		// last encoder count
-
-  // Using previous input (PrevInput) instead of PrevError to avoid derivative kick,
-  // see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
-  Short PrevInput;		// last input
-
-  // Using integrated term (ITerm) instead of integrated error (Ierror),
-  // to allow tuning changes,
-  // see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
-
-  Short ITerm;			//integrated term
-
-  Integer output;		// last motor setting
-} Motor_Encoder;
+#include <Bus_Motor_Encoder.h>
 
 Motor_Encoder leftPID, rightPID;
 
@@ -152,16 +135,6 @@ UByte command_process(Bus_Slave *bus_slave,
    command, execute_mode);
 }
 
-void pid_reset(Motor_Encoder *pid){
-   pid->TargetTicksPerFrame = 0.0;
-   // Leave *encoder* field alone:
-   //pid->Encoder = 0;
-   pid->PrevEnc = leftPID.Encoder;
-   pid->output = 0;
-   pid->PrevInput = 0;
-   pid->ITerm = 0;
-}
-
 void do_pid(Motor_Encoder *pid) {
   Integer Perror;
   Integer output;
@@ -243,8 +216,8 @@ void pid_update() {
     // whether reset has already happened
 
     if (leftPID.PrevInput != 0 || rightPID.PrevInput != 0) {
-	pid_reset(&leftPID);
-	pid_reset(&rightPID);
+	leftPID.reset();
+	rightPID.reset();
     }
   }
 }
