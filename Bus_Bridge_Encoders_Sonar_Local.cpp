@@ -19,6 +19,11 @@ Bus_Bridge_Encoders_Sonar::Bus_Bridge_Encoders_Sonar(UByte address) {
   motor1_reverse_set((Logical)1);
   motor2_reverse_set((Logical)1);
   motors_encoders_swap_set((Logical)1);
+  pid_active_set((Logical)0);
+  pid_denominator_set(50);
+  pid_derivative_set(12);
+  pid_integral_set(0);
+  pid_proportional_set(20);
   //////// Edit ends here: CONSTRUCTOR
 }
 
@@ -271,6 +276,86 @@ void Bus_Bridge_Encoders_Sonar::motors_encoders_swap_set(Logical motors_encoders
   //////// Edit ends here: MOTORS_ENCODERS_SWAP_SET
 }
 
+// pid_proportional_get: Kp proportional constant numerator for PID algorithm.
+Short Bus_Bridge_Encoders_Sonar::pid_proportional_get() {
+  Short result = 0;
+  //////// Edit begins here: PID_PROPORTIONAL_GET
+  result = _pid_proportional;
+  //////// Edit ends here: PID_PROPORTIONAL_GET
+  return result;
+}
+
+// pid_proportional_set: Kp proportional constant numerator for PID algorithm.
+void Bus_Bridge_Encoders_Sonar::pid_proportional_set(Short pid_proportional) {
+  //////// Edit begins here: PID_PROPORTIONAL_SET
+  _pid_proportional = pid_proportional;
+  //////// Edit ends here: PID_PROPORTIONAL_SET
+}
+
+// pid_integral_get: Ki integral constant numerator for PID algorithm.
+Short Bus_Bridge_Encoders_Sonar::pid_integral_get() {
+  Short result = 0;
+  //////// Edit begins here: PID_INTEGRAL_GET
+  result = _pid_integral;
+  //////// Edit ends here: PID_INTEGRAL_GET
+  return result;
+}
+
+// pid_integral_set: Ki integral constant numerator for PID algorithm.
+void Bus_Bridge_Encoders_Sonar::pid_integral_set(Short pid_integral) {
+  //////// Edit begins here: PID_INTEGRAL_SET
+  _pid_integral = pid_integral;
+  //////// Edit ends here: PID_INTEGRAL_SET
+}
+
+// pid_derivative_get: Kd derivative constant numerator for PID algorithm.
+Short Bus_Bridge_Encoders_Sonar::pid_derivative_get() {
+  Short result = 0;
+  //////// Edit begins here: PID_DERIVATIVE_GET
+  result = _pid_derivative;
+  //////// Edit ends here: PID_DERIVATIVE_GET
+  return result;
+}
+
+// pid_derivative_set: Kd derivative constant numerator for PID algorithm.
+void Bus_Bridge_Encoders_Sonar::pid_derivative_set(Short pid_derivative) {
+  //////// Edit begins here: PID_DERIVATIVE_SET
+  _pid_derivative = pid_derivative;
+  //////// Edit ends here: PID_DERIVATIVE_SET
+}
+
+// pid_denominator_get: Common deonominator for the PID constants.
+Short Bus_Bridge_Encoders_Sonar::pid_denominator_get() {
+  Short result = 0;
+  //////// Edit begins here: PID_DENOMINATOR_GET
+  result = _pid_denominator;
+  //////// Edit ends here: PID_DENOMINATOR_GET
+  return result;
+}
+
+// pid_denominator_set: Common deonominator for the PID constants.
+void Bus_Bridge_Encoders_Sonar::pid_denominator_set(Short pid_denominator) {
+  //////// Edit begins here: PID_DENOMINATOR_SET
+  _pid_denominator = pid_denominator;
+  //////// Edit ends here: PID_DENOMINATOR_SET
+}
+
+// pid_active_get: Register to enable/disable PID algorithm.
+Logical Bus_Bridge_Encoders_Sonar::pid_active_get() {
+  Logical result = 0;
+  //////// Edit begins here: PID_ACTIVE_GET
+  result = _pid_active;
+  //////// Edit ends here: PID_ACTIVE_GET
+  return result;
+}
+
+// pid_active_set: Register to enable/disable PID algorithm.
+void Bus_Bridge_Encoders_Sonar::pid_active_set(Logical pid_active) {
+  //////// Edit begins here: PID_ACTIVE_SET
+  _pid_active = pid_active;
+  //////// Edit ends here: PID_ACTIVE_SET
+}
+
 // encoders_reset: Reset both encoders to zero.
 void Bus_Bridge_Encoders_Sonar::encoders_reset() {
   //////// Edit begins here: ENCODERS_RESET
@@ -445,6 +530,86 @@ UByte Bus_Bridge_Encoders_Sonar::command_process(Bus_Slave *bus_slave, UByte com
       Logical motors_encoders_swap = bus_slave->logical_get();
       if (execute_mode) {
         motors_encoders_swap_set(motors_encoders_swap);
+      }
+      break;
+    }
+    case 22: {
+      // pid_proportional_get: Kp proportional constant numerator for PID algorithm.
+      if (execute_mode) {
+        Short pid_proportional = pid_proportional_get();
+        bus_slave->short_put(pid_proportional);
+      }
+      break;
+    }
+    case 23: {
+      // pid_proportional_set: Kp proportional constant numerator for PID algorithm.
+      Short pid_proportional = bus_slave->short_get();
+      if (execute_mode) {
+        pid_proportional_set(pid_proportional);
+      }
+      break;
+    }
+    case 24: {
+      // pid_integral_get: Ki integral constant numerator for PID algorithm.
+      if (execute_mode) {
+        Short pid_integral = pid_integral_get();
+        bus_slave->short_put(pid_integral);
+      }
+      break;
+    }
+    case 25: {
+      // pid_integral_set: Ki integral constant numerator for PID algorithm.
+      Short pid_integral = bus_slave->short_get();
+      if (execute_mode) {
+        pid_integral_set(pid_integral);
+      }
+      break;
+    }
+    case 26: {
+      // pid_derivative_get: Kd derivative constant numerator for PID algorithm.
+      if (execute_mode) {
+        Short pid_derivative = pid_derivative_get();
+        bus_slave->short_put(pid_derivative);
+      }
+      break;
+    }
+    case 27: {
+      // pid_derivative_set: Kd derivative constant numerator for PID algorithm.
+      Short pid_derivative = bus_slave->short_get();
+      if (execute_mode) {
+        pid_derivative_set(pid_derivative);
+      }
+      break;
+    }
+    case 28: {
+      // pid_denominator_get: Common deonominator for the PID constants.
+      if (execute_mode) {
+        Short pid_denominator = pid_denominator_get();
+        bus_slave->short_put(pid_denominator);
+      }
+      break;
+    }
+    case 29: {
+      // pid_denominator_set: Common deonominator for the PID constants.
+      Short pid_denominator = bus_slave->short_get();
+      if (execute_mode) {
+        pid_denominator_set(pid_denominator);
+      }
+      break;
+    }
+    case 30: {
+      // pid_active_get: Register to enable/disable PID algorithm.
+      if (execute_mode) {
+        Logical pid_active = pid_active_get();
+        bus_slave->logical_put(pid_active);
+      }
+      break;
+    }
+    case 31: {
+      // pid_active_set: Register to enable/disable PID algorithm.
+      Logical pid_active = bus_slave->logical_get();
+      if (execute_mode) {
+        pid_active_set(pid_active);
       }
       break;
     }

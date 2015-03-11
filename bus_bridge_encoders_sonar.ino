@@ -1,4 +1,5 @@
-// Copyright (c) 2014 by Wayne C. Gramlich.  All rights reserved.
+// Copyright (c) 2014-2015 by Wayne C. Gramlich.  All rights reserved.
+// Some code came from the ros_arduino_bridge.
 
 // The following tests are implemented by this code:
 #define TEST_BUS_INPUT 1
@@ -16,6 +17,26 @@
 
 #include <Bus_Slave.h>
 #include "Bus_Bridge_Encoders_Sonar_Local.h"
+
+typedef struct {
+  Double TargetTicksPerFrame;	// target speed in ticks per frame
+  Integer Encoder;		// encoder count
+  Integer PrevEnc;		// last encoder count
+
+  // Using previous input (PrevInput) instead of PrevError to avoid derivative kick,
+  // see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
+  Short PrevInput;		// last input
+
+  // Using integrated term (ITerm) instead of integrated error (Ierror),
+  // to allow tuning changes,
+  // see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
+
+  Short ITerm;			//integrated term
+
+  Integer output;		// last motor setting
+} Motor_Encoder;
+
+Motor_Encoder leftPID, rightPID;
 
 // The null object can be used for *debug_uart*:
 NULL_UART null_uart;
@@ -100,6 +121,14 @@ static Byte state_transition_table[32] = {
     (signed char)((0x00 << 3) | 0x7), // [31]: 11111[11] => 111  0
 };
 
+// PID constants:
+static Short Kp = 20;	// PID Proportional Constant
+static Short Kd = 12;	// PID Differential Constant
+static Short Ki = 0;	// PID Integal Constant
+static Short Ko = 50;	// PID common denOminator 
+static Byte const MAX_PWM = 127;
+static Logical is_moving = (Logical)0;
+
 // *PCINT1_vect*() is the interrupt service routine for the
 // pin change interrupts PCINT8/.../15.  The two encoders are
 // attached to PCINT8/9/10/11, so these are the bits we want
@@ -121,6 +150,103 @@ UByte command_process(Bus_Slave *bus_slave,
  UByte command, Logical execute_mode) {
   return bus_bridge_encoders_sonar.command_process(bus_slave,
    command, execute_mode);
+}
+
+void pid_reset(Motor_Encoder *pid){
+   pid->TargetTicksPerFrame = 0.0;
+   // Leave *encoder* field alone:
+   //pid->Encoder = 0;
+   pid->PrevEnc = leftPID.Encoder;
+   pid->output = 0;
+   pid->PrevInput = 0;
+   pid->ITerm = 0;
+}
+
+void do_pid(Motor_Encoder *pid) {
+  Integer Perror;
+  Integer output;
+  Short input;
+
+  //Perror = pid->TargetTicksPerFrame - (pid->Encoder - pid->PrevEnc);
+  input = pid->Encoder - pid->PrevEnc;
+  Perror = pid->TargetTicksPerFrame - input;
+
+  // Avoid derivative kick and allow tuning changes, see:
+  //
+  //   http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-derivative-kick/
+  //   http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
+
+  //output =
+  // (Kp * Perror + Kd * (Perror - pid->PrevErr) + Ki * pid->Ierror) / Ko;
+  // p->PrevErr = Perror;
+  output = (Kp * Perror - Kd * (input - pid->PrevInput) + pid->ITerm) / Ko;
+  pid->PrevEnc = pid->Encoder;
+
+  output += pid->output;
+  // Accumulate Integral error *or* Limit output.
+  // Stop accumulating when output saturates
+  if (output >= MAX_PWM)
+    output = MAX_PWM;
+  else if (output <= -MAX_PWM)
+    output = -MAX_PWM;
+  else
+    // allow turning changes, see
+    // http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
+    pid->ITerm += Ki * Perror;
+
+  pid->output = output;
+  pid->PrevInput = input;
+}
+
+void pid_update() {
+  static Byte last_left_speed = 0x80;
+  static Byte last_right_speed = 0x80;
+
+  if (is_moving) {
+    // Read the encoders:
+    leftPID.Encoder = bus_bridge_encoders_sonar.encoder1_get();
+    rightPID.Encoder = bus_bridge_encoders_sonar.encoder2_get();
+  
+    // Do the PID for each motor:
+    //debug_uart->string_print((Text)"+");
+    do_pid(&rightPID);
+    do_pid(&leftPID);
+
+    /* Set the motor speeds accordingly */
+    //debug_uart->string_print((Text)" l=");
+    //debug_uart->integer_print((UInteger)leftPID.output);
+    //debug_uart->string_print((Text)" r=");
+    //debug_uart->integer_print((UInteger)rightPID.output);
+    //debug_uart->string_print((Text)"\r\n");
+
+    Byte left_speed = (Byte)leftPID.output;
+    Byte right_speed = (Byte)rightPID.output;
+
+    if (left_speed != last_left_speed) {
+	bus_bridge_encoders_sonar.motor1_set(left_speed);
+	last_left_speed = left_speed;
+    } 
+    if (right_speed != last_right_speed) {
+	bus_bridge_encoders_sonar.motor2_set(right_speed);
+	last_right_speed = right_speed;
+    }
+    is_moving = (Logical)(left_speed != 0) || (right_speed != 0);
+
+    //motor_speeds_set((Byte)leftPID.output, (Byte)rightPID.output);
+  } else {
+    //debug_uart->string_print((Text)"-");
+
+    // If we're not moving there is nothing more to do:
+    // Reset PIDs once, to prevent startup spikes, see
+    //    http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-initialization/
+    // PrevInput is considered a good proxy to detect
+    // whether reset has already happened
+
+    if (leftPID.PrevInput != 0 || rightPID.PrevInput != 0) {
+	pid_reset(&leftPID);
+	pid_reset(&rightPID);
+    }
+  }
 }
 
 void loop() {

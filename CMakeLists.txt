@@ -73,6 +73,16 @@ add_service_files(
   Encoder2_Reverse_Set.srv
   Motors_Encoders_Swap_Get.srv
   Motors_Encoders_Swap_Set.srv
+  PID_Proportional_Get.srv
+  PID_Proportional_Set.srv
+  PID_Integral_Get.srv
+  PID_Integral_Set.srv
+  PID_Derivative_Get.srv
+  PID_Derivative_Set.srv
+  PID_Denominator_Get.srv
+  PID_Denominator_Set.srv
+  PID_Active_Get.srv
+  PID_Active_Set.srv
 )
 
 ## Generate actions in the 'action' folder

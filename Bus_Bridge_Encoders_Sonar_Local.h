@@ -55,6 +55,26 @@ class Bus_Bridge_Encoders_Sonar : public Bus_Module {
     Logical motors_encoders_swap_get();
     void motors_encoders_swap_set(Logical motors_encoders_swap);
 
+    // Kp proportional constant numerator for PID algorithm.
+    Short pid_proportional_get();
+    void pid_proportional_set(Short pid_proportional);
+
+    // Ki integral constant numerator for PID algorithm.
+    Short pid_integral_get();
+    void pid_integral_set(Short pid_integral);
+
+    // Kd derivative constant numerator for PID algorithm.
+    Short pid_derivative_get();
+    void pid_derivative_set(Short pid_derivative);
+
+    // Common deonominator for the PID constants.
+    Short pid_denominator_get();
+    void pid_denominator_set(Short pid_denominator);
+
+    // Register to enable/disable PID algorithm.
+    Logical pid_active_get();
+    void pid_active_set(Logical pid_active);
+
     // Reset both encoders to zero.
     void encoders_reset();
 
@@ -88,6 +108,11 @@ class Bus_Bridge_Encoders_Sonar : public Bus_Module {
     Logical _motor1_reverse;
     Logical _motor2_reverse;
     Logical _motors_encoders_swap;
+    Short _pid_proportional;
+    Short _pid_integral;
+    Short _pid_derivative;
+    Short _pid_denominator;
+    Logical _pid_active;
   //////// Edit ends here: PRIVATE
 };
 

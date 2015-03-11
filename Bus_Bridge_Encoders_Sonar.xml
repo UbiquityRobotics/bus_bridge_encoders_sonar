@@ -85,4 +85,41 @@
       This register causes the motors and encoders to be swapped.
     </Description>
   </Register>
+  <Register Name="PID_Proportional" Type="Short" Number="22"
+   Brief="Kp proportional constant numerator for PID algorithm.">
+    <Description>
+      This register specifies a signed 16-bit numerator that when
+      divided by a the common demomitator is used by the PID
+      algorithm as the Kp proportional constant.
+    </Description>
+  </Register>
+  <Register Name="PID_Integral" Type="Short" Number="24"
+   Brief="Ki integral constant numerator for PID algorithm.">
+    <Description>
+      This register specifies a signed 16-bit numerator that when
+      divided by a the common demomitator is used by the PID
+      algorithm as the Ki integral constant.
+    </Description>
+  </Register>
+  <Register Name="PID_Derivative" Type="Short" Number="26"
+   Brief="Kd derivative constant numerator for PID algorithm.">
+    <Description>
+      This register specifies a signed 16-bit numerator that when
+      divided by a the common demomitator is used by the PID
+      algorithm as the Kd derivative constant.
+    </Description>
+  </Register>
+  <Register Name="PID_Denominator" Type="Short" Number="28"
+   Brief="Common deonominator for the PID constants.">
+    <Description>
+      This register specifies a signed 16-bit denominator that is
+      used to divide the Kp, Ki, and Kd numerators.
+    </Description>
+  </Register>
+  <Register Name="PID_Active" Type="Logical" Number="30"
+   Brief="Register to enable/disable PID algorithm.">
+    <Description>
+      This register is set to *True* to enable the PID algorithm.
+    </Description>
+  </Register>
 </Module>
