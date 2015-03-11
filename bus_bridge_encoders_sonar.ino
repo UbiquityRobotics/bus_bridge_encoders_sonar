@@ -17,9 +17,6 @@
 
 #include <Bus_Slave.h>
 #include "Bus_Bridge_Encoders_Sonar_Local.h"
-#include <Bus_Motor_Encoder.h>
-
-Motor_Encoder leftPID, rightPID;
 
 // The null object can be used for *debug_uart*:
 NULL_UART null_uart;
@@ -127,57 +124,6 @@ UByte command_process(Bus_Slave *bus_slave,
  UByte command, Logical execute_mode) {
   return bus_bridge_encoders_sonar.command_process(bus_slave,
    command, execute_mode);
-}
-
-void pid_update() {
-  static Byte last_left_speed = 0x80;
-  static Byte last_right_speed = 0x80;
-
-  if (is_moving) {
-    // Read the encoders:
-    leftPID.Encoder = bus_bridge_encoders_sonar.encoder1_get();
-    rightPID.Encoder = bus_bridge_encoders_sonar.encoder2_get();
-  
-    // Do the PID for each motor:
-    //debug_uart->string_print((Text)"+");
-    do_pid(&rightPID);
-    do_pid(&leftPID);
-
-    /* Set the motor speeds accordingly */
-    //debug_uart->string_print((Text)" l=");
-    //debug_uart->integer_print((UInteger)leftPID.output);
-    //debug_uart->string_print((Text)" r=");
-    //debug_uart->integer_print((UInteger)rightPID.output);
-    //debug_uart->string_print((Text)"\r\n");
-
-    Byte left_speed = (Byte)leftPID.output;
-    Byte right_speed = (Byte)rightPID.output;
-
-    if (left_speed != last_left_speed) {
-	bus_bridge_encoders_sonar.motor1_set(left_speed);
-	last_left_speed = left_speed;
-    } 
-    if (right_speed != last_right_speed) {
-	bus_bridge_encoders_sonar.motor2_set(right_speed);
-	last_right_speed = right_speed;
-    }
-    is_moving = (Logical)(left_speed != 0) || (right_speed != 0);
-
-    //motor_speeds_set((Byte)leftPID.output, (Byte)rightPID.output);
-  } else {
-    //debug_uart->string_print((Text)"-");
-
-    // If we're not moving there is nothing more to do:
-    // Reset PIDs once, to prevent startup spikes, see
-    //    http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-initialization/
-    // PrevInput is considered a good proxy to detect
-    // whether reset has already happened
-
-    if (leftPID.PrevInput != 0 || rightPID.PrevInput != 0) {
-	leftPID.reset();
-	rightPID.reset();
-    }
-  }
 }
 
 void loop() {
