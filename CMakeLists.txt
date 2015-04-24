@@ -5,6 +5,7 @@ project(bus_bridge_encoders_sonar)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   roscpp
   rospy
   std_msgs
@@ -43,6 +44,7 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
+generate_dynamic_reconfigure_options(cfg/Bus_Bridge_Encoders_Sonar.cfg)
 
 ## Generate messages in the 'msg' folder
 #add_message_files(
@@ -93,10 +95,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
+generate_messages(
    DEPENDENCIES
    std_msgs
- )
+)
 
 ###################################
 ## catkin specific configuration ##
